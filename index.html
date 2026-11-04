@@ -177,13 +177,33 @@ dialog label{display:block;font-size:11px;font-weight:600;color:var(--muted);mar
 .chk,.month .day{position:relative;overflow:visible}
 .chk.on,.month .day.on{background:var(--surface2);border-color:var(--border);color:var(--text2)}
 .chk.on.today,.month .day.on.today{border-color:var(--text);box-shadow:none}
-.xm{position:absolute;left:-24%;top:-24%;width:148%;height:148%;pointer-events:none;overflow:visible;z-index:2}
+.xm{position:absolute;left:-14%;top:-14%;width:128%;height:128%;pointer-events:none;overflow:visible;z-index:2}
 .xm path{fill:none;stroke:var(--text);stroke-width:16;stroke-linecap:round;stroke-linejoin:round}
 .xm.new path{stroke-dasharray:110;stroke-dashoffset:110;animation:draw .18s ease-out forwards}
 .xm.new path+path{animation-delay:.14s}
 @keyframes draw{to{stroke-dashoffset:0}}
 .heat svg .yx{fill:none;stroke:var(--text);stroke-width:3.4;stroke-linecap:round;pointer-events:none}
 button.big{font-size:13px;padding:9px 18px;margin-left:auto;line-height:inherit}
+/* ===== round days ===== */
+.dgrid,.month{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;max-width:520px;margin:0 auto}
+.dc{display:flex;justify-content:center;align-items:center;min-width:0}
+.cday{position:relative;overflow:visible;width:100%;max-width:46px;aspect-ratio:1/1;border-radius:50%;border:2px solid var(--border);background:var(--surface2);cursor:pointer;padding:0;font-family:var(--font);font-size:14px;font-weight:800;color:var(--text2);display:flex;align-items:center;justify-content:center}
+.cday.today{border-color:var(--text)}
+.cday.fut{opacity:.5}
+.cday:hover{border-color:var(--text)}
+.msum{grid-column:1/-1;text-align:center;font-size:14px;color:var(--muted);font-weight:600;margin-top:14px}
+.msum b{color:var(--text);font-weight:900}
+.mhead{margin:14px 0 12px}
+.ygrid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px 16px;margin-top:14px}
+.ym{min-width:0}
+.ymh{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;margin-bottom:6px}
+.ymh b{font-weight:800}.ymh span{font-weight:800;color:var(--accent)}
+.ymg{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.yd{position:relative;overflow:visible;aspect-ratio:1/1;border-radius:50%;border:none;background:var(--cell);padding:0;cursor:pointer}
+.yd.today{box-shadow:0 0 0 1.5px var(--text)}
+.yd.fut{opacity:.45}
+.yd .xm path{stroke-width:18}
+@media (max-width:700px){.ygrid{grid-template-columns:repeat(3,1fr);gap:14px 12px}}
 /* ===== bold & clean ===== */
 .ttl{font-family:var(--font);font-size:20px;font-weight:800;text-transform:none;letter-spacing:-.3px;color:var(--text)}
 body{font-size:15px}
@@ -462,32 +482,27 @@ function renderProcess(){
   }
   $('bars').innerHTML=bars;$('bars').style.display=bars?'':'none';
 }
+// One round, cross-able day; identical in week and month view.
+function dayBtn(k,T,cls=''){const on=T.has(k),d=parse(k).getDate();
+  return `<div class="dc"><button class="cday${on?' on':''}${k===todayIso?' today':''}${k>todayIso?' fut':''}${cls}" data-wd="${k}" title="${fmtD(k)}" aria-pressed="${on}"><span>${d}</span>${on?crossSVG(k):''}</button></div>`;}
+const countTxt=(n,period)=>`<div class="msum"><b>${n}</b> training ${n===1?'day':'days'} ${period}</div>`;
 function renderMonth(){
   const monthCur=new Date(weekStart.getFullYear(),weekStart.getMonth(),1);
   const T=trained(),y=monthCur.getFullYear(),mo=monthCur.getMonth();
   $('mLbl').textContent=monthCur.toLocaleDateString(LOC,{month:'long',year:'numeric'});
   const first=new Date(y,mo,1),n=new Date(y,mo+1,0).getDate(),lead=(first.getDay()+6)%7;
-  let h=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d=>`<div class="dn">${d}</div>`).join('');
-  for(let i=0;i<lead;i++)h+='<div class="blank"></div>';
+  let h='';for(let i=0;i<lead;i++)h+='<div class="dc"></div>';
   let c=0;
-  for(let d=1;d<=n;d++){const k=iso(new Date(y,mo,d)),on=T.has(k);if(on)c++;
-    h+=`<button class="day${on?' on':''}${k===todayIso?' today':''}${k>todayIso?' fut':''}" data-wd="${k}" title="${fmtD(k)}" aria-pressed="${on}">${d}${on?crossSVG(k):''}</button>`;}
-  h+=`<div class="msum"><b>${c}</b> training ${c===1?'day':'days'} this month</div>`;
-  $('month').innerHTML=h;
+  for(let d=1;d<=n;d++){const k=iso(new Date(y,mo,d));if(T.has(k))c++;h+=dayBtn(k,T);}
+  $('month').innerHTML=h+countTxt(c,'this month');
 }
 function renderWeek(){
   const days=[...Array(7)].map((_,i)=>{const d=new Date(weekStart);d.setDate(d.getDate()+i);return iso(d);});
-  const end=days[6];
-  const isThis=iso(mondayOf(new Date()))===days[0];
   const T=trained(),pw=perWeek();
-  let h='<div class="week">';
-  days.forEach(k=>{const d=parse(k);h+=`<div class="hd${k===todayIso?' today':''}">${d.toLocaleDateString(LOC,{weekday:'short'})}<small>${d.getDate()}</small></div>`;});
-  h+='<div class="hd">Total</div>';
-  let n=0;
-  days.forEach(k=>{const on=T.has(k);if(on)n++;
-    h+=`<button class="chk${on?' on':''}${k===todayIso?' today':''}${k>todayIso?' fut':''}" data-wd="${k}" title="${fmtD(k)}" aria-pressed="${on}">${on?crossSVG(k):''}</button>`;});
-  h+=`<div class="tot${pw&&n>=pw?' hit':''}">${n}/${pw||7}</div>`;
-  $('week').innerHTML=h+'</div>';
+  const n=days.filter(k=>T.has(k)).length;
+  const isThis=iso(mondayOf(new Date()))===days[0];
+  $('week').innerHTML=`<div class="mhead"><b>${fmtDs(days[0])} – ${fmtDs(days[6])}</b></div><div class="dgrid">${days.map(k=>dayBtn(k,T)).join('')}</div>`
+    +countTxt(n,(isThis?'this week':'in this week')+(pw?` · plan ${pw}`:''));
 }
 
 function renderWeight(){
@@ -563,22 +578,14 @@ function drawChart(W,tw,dl){
 function renderActions(){
   const T=trained(),pw=perWeek();
   const jan1=new Date(year,0,1),dec31=new Date(year,11,31);
-  const start=mondayOf(jan1);
-  const cs=12,gap=3,left=3,top=22;
-  let cells='',xs='',col=0,cnt=0,lastMonth=-1,labels='';
-  for(let d=new Date(start);d<=dec31;d.setDate(d.getDate()+1)){
-    const row=(d.getDay()+6)%7;if(row===0&&d>start)col++;
-    if(d<jan1)continue;
-    const k=iso(d),isDone=T.has(k),fut=k>todayIso,isT=k===todayIso;
-    if(isDone)cnt++;
-    if(d.getMonth()!==lastMonth&&(d.getDate()===1&&lastMonth<0||row===0&&d.getDate()<=7)){lastMonth=d.getMonth();labels+=`<text x="${left+col*(cs+gap)}" y="12" font-size="12" font-weight="600" fill="var(--muted)">${d.toLocaleDateString(LOC,{month:'short'})}</text>`;}
-    const cx0=left+col*(cs+gap),cy0=top+row*(cs+gap);
-    cells+=`<rect class="c" data-d="${k}" x="${cx0}" y="${cy0}" width="${cs}" height="${cs}" rx="3" fill="var(--cell)" ${fut?'opacity=".45"':''} ${isT?'stroke="var(--cell-today)" stroke-width="1.5"':''}><title>${fmtD(k)}${isDone?' · trained':''}</title></rect>`;
-    if(isDone){const hh=hashStr(k),o=((hh>>4)&3)-1.5;
-      xs+=`<path class="yx" d="M${cx0-2.5+o} ${cy0-2} L${cx0+cs+2.5} ${cy0+cs+2+o*.5} M${cx0+cs+2} ${cy0-2.5+o*.5} L${cx0-2} ${cy0+cs+2.5}"/>`;}
+  let cnt=0,months='';
+  for(let mo=0;mo<12;mo++){
+    const f=new Date(year,mo,1),n=new Date(year,mo+1,0).getDate(),lead=(f.getDay()+6)%7;let c=0,g='';
+    for(let i=0;i<lead;i++)g+='<i></i>';
+    for(let d=1;d<=n;d++){const k=iso(new Date(year,mo,d)),on=T.has(k);if(on){c++;cnt++;}
+      g+=`<button class="yd${on?' on':''}${k===todayIso?' today':''}${k>todayIso?' fut':''}" data-wd="${k}" title="${fmtD(k)}" aria-pressed="${on}">${on?crossSVG(k):''}</button>`;}
+    months+=`<div class="ym"><div class="ymh"><b>${f.toLocaleDateString(LOC,{month:'short'})}</b>${c?`<span>${c}</span>`:''}</div><div class="ymg">${g}</div></div>`;
   }
-  const dl=['Mon','','Wed','','Fri','','Sun'].map((t,i)=>t?`<text x="0" y="${top+i*(cs+gap)+11}" font-size="11" fill="var(--muted)">${t}</text>`:'').join('');
-  const w=left+(col+1)*(cs+gap),h=top+7*(cs+gap);
   // weeks on plan: finished weeks of this year since the first training day, plus this week once it already hits the plan
   const first=[...T].filter(k=>k.startsWith(year+'-')).sort()[0];
   let wTot=0,wHit=0,wStreak=0,run=0;
@@ -602,7 +609,7 @@ function renderActions(){
   const paceTxt=expected?(pace===0?'on pace':Math.abs(pace)+' '+(Math.abs(pace)===1?'day':'days')+' '+(pace>0?'ahead':'behind')):'';
   $('actSum').innerHTML=`<div class="calsum"><span><b>${cnt}</b>${yGoal?' / '+yGoal:''} days in ${year}</span>${paceTxt?`<span>${paceTxt}</span>`:''}</div>
     ${yGoal?`<div class="track thin"><i style="width:${gp}%;background:var(--accent)"></i></div>`:''}`;
-  $('actions').innerHTML=`<div class="heat"><svg viewBox="0 0 ${w+3} ${h+3}" preserveAspectRatio="xMinYMin meet">${labels}${cells}${xs}</svg></div>`;
+  $('actions').innerHTML=`<div class="ygrid">${months}</div>`+countTxt(cnt,'in '+year);
 }
 
 // ---------- events ----------
