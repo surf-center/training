@@ -330,6 +330,12 @@ button.ghost{font-weight:700;border-radius:11px}
 #intro .in-skip{top:calc(28px + env(safe-area-inset-top));bottom:auto;right:20px;color:rgba(255,255,255,.6)}
 @media (max-width:420px){#intro .in-term{font-size:23px}#intro .in-final .word{font-size:54px}#intro .in-final .eq{font-size:38px}}
 /* ===== intro v3: minimal ===== */
+#intro .in-check{position:relative;width:84px;height:84px;margin-top:30px;display:block}
+#intro .in-check .ring{position:absolute;inset:10px;border-radius:50%;border:3px solid rgba(255,255,255,.18)}
+#intro .in-check svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+#intro .in-check path{fill:none;stroke:#fff;stroke-width:13;stroke-linecap:round;stroke-dasharray:110;stroke-dashoffset:110}
+#intro .in-check.on path{animation:draw .3s ease-out .2s forwards}
+#intro .in-check.on path+path{animation-delay:.48s}
 #intro{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:none}
 #intro.paused *{animation-play-state:paused!important}
 #intro.paused .in-skip::after{content:' · paused'}
@@ -470,7 +476,7 @@ button.ghost{font-weight:700;border-radius:11px}
 // ---------- Storage: Google Sheet (Apps Script) or local ----------
 const LS_CFG='training.cfg', LS_DATA='training.data';
 const ls={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
-// The web app URL is not secret, so it is built in. The key is entered once per device (or comes from config.js locally).
+// The web app URL is not secret, so it is built in. The PIN is entered once per device (or comes from config.js locally).
 const DEFAULT_URL='https://script.google.com/macros/s/AKfycbzZZcqDX0pMBG9Lu0TsbTM_HTidZblEwPNMPAlrH_S0ekKSBVOZ8qQoqcRpSbC2CfRn/exec';
 let cfg=ls.get(LS_CFG,null)||(window.TRAINING_CFG&&window.TRAINING_CFG.key?{url:window.TRAINING_CFG.url||DEFAULT_URL,key:window.TRAINING_CFG.key}:{url:DEFAULT_URL,key:''});
 if(!cfg.url)cfg.url=DEFAULT_URL;
@@ -856,11 +862,12 @@ function playIntro(force){
     <div class="in-row"><div class="in-term"><i>+</i> Deadline</div><div class="in-tag">objective</div></div>
     <div class="in-row"><div class="in-term"><i>+</i> Plan</div><div class="in-tag">strategy</div></div>
     <div class="in-row"><div class="in-term"><i>+</i> Consistent action</div><div class="in-tag res">results</div></div>
+    <div class="in-final in-check"><div class="ring"></div><svg viewBox="0 0 100 100"><path d="M27 28 Q50 48 73 72"/><path d="M73 27 Q52 51 27 73"/></svg></div>
     <div class="in-tagline">${today?'Done today. Keep the chain going.':'Take action.'}</div>
   </div>`;
   el.hidden=false;
   const parts=[...stage.querySelectorAll('.in-term,.in-tag,.in-final,.in-tagline')];
-  const gaps=[500,450,450,450,450,550,700,0];let i=0,timer;const total=gaps.reduce((a,b)=>a+b,0)+1500;
+  const gaps=[500,450,450,450,450,550,550,1100,0];let i=0,timer;const total=gaps.reduce((a,b)=>a+b,0)+1500;
   // pausable timeline: hold the screen to pause, release to continue
   const bar=$('inBar');let fn=null,due=0,left=0,paused=false,barLeft=total,barT0=0,done=false;
   const sched=(f,ms)=>{fn=f;left=ms;due=performance.now()+ms;timer=setTimeout(()=>{fn=null;f();},ms);};
@@ -880,8 +887,8 @@ function playIntro(force){
   const guard=setInterval(()=>{if(run!==introRun||done){clearInterval(guard);return;}if(!paused&&performance.now()>due+3000)end();},1000);
 }
 // first visit on a device (or a wrong key): ask only for the key
-function askKey(){if($('dlg').open)return;dialog(`<h3>Connect</h3><p>Enter your key once on this device to load your data.</p><label>Key</label><input name="key" type="password" autocomplete="current-password">`,
-  async f=>{const k=f.key.value.trim();if(!k)return;cfg={url:DEFAULT_URL,key:k};ls.set(LS_CFG,cfg);await load();});}
+function askKey(){if($('dlg').open)return;dialog(`<h3>Enter PIN</h3><p>Enter your PIN once on this device. It is remembered after that.</p><label>PIN</label><input name="key" type="password" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" maxlength="8" style="font-size:22px;letter-spacing:6px;text-align:center">`,
+  async f=>{const k=f.key.value.trim();if(!k)return;cfg={url:DEFAULT_URL,key:k};ls.set(LS_CFG,cfg);await load();},'Unlock');}
 if(!cfg.key)setTimeout(askKey,300);
 </script>
 </body>
