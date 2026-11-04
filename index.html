@@ -167,6 +167,42 @@ dialog label{display:block;font-size:11px;font-weight:600;color:var(--muted);mar
   .week{grid-template-columns:repeat(7,1fr) 40px;gap:4px}
   .chk{height:36px}
 }
+/* ===== bold & clean ===== */
+body{font-size:15px}
+h1{font-size:30px;font-weight:900;letter-spacing:-.6px}
+.card{border:none;border-radius:22px;padding:22px 22px;box-shadow:0 1px 2px rgba(15,23,42,.04),0 8px 24px rgba(15,23,42,.06)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .card{box-shadow:none;border:1px solid var(--border)}}
+.label{font-size:12px;font-weight:800;letter-spacing:.8px;color:var(--text)}
+.step{font-size:11px;font-weight:800;padding:2px 7px;border-radius:7px;background:var(--accent);color:#fff}
+.edit{font-size:12px;font-weight:700}
+.countdown{font-size:38px;font-weight:900;letter-spacing:-1px;margin-top:8px}
+.sub{font-size:13px;font-weight:500}
+.steps::before,.steps .fill{top:21px;height:5px;border-radius:3px}
+.st .n{width:46px;height:46px;font-size:16px;font-weight:900;border-width:4px}
+.st .t{font-size:14px;font-weight:800;margin-top:10px}
+.st .v{font-size:13px;font-weight:600}
+.bars{gap:24px;margin-top:22px;padding-top:18px}
+.bar .top{font-size:13px;font-weight:700;color:var(--text2)}
+.bar .top b{font-size:20px;font-weight:900;letter-spacing:-.4px}
+.track{height:14px;border:none;border-radius:8px}
+.track i{border-radius:8px}
+.bar .ends{font-size:11px;font-weight:600}
+.week{gap:8px}
+.week .hd{font-size:11px;font-weight:800}
+.week .tot{font-size:16px;font-weight:900}
+.chk{height:auto;aspect-ratio:1/1;max-height:56px;border-radius:14px;border-width:2px}
+.calsum{font-size:14px;font-weight:600}
+.calsum b{font-size:34px;font-weight:900;letter-spacing:-1px}
+.track.thin{height:8px}
+.stat .v{font-size:32px;font-weight:900;letter-spacing:-.8px}
+.stat .l{font-size:11px;font-weight:800}
+.stats{gap:36px}
+.month .day{font-size:15px;font-weight:800;border-radius:14px}
+button.primary{font-weight:800;border-radius:11px;padding:10px 18px}
+button.ghost{font-weight:700;border-radius:11px}
+.period select{font-weight:700;border-radius:11px}
+.iconbtn{border-radius:11px}
+@media (max-width:560px){.countdown{font-size:32px}.stat .v{font-size:28px}.chk{border-radius:12px}.st .n{width:40px;height:40px}.steps::before,.steps .fill{top:18px}}
 </style>
 </head>
 <body>
@@ -265,7 +301,10 @@ dialog label{display:block;font-size:11px;font-weight:600;color:var(--muted);mar
 const LS_CFG='training.cfg', LS_DATA='training.data';
 const ls={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 // config.js (optional, next to this file) pre-fills the connection; the gear icon overrides it.
-let cfg=ls.get(LS_CFG,null)||(window.TRAINING_CFG&&window.TRAINING_CFG.url?{url:window.TRAINING_CFG.url,key:window.TRAINING_CFG.key}:{url:'',key:''});
+// The web app URL is not secret, so it is built in. The key is entered once per device (or comes from config.js locally).
+const DEFAULT_URL='https://script.google.com/macros/s/AKfycbzZZcqDX0pMBG9Lu0TsbTM_HTidZblEwPNMPAlrH_S0ekKSBVOZ8qQoqcRpSbC2CfRn/exec';
+let cfg=ls.get(LS_CFG,null)||(window.TRAINING_CFG&&window.TRAINING_CFG.key?{url:window.TRAINING_CFG.url||DEFAULT_URL,key:window.TRAINING_CFG.key}:{url:DEFAULT_URL,key:''});
+if(!cfg.url)cfg.url=DEFAULT_URL;
 let S={settings:{},weight:[],actions:[]};
 const remote=()=>!!(cfg.url&&cfg.key);
 
@@ -483,7 +522,7 @@ function drawChart(W,tw,dl){
   if(dl)s+=`<line x1="${x(parse(dl).getTime())}" x2="${x(parse(dl).getTime())}" y1="${m.t}" y2="${height-m.b}" stroke="var(--bad)" stroke-width="1" stroke-dasharray="3 3"/><text x="${x(parse(dl).getTime())-4}" y="${m.t+10}" text-anchor="end" font-size="10" font-weight="600" fill="var(--bad)">deadline</text>`;
   const pts=W.map(w=>[x(parse(w.date).getTime()),y(w.kg)]);
   s+='<g clip-path="url(#plotClip)">';
-  s+=`<polyline points="${pts.map(p=>p.join(',')).join(' ')}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+  s+=`<polyline points="${pts.map(p=>p.join(',')).join(' ')}" fill="none" stroke="var(--accent)" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>`;
   // highest weight gets its own marker (a star)
   let hiI=0;W.forEach((w,i)=>{if(w.kg>W[hiI].kg)hiI=i;});
   W.forEach((w,i)=>{if(i!==hiI)s+=`<circle cx="${pts[i][0]}" cy="${pts[i][1]}" r="${W.length>60?2.5:4}" fill="var(--surface)" stroke="var(--accent)" stroke-width="2"/>`;});
@@ -612,6 +651,9 @@ $('btnSettings').onclick=()=>dialog(`<h3>Google Sheet connection</h3><p>Paste th
   });
 
 load();
+// first visit on a device: ask only for the key
+if(!cfg.key)setTimeout(()=>dialog(`<h3>Connect</h3><p>Enter your key once on this device to load your data.</p><label>Key</label><input name="key" type="password" autocomplete="current-password">`,
+  async f=>{const k=f.key.value.trim();if(!k)return;cfg={url:cfg.url||DEFAULT_URL,key:k};ls.set(LS_CFG,cfg);await load();}),300);
 </script>
 </body>
 </html>
