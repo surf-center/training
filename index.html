@@ -353,7 +353,7 @@ button.ghost{font-weight:700;border-radius:11px}
 .k6-top i{font-style:normal;color:#60a5fa;margin-right:8px}
 .k6{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;gap:18px;padding:0 28px;transition:opacity .45s ease,transform .6s cubic-bezier(.6,0,.4,1)}
 .k6.out{opacity:0;transform:translateY(-30px)}
-.k6-row{opacity:0;transform:translateY(16px);transition:opacity .45s ease,transform .6s cubic-bezier(.16,1,.3,1),max-height .45s ease,margin .45s ease;max-height:160px}
+.k6-row{opacity:0;transform:translateY(16px);transition:opacity .6s ease,transform .8s cubic-bezier(.16,1,.3,1),max-height .45s ease,margin .45s ease;max-height:160px}
 .k6-row.in{opacity:1;transform:none}
 .k6-row.past{opacity:1}
 .k6-row.gone{opacity:0;max-height:0;margin-top:-22px;overflow:hidden}
@@ -814,7 +814,7 @@ function drawChart(W,tw,dl){
      +`<circle cx="${fx}" cy="${fy}" r="4" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" stroke-dasharray="2 2"/>`
      +`<text x="${fx-8}" y="${fy+16}" text-anchor="end" font-size="10" font-weight="700" fill="var(--text)">${fmtKg(tr.at(tf))} kg forecast</text>`;}
   const tt=parse(todayIso).getTime();
-  s+=`<line x1="${x(tt)}" x2="${x(tt)}" y1="${m.t}" y2="${height-m.b}" stroke="var(--muted2)" stroke-width="1"/>`;
+  s+=`<line x1="${x(tt)}" x2="${x(tt)}" y1="${m.t}" y2="${height-m.b}" stroke="var(--muted2)" stroke-width="1"/><text x="${x(tt)+4}" y="${height-m.b-6}" font-size="10" font-weight="600" fill="var(--muted)">today</text>`;
   if(dl)s+=`<line x1="${x(parse(dl).getTime())}" x2="${x(parse(dl).getTime())}" y1="${m.t}" y2="${height-m.b}" stroke="var(--bad)" stroke-width="1" stroke-dasharray="3 3"/><text x="${x(parse(dl).getTime())-4}" y="${m.t+10}" text-anchor="end" font-size="10" font-weight="600" fill="var(--bad)">deadline</text>`;
   const pts=W.map(w=>[x(parse(w.date).getTime()),y(w.kg)]);
   s+='<g clip-path="url(#plotClip)">';
@@ -1006,13 +1006,13 @@ function playIntro(force){
   let topN=0;const addTop=n=>{for(let k=0;k<rows[n][3].length;k++)TOP[topN++].classList.add('on');};
   const parts=[];const step=(fx,gap)=>parts.push({fx,gap});
   R.forEach((r,n)=>{
-    step(()=>{R.forEach((x,k)=>x.classList.toggle('past',k<n));r.classList.add('in');},560);   // term
-    step(()=>{r.classList.add('eq');addTop(n);},n===0?1100:1050);                          // outcome + formula grows at the top
-    if(n===0)step(()=>r.classList.add('gone'),350);                                          // fantasy fades out of the way
+    step(()=>{R.forEach((x,k)=>x.classList.toggle('past',k<n));r.classList.add('in');},680);   // term
+    step(()=>{r.classList.add('eq');addTop(n);},n===0?1350:1300);                          // outcome + formula grows at the top
+    if(n===0)step(()=>r.classList.add('gone'),450);                                          // fantasy fades out of the way
   });
-  step(()=>B.classList.add('out'),450);
-  step(()=>E.classList.add('in'),520);
-  step(()=>{E.classList.add('stamp');K.classList.add('shake');},1400);
+  step(()=>B.classList.add('out'),600);
+  step(()=>E.classList.add('in'),700);
+  step(()=>{E.classList.add('stamp');K.classList.add('shake');},1700);
   const gaps=parts.map(p=>p.gap);let i=0,timer;const total=gaps.reduce((a,b)=>a+b,0)+1700;
   // pausable timeline: hold the screen to pause, release to continue
   const bar=$('inBar');let fn=null,due=0,left=0,paused=false,barLeft=total,barT0=0,done=false;
@@ -1020,7 +1020,7 @@ function playIntro(force){
   const runBar=()=>{barT0=performance.now();bar.style.transition=`width ${barLeft}ms linear`;bar.style.width='100%';};
   bar.style.transition='none';bar.style.width='0';requestAnimationFrame(runBar);
   const end=()=>{if(done)return;done=true;clearTimeout(timer);el.classList.remove('paused');el.classList.add('out');setTimeout(()=>{el.hidden=true;el.classList.remove('out');},450);try{localStorage.setItem('training.intro',todayIso)}catch(e){}};
-  const next=()=>{if(i>=parts.length){sched(end,1700);return;}const p=parts[i++];p.fx();sched(next,p.gap||300);};
+  const next=()=>{if(i>=parts.length){sched(end,1800);return;}const p=parts[i++];p.fx();sched(next,p.gap||300);};
   const pause=()=>{if(paused||done)return;paused=true;clearTimeout(timer);left=Math.max(0,due-performance.now());
     const w=getComputedStyle(bar).width;bar.style.transition='none';bar.style.width=w;barLeft=Math.max(0,barLeft-(performance.now()-barT0));el.classList.add('paused');};
   const resume=()=>{if(!paused||done)return;paused=false;el.classList.remove('paused');if(fn){const f=fn;due=performance.now()+left;timer=setTimeout(()=>{fn=null;f();},left);}runBar();};
