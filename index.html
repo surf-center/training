@@ -544,11 +544,17 @@ button.ghost{font-weight:700;border-radius:11px}
   </div>
 
   <!-- Progress -->
-  <div class="card process">
-    <div class="label"><span class="ttl">Progress</span></div>
+  <div class="card process" id="progCard">
+    <div class="label"><span class="ttl">Progress</span><button class="edit" id="progToggle" aria-expanded="false">Show chart ▾</button></div>
     <div class="steps" id="steps" hidden></div>
     <div id="wStats"></div>
     <div class="bars" id="bars"></div>
+    <div class="wform">
+      <input type="date" id="wDate" aria-label="Date">
+      <input type="number" id="wKg" step="0.1" min="20" max="300" placeholder="kg" inputmode="decimal" aria-label="Weight in kg">
+      <button class="primary" id="wAdd">Save</button>
+    </div>
+    <div class="pmore" id="pmore" hidden>
     <div class="chart-head"><span>Weight</span>
       <label class="zoom" title="Zoom the chart"><span id="zLbl">All</span><input type="range" id="zoom" min="0" max="4" step="1" value="0"></label>
     </div>
@@ -560,13 +566,9 @@ button.ghost{font-weight:700;border-radius:11px}
       <span><i style="background:var(--accent);opacity:.5"></i>Forecast</span>
       <span>★ Highest</span>
     </div>
-    <div class="wform">
-      <input type="date" id="wDate" aria-label="Date">
-      <input type="number" id="wKg" step="0.1" min="20" max="300" placeholder="kg" inputmode="decimal" aria-label="Weight in kg">
-      <button class="primary" id="wAdd">Save</button>
-    </div>
     <button class="linkbtn" id="wListToggle">Show measurements ▾</button>
     <div class="wtable" id="wList" hidden></div>
+    </div>
   </div>
 
 </div>
@@ -936,6 +938,11 @@ function setTheme(t){document.documentElement.dataset.theme=t;$('themeBtn').inne
 setTheme((()=>{try{return localStorage.getItem('training.theme')||'light'}catch(e){return 'light'}})());
 $('playBtn').onclick=()=>playIntro(true);
 $('themeBtn').onclick=()=>setTheme(document.documentElement.dataset.theme==='dark'?'light':'dark');
+// Progress card: collapsed shows current weight, bars and the entry; expanded adds chart + measurements
+function setProg(open){$('pmore').hidden=!open;$('progToggle').textContent=open?'Hide chart ▴':'Show chart ▾';$('progToggle').setAttribute('aria-expanded',open);
+  try{localStorage.setItem('training.prog',open?'1':'0')}catch(e){}if(open)renderWeight();}
+$('progToggle').onclick=()=>setProg($('pmore').hidden);
+setProg((()=>{try{return localStorage.getItem('training.prog')==='1'}catch(e){return false}})());
 let actView=(()=>{try{return localStorage.getItem('training.view')||'week'}catch(e){return 'week'}})();
 function setView(v){actView=v;setTimeout(renderSum,0);$('actionCard').dataset.view=v;document.querySelectorAll('#viewSeg button').forEach(b=>b.classList.toggle('on',b.dataset.view===v));try{localStorage.setItem('training.view',v)}catch(e){}}
 document.querySelectorAll('#viewSeg button').forEach(b=>b.onclick=()=>setView(b.dataset.view));
