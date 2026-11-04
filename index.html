@@ -877,7 +877,8 @@ function renderSum(){
   else{a=year+'-01-01';b=year+'-12-31';label='in '+year;}
   const from=[a,goalStart()].sort()[1];
   const days=(x,y)=>x>y?0:(parse(y)-parse(x))/864e5+1;
-  const cnt=[...T].filter(k=>k>=a&&k<=b).length;
+  // count only days from the goal start on (week view: the whole week), so earlier training doesn't inflate the pace
+  const cnt=[...T].filter(k=>k>=(actView==='week'?a:from)&&k<=b).length;
   const goal=pw?(actView==='week'?(b>=goalStart()?pw:0):Math.round(pw*days(from,b)/7)):0;
   const exp=pw&&todayIso>=from?Math.min(goal,Math.round(pw*days(actView==='week'?a:from,todayIso<b?todayIso:b)/7)):0;
   const pace=cnt-exp,gp=goal?Math.min(100,Math.round(cnt/goal*100)):0;
