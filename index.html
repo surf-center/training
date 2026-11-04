@@ -54,6 +54,33 @@ h1{font-size:22px;font-weight:800;margin:0;letter-spacing:-.3px}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px 20px;margin-bottom:16px}
 .label{flex-wrap:wrap;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);display:flex;justify-content:space-between;align-items:center;gap:8px}
 .edit{font-size:11px;font-weight:600;color:var(--accent);background:none;border:none;cursor:pointer;padding:0;text-transform:none;letter-spacing:0;font-family:var(--font)}
+.stack{position:relative;margin-bottom:34px;cursor:pointer}
+.stack .scard{margin:0;transition:transform .28s cubic-bezier(.2,.8,.2,1),opacity .2s}
+.stack .scard+.scard{margin-top:12px}
+.stack[aria-expanded="false"] .scard:nth-child(2),.stack[aria-expanded="false"] .scard:nth-child(3){position:absolute;left:0;right:0;top:0;height:100%;margin:0;overflow:hidden;pointer-events:none}
+.stack[aria-expanded="false"] .scard:nth-child(2){transform:translateY(12px) scale(.95);z-index:1;opacity:.85}
+.stack[aria-expanded="false"] .scard:nth-child(3){transform:translateY(23px) scale(.9);z-index:0;opacity:.6}
+.stack[aria-expanded="false"] .scard:nth-child(2)>*,.stack[aria-expanded="false"] .scard:nth-child(3)>*{visibility:hidden}
+.stack .scard:first-child{position:relative;z-index:2}
+.stack[aria-expanded="true"]{margin-bottom:16px;cursor:default}
+.more-n{margin-left:auto;margin-right:10px;font-size:11px;font-weight:800;color:var(--muted);background:var(--surface2);border-radius:20px;padding:2px 8px;letter-spacing:0}
+.stack[aria-expanded="true"] .more-n{display:none}
+.stack-less{display:none;margin:10px auto 0;border:none;background:none;font-family:var(--font);font-size:12px;font-weight:800;color:var(--muted);cursor:pointer}
+.stack[aria-expanded="true"] .stack-less{display:block}
+.wform{display:grid;grid-template-columns:minmax(0,1fr) 92px auto;gap:8px;margin-top:16px}
+@media (max-width:560px){.wform{grid-template-columns:minmax(0,1fr) 72px auto}.wform input{font-size:14px;padding:0 8px}.wform button.primary{padding:0 16px}}
+.wform input,.wform button{height:44px;margin:0;border-radius:12px}
+.wform input{font-size:15px;font-weight:700;padding:0 12px}
+.wform button.primary{padding:0 20px;font-size:14px}
+.linkbtn{display:block;width:100%;margin-top:10px;border:none;background:none;font-family:var(--font);font-size:12px;font-weight:800;color:var(--muted);cursor:pointer;padding:6px}
+.wtable{margin-top:4px;max-height:280px;overflow:auto;border-radius:12px;background:var(--surface2)}
+.wtable table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+.wtable th{position:sticky;top:0;background:var(--surface2);text-align:left;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);padding:9px 12px}
+.wtable td{padding:9px 12px;border-top:1px solid var(--border);font-weight:600}
+.wtable td.kg{font-weight:900}
+.wtable .up{color:var(--good)}.wtable .dn{color:var(--warn)}.wtable .nc{color:var(--muted)}
+.wtable th:last-child,.wtable td:last-child{text-align:right;width:36px}
+.wtable button{background:none;border:none;color:var(--muted2);cursor:pointer;font-size:14px;padding:2px 4px}
 .grid3{display:grid;grid-template-columns:1.3fr .8fr 1.3fr;gap:16px;margin-bottom:16px}
 .grid3 .card{margin:0}
 .big{font-size:17px;font-weight:700;margin-top:8px;white-space:pre-wrap}
@@ -238,7 +265,10 @@ h1{font-size:30px;font-weight:900;letter-spacing:-.6px}
 .month .day{font-size:15px;font-weight:800;border-radius:14px}
 button.primary{font-weight:800;border-radius:11px;padding:10px 18px}
 button.ghost{font-weight:700;border-radius:11px}
-.period select{font-weight:700;border-radius:11px}
+.period{background:var(--surface);border-radius:12px;padding:3px;box-shadow:0 1px 2px rgba(15,23,42,.06),0 4px 12px rgba(15,23,42,.06);gap:0;align-items:center}
+.period select{border:none;background:transparent;box-shadow:none;font-weight:800;font-size:13px;padding:7px 10px;border-radius:9px;-webkit-appearance:none;appearance:none;color:var(--text)}
+.period select:focus{box-shadow:none;background:var(--surface2)}
+.period select+select{border-left:1px solid var(--border);border-radius:0 9px 9px 0}
 .iconbtn{border-radius:11px}
 @media (max-width:560px){.countdown{font-size:32px}.stat .v{font-size:28px}.chk{border-radius:12px}.st .n{width:40px;height:40px}.steps::before,.steps .fill{top:18px}}
 </style>
@@ -251,19 +281,31 @@ button.ghost{font-weight:700;border-radius:11px}
       <div class="sync"><span class="dot" id="dot"></span><span id="syncText">Local</span></div>
     </div>
     <div class="hdr-right">
-      <div class="period" title="Week and year shown in Action and Calendar">
+      <div class="period" title="Year and week shown in Action">
         <select id="selYear" aria-label="Year"></select>
         <select id="selWeek" aria-label="Week"></select>
       </div>
-      <button class="iconbtn" id="btnSettings" title="Google Sheet connection">⚙</button>
     </div>
   </header>
 
-  <!-- Process timeline -->
-  <div class="card process">
-    <div class="label"><span class="ttl">Progress</span></div>
-    <div class="steps" id="steps"></div>
-    <div class="bars" id="bars"></div>
+  <!-- Goal / Deadline / Plan as a stack (tap to expand) -->
+  <div class="stack" id="stack" aria-expanded="false">
+    <div class="card scard">
+      <div class="label"><span><span class="step">1</span>Goal</span><span class="more-n">+2</span><button class="edit" data-edit="goal">Edit</button></div>
+      <div class="countdown" id="goalView">–</div>
+      <div class="sub" id="goalSub"></div>
+    </div>
+    <div class="card scard">
+      <div class="label"><span><span class="step">2</span>Deadline</span><button class="edit" data-edit="deadline">Edit</button></div>
+      <div class="countdown" id="dlCount">–</div>
+      <div class="sub" id="dlDate"></div>
+    </div>
+    <div class="card scard">
+      <div class="label"><span><span class="step">3</span>Plan</span><button class="edit" data-edit="plan">Edit</button></div>
+      <div class="countdown" id="planView">–</div>
+      <div class="sub" id="planSub"></div>
+    </div>
+    <button class="stack-less" id="stackLess">Show less ▴</button>
   </div>
 
   <!-- This week -->
@@ -283,29 +325,9 @@ button.ghost{font-weight:700;border-radius:11px}
     <div id="yearView" class="view"><div id="actions"></div></div>
   </div>
 
-  <!-- Goal / Deadline / Plan -->
-  <div class="grid3">
-    <div class="card">
-      <div class="label"><span><span class="step">1</span>Goal</span><button class="edit" data-edit="goal">Edit</button></div>
-      <div class="countdown" id="goalView">–</div>
-      <div class="sub" id="goalSub"></div>
-    </div>
-    <div class="card">
-      <div class="label"><span><span class="step">2</span>Deadline</span><button class="edit" data-edit="deadline">Edit</button></div>
-      <div class="countdown" id="dlCount">–</div>
-      <div class="sub" id="dlDate"></div>
-    </div>
-    <div class="card">
-      <div class="label"><span><span class="step">3</span>Plan</span><button class="edit" data-edit="plan">Edit</button></div>
-      <div class="countdown" id="planView">–</div>
-      <div class="sub" id="planSub"></div>
-    </div>
-  </div>
-
-
-  <!-- Weight -->
+  <!-- Results -->
   <div class="card">
-    <div class="label"><span>Weight</span>
+    <div class="label"><span class="ttl">Results</span>
       <label class="zoom" title="Zoom the chart"><span id="zLbl">All</span><input type="range" id="zoom" min="0" max="4" step="1" value="0"></label>
     </div>
     <div class="stats" id="wStats"></div>
@@ -317,15 +339,21 @@ button.ghost{font-weight:700;border-radius:11px}
       <span><i style="background:var(--accent);opacity:.5"></i>Forecast</span>
       <span>★ Highest</span>
     </div>
-    <div class="row">
-      <input type="date" id="wDate" style="max-width:170px">
-      <input type="number" id="wKg" step="0.1" min="20" max="300" placeholder="kg" style="max-width:110px">
+    <div class="wform">
+      <input type="date" id="wDate" aria-label="Date">
+      <input type="number" id="wKg" step="0.1" min="20" max="300" placeholder="kg" inputmode="decimal" aria-label="Weight in kg">
       <button class="primary" id="wAdd">Save</button>
-      <button class="ghost big" id="wListToggle">Measurements ▾</button>
     </div>
-    <div class="wlist" id="wList" hidden></div>
+    <button class="linkbtn" id="wListToggle">Show measurements ▾</button>
+    <div class="wtable" id="wList" hidden></div>
   </div>
 
+  <!-- Process timeline -->
+  <div class="card process">
+    <div class="label"><span class="ttl">Progress</span></div>
+    <div class="steps" id="steps"></div>
+    <div class="bars" id="bars"></div>
+  </div>
 </div>
 
 <dialog id="dlg"><form method="dialog" id="dlgForm"></form></dialog>
@@ -517,13 +545,16 @@ function renderWeight(){
       h+=`<div class="stat"><div class="v">${p}%</div><div class="l">To goal (${fmtKg(tw)} kg)</div></div>`;}
   }else h='<div class="sub">No measurements yet. Add your first weight below.</div>';
   $('wStats').innerHTML=h;
-  $('wList').innerHTML=[...W].reverse().map(w=>`<div><span>${fmtD(w.date)}</span><span><b>${fmtKg(w.kg)} kg</b> <button title="Delete" data-del="${w.date}">✕</button></span></div>`).join('');
+  {const up=tw?tw>=(W.length?startWeight(W).kg:0):false;
+   $('wList').innerHTML=W.length?`<table><thead><tr><th>Date</th><th>kg</th><th>Change</th><th></th></tr></thead><tbody>${[...W].map((w,i)=>{const d=i?w.kg-W[i-1].kg:null;
+     const cls=d===null||Math.abs(d)<0.05?'nc':((d>0)===up?'up':'dn');
+     return `<tr><td>${fmtD(w.date)}</td><td class="kg">${fmtKg(w.kg)}</td><td class="${cls}">${d===null?'–':(d>0?'+':'')+fmtKg(d)}</td><td><button title="Delete" data-del="${w.date}">✕</button></td></tr>`;}).reverse().join('')}</tbody></table>`:'';}
   drawChart(W,tw,dl);
 }
 
 // Chart zoom: how far back the chart shows (0 = everything)
 const ZOOMS=[['All',0],['1 year',365],['6 months',182],['3 months',91],['1 month',30]];
-let zoomI=(()=>{try{const v=+localStorage.getItem('training.zoom');return v>=0&&v<ZOOMS.length?v:0}catch(e){return 0}})();
+let zoomI=(()=>{try{const raw=localStorage.getItem('training.zoom');if(raw===null)return innerWidth<600?3:0;const v=+raw;return v>=0&&v<ZOOMS.length?v:0}catch(e){return innerWidth<600?3:0}})();
 function drawChart(W,tw,dl){
   const wrap=$('chartWrap');wrap.querySelector('svg')?.remove();$('tip').style.display='none';
   if(!W.length)return;
@@ -607,9 +638,26 @@ function renderActions(){
   const gp=yGoal?Math.min(100,Math.round(cnt/yGoal*100)):0, ep=yGoal?Math.min(100,Math.round(expected/yGoal*100)):0;
   const pace=cnt-expected;
   const paceTxt=expected?(pace===0?'on pace':Math.abs(pace)+' '+(Math.abs(pace)===1?'day':'days')+' '+(pace>0?'ahead':'behind')):'';
-  $('actSum').innerHTML=`<div class="calsum"><span><b>${cnt}</b>${yGoal?' / '+yGoal:''} days in ${year}</span>${paceTxt?`<span>${paceTxt}</span>`:''}</div>
-    ${yGoal?`<div class="track thin"><i style="width:${gp}%;background:var(--accent)"></i></div>`:''}`;
+  renderSum();
   $('actions').innerHTML=`<div class="ygrid">${months}</div>`+countTxt(cnt,'in '+year);
+}
+
+// Top summary of the Action block: done / goal for the period shown (week, month or year).
+// The goal is the plan (days per week) spread over the days of that period, counted from the goal start.
+function renderSum(){
+  const T=trained(),pw=perWeek();let a,b,label;
+  if(actView==='week'){const e=new Date(weekStart);e.setDate(e.getDate()+6);a=iso(weekStart);b=iso(e);label='this week';}
+  else if(actView==='month'){const f=new Date(weekStart.getFullYear(),weekStart.getMonth(),1),l=new Date(f.getFullYear(),f.getMonth()+1,0);a=iso(f);b=iso(l);label='in '+f.toLocaleDateString(LOC,{month:'long'});}
+  else{a=year+'-01-01';b=year+'-12-31';label='in '+year;}
+  const from=[a,goalStart()].sort()[1];
+  const days=(x,y)=>x>y?0:(parse(y)-parse(x))/864e5+1;
+  const cnt=[...T].filter(k=>k>=a&&k<=b).length;
+  const goal=pw?(actView==='week'?(b>=goalStart()?pw:0):Math.round(pw*days(from,b)/7)):0;
+  const exp=pw&&todayIso>=from?Math.min(goal,Math.round(pw*days(actView==='week'?a:from,todayIso<b?todayIso:b)/7)):0;
+  const pace=cnt-exp,gp=goal?Math.min(100,Math.round(cnt/goal*100)):0;
+  const paceTxt=goal&&todayIso>=from&&todayIso<=b?(pace>=0&&cnt>=goal?'goal reached':pace===0?'on pace':Math.abs(pace)+' '+(Math.abs(pace)===1?'day':'days')+' '+(pace>0?'ahead':'behind')):(goal&&cnt>=goal?'goal reached':'');
+  $('actSum').innerHTML=`<div class="calsum"><span><b>${cnt}</b>${goal?' / '+goal:''} days ${label}</span>${paceTxt?`<span>${paceTxt}</span>`:''}</div>
+    ${goal?`<div class="track thin"><i style="width:${gp}%;background:var(--accent)"></i></div>`:''}`;
 }
 
 // ---------- events ----------
@@ -640,7 +688,8 @@ function fillPeriod(){
   const opts=[];const ws=iso(weekStart);
   for(let m=mondayOf(new Date(year,0,1));m.getFullYear()<=year;m.setDate(m.getDate()+7)){
     const e=new Date(m);e.setDate(e.getDate()+6);const k=iso(m);
-    opts.push(`<option value="${k}"${k===ws?' selected':''}>W${isoWeek(m)} · ${fmtDs(k)} – ${fmtDs(iso(e))}${k===iso(mondayOf(new Date()))?' (now)':''}</option>`);
+    const sm=m.getMonth()===e.getMonth();
+    opts.push(`<option value="${k}"${k===ws?' selected':''}>W${isoWeek(m)} · ${sm?m.getDate():fmtDs(k)}–${fmtDs(iso(e))}</option>`);
   }
   $('selWeek').innerHTML=opts.join('');
 }
@@ -648,12 +697,16 @@ $('selYear').onchange=e=>{year=+e.target.value;
   const cur=mondayOf(new Date());
   weekStart=cur.getFullYear()===year?cur:mondayOf(new Date(year,0,1));
   fillPeriod();renderWeek();renderActions();renderMonth();};
-$('selWeek').onchange=e=>{weekStart=parse(e.target.value);renderWeek();renderMonth();};
+$('selWeek').onchange=e=>{weekStart=parse(e.target.value);renderWeek();renderMonth();renderSum();};
 $('zoom').value=zoomI;$('zLbl').textContent=ZOOMS[zoomI][0];
 $('zoom').oninput=e=>{zoomI=+e.target.value;$('zLbl').textContent=ZOOMS[zoomI][0];try{localStorage.setItem('training.zoom',zoomI)}catch(_){};renderWeight();};
-$('wListToggle').onclick=()=>{const l=$('wList'),open=l.hidden;l.hidden=!open;$('wListToggle').textContent=open?'Measurements ▴':'Measurements ▾';};
+$('wListToggle').onclick=()=>{const l=$('wList'),open=l.hidden;l.hidden=!open;$('wListToggle').textContent=open?'Hide measurements ▴':'Show measurements ▾';};
+// stack: collapsed like notifications, tap to expand
+$('stack').addEventListener('click',e=>{if(e.target.closest('[data-edit]'))return;const st=$('stack');
+  if(e.target.closest('#stackLess')){st.setAttribute('aria-expanded','false');return;}
+  if(st.getAttribute('aria-expanded')==='false')st.setAttribute('aria-expanded','true');});
 let actView=(()=>{try{return localStorage.getItem('training.view')||'week'}catch(e){return 'week'}})();
-function setView(v){actView=v;$('actionCard').dataset.view=v;document.querySelectorAll('#viewSeg button').forEach(b=>b.classList.toggle('on',b.dataset.view===v));try{localStorage.setItem('training.view',v)}catch(e){}}
+function setView(v){actView=v;setTimeout(renderSum,0);$('actionCard').dataset.view=v;document.querySelectorAll('#viewSeg button').forEach(b=>b.classList.toggle('on',b.dataset.view===v));try{localStorage.setItem('training.view',v)}catch(e){}}
 document.querySelectorAll('#viewSeg button').forEach(b=>b.onclick=()=>setView(b.dataset.view));
 setView(actView);
 let rt;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(renderWeight,150);});
@@ -673,21 +726,6 @@ function openEdit(k){
   if(k==='plan')dialog(`<h3>Plan</h3><p>How many days per week will you train?</p><label>Training days per week</label><input name="daysPerWeek" type="number" min="1" max="7" step="1" value="${esc(st.daysPerWeek)}">`,
     f=>{const n=Math.min(7,Math.max(1,parseInt(f.daysPerWeek.value,10)||0));if(n)saveSettings({daysPerWeek:String(n)});});
 }
-$('btnSettings').onclick=()=>dialog(`<h3>Google Sheet connection</h3><p>Paste the Apps Script web app URL (ends in /exec) and the same key as SECRET in the script. Leave empty to store data in this browser only.</p>
-  <label>Web app URL</label><input name="url" value="${esc(cfg.url)}" placeholder="https://script.google.com/macros/s/…/exec">
-  <label>Key</label><input name="key" type="password" value="${esc(cfg.key)}">`,
-  async f=>{const wasLocal=!remote();const local=ls.get(LS_DATA,null);cfg={url:f.url.value.trim(),key:f.key.value.trim()};ls.set(LS_CFG,cfg);
-    await load();
-    // first connection: copy local data into an empty sheet
-    if(wasLocal&&remote()&&local&&!S.weight.length&&!S.actions.length&&!Object.keys(S.settings).length&&(local.weight.length||local.actions.length||Object.keys(local.settings).length)){
-      if(confirm('The sheet is empty. Copy your local data to the sheet?')){
-        await save({type:'settings',settings:local.settings});
-        for(const w of local.weight)await save({type:'weight',date:w.date,kg:w.kg});
-        for(const a of local.actions)await save({type:'action',date:a.date,action:a.action,done:true});
-      }
-    }
-  });
-
 load();
 // first visit on a device (or a wrong key): ask only for the key
 function askKey(){if($('dlg').open)return;dialog(`<h3>Connect</h3><p>Enter your key once on this device to load your data.</p><label>Key</label><input name="key" type="password" autocomplete="current-password">`,
