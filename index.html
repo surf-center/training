@@ -52,7 +52,7 @@ h1{font-size:22px;font-weight:800;margin:0;letter-spacing:-.3px}
 .period select{width:auto;font-size:12px;font-weight:600;padding:7px 8px;border-radius:10px;background:var(--surface);cursor:pointer}
 .iconbtn{border:1px solid var(--border);background:var(--surface);color:var(--text2);border-radius:10px;width:36px;height:36px;cursor:pointer;font-size:16px}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px 20px;margin-bottom:16px}
-.label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);display:flex;justify-content:space-between;align-items:center;gap:8px}
+.label{flex-wrap:wrap;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);display:flex;justify-content:space-between;align-items:center;gap:8px}
 .edit{font-size:11px;font-weight:600;color:var(--accent);background:none;border:none;cursor:pointer;padding:0;text-transform:none;letter-spacing:0;font-family:var(--font)}
 .grid3{display:grid;grid-template-columns:1.3fr .8fr 1.3fr;gap:16px;margin-bottom:16px}
 .grid3 .card{margin:0}
@@ -70,7 +70,8 @@ button.ghost{font-family:var(--font);font-size:13px;font-weight:600;background:n
 .stats{display:flex;gap:28px;flex-wrap:wrap;margin:12px 0 4px}
 .stat .v{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}
 .stat .l{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
-.chartwrap{position:relative;margin-top:10px}
+.chartwrap{position:relative;margin-top:10px;overflow:hidden}
+.chartwrap svg{display:block;max-width:100%}
 svg text{font-family:var(--font)}
 .tip{position:absolute;pointer-events:none;background:var(--text);color:var(--bg);font-size:11px;font-weight:600;padding:5px 8px;border-radius:7px;white-space:nowrap;transform:translate(-50%,-120%);display:none}
 .wlist{margin-top:12px;max-height:150px;overflow:auto;font-size:12px;border-top:1px solid var(--border)}
@@ -167,7 +168,24 @@ dialog label{display:block;font-size:11px;font-weight:600;color:var(--muted);mar
   .week{grid-template-columns:repeat(7,1fr) 40px;gap:4px}
   .chk{height:36px}
 }
+/* ===== action views + hand-drawn crosses ===== */
+.seg{display:flex;background:var(--surface2);border-radius:12px;padding:3px;gap:2px;text-transform:none;letter-spacing:0}
+.seg button{border:none;background:none;font-family:var(--font);font-size:12px;font-weight:800;color:var(--muted);padding:6px 12px;border-radius:9px;cursor:pointer}
+.seg button.on{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(15,23,42,.12)}
+#actionCard .view{display:none}
+#actionCard[data-view="week"] #week,#actionCard[data-view="month"] #monthView,#actionCard[data-view="year"] #yearView{display:block}
+.chk,.month .day{position:relative;overflow:visible}
+.chk.on,.month .day.on{background:var(--surface2);border-color:var(--border);color:var(--text2)}
+.chk.on.today,.month .day.on.today{border-color:var(--text);box-shadow:none}
+.xm{position:absolute;left:-24%;top:-24%;width:148%;height:148%;pointer-events:none;overflow:visible;z-index:2}
+.xm path{fill:none;stroke:var(--text);stroke-width:16;stroke-linecap:round;stroke-linejoin:round}
+.xm.new path{stroke-dasharray:110;stroke-dashoffset:110;animation:draw .18s ease-out forwards}
+.xm.new path+path{animation-delay:.14s}
+@keyframes draw{to{stroke-dashoffset:0}}
+.heat svg .yx{fill:none;stroke:var(--text);stroke-width:3.4;stroke-linecap:round;pointer-events:none}
+button.big{font-size:13px;padding:9px 18px;margin-left:auto;line-height:inherit}
 /* ===== bold & clean ===== */
+.ttl{font-family:var(--font);font-size:20px;font-weight:800;text-transform:none;letter-spacing:-.3px;color:var(--text)}
 body{font-size:15px}
 h1{font-size:30px;font-weight:900;letter-spacing:-.6px}
 .card{border:none;border-radius:22px;padding:22px 22px;box-shadow:0 1px 2px rgba(15,23,42,.04),0 8px 24px rgba(15,23,42,.06)}
@@ -223,22 +241,26 @@ button.ghost{font-weight:700;border-radius:11px}
 
   <!-- Process timeline -->
   <div class="card process">
-    <div class="label"><span>Your process</span></div>
+    <div class="label"><span class="ttl">Progress</span></div>
     <div class="steps" id="steps"></div>
     <div class="bars" id="bars"></div>
   </div>
 
   <!-- This week -->
-  <div class="card">
+  <div class="card" id="actionCard">
     <div class="label">
       <span><span class="step">4</span>Action</span>
+      <div class="seg" role="tablist" id="viewSeg">
+        <button data-view="week" role="tab">Week</button><button data-view="month" role="tab">Month</button><button data-view="year" role="tab">Year</button>
+      </div>
     </div>
-    <div id="week"></div>
-    <button class="ghost more" id="monthToggle" aria-expanded="false">Show month view ▾</button>
-    <div id="monthView" hidden>
+    <div id="actSum"></div>
+    <div id="week" class="view"></div>
+    <div id="monthView" class="view">
       <div class="mhead"><b id="mLbl"></b></div>
       <div class="month" id="month"></div>
     </div>
+    <div id="yearView" class="view"><div id="actions"></div></div>
   </div>
 
   <!-- Goal / Deadline / Plan -->
@@ -260,13 +282,6 @@ button.ghost{font-weight:700;border-radius:11px}
     </div>
   </div>
 
-  <!-- Year overview -->
-  <div class="card">
-    <div class="label">
-      <span class="cal-title">Calendar</span>
-    </div>
-    <div id="actions"></div>
-  </div>
 
   <!-- Weight -->
   <div class="card">
@@ -286,7 +301,7 @@ button.ghost{font-weight:700;border-radius:11px}
       <input type="date" id="wDate" style="max-width:170px">
       <input type="number" id="wKg" step="0.1" min="20" max="300" placeholder="kg" style="max-width:110px">
       <button class="primary" id="wAdd">Save</button>
-      <button class="ghost" id="wListToggle" style="margin-left:auto;font-size:12px">Show measurements ▾</button>
+      <button class="ghost big" id="wListToggle">Measurements ▾</button>
     </div>
     <div class="wlist" id="wList" hidden></div>
   </div>
@@ -379,7 +394,17 @@ function trend(W){
 let year=new Date().getFullYear();
 let weekStart=mondayOf(new Date());
 
-function toggle(d){const a=ACTION;
+// A hand-drawn looking cross, slightly different per day (seeded by the date), larger than its box.
+function hashStr(k){let h=0;for(const c of k)h=(h*31+c.charCodeAt(0))|0;return h;}
+function crossSVG(k){
+  const h=hashStr(k),j=n=>((h>>(n*3))&7)-3.5; // -3.5..3.5
+  const r=((h>>2)%9)-4;                          // rotation -4..4 deg
+  return `<svg class="xm${k===lastToggled?' new':''}" viewBox="0 0 100 100" aria-hidden="true"><g transform="rotate(${r} 50 50)">`
+    +`<path d="M${18+j(1)} ${20+j(2)} Q${50+j(3)} ${47+j(4)} ${82+j(5)} ${80+j(6)}"/>`
+    +`<path d="M${81+j(7)} ${19+j(8)} Q${52+j(9)} ${51+j(1)} ${19+j(2)} ${83+j(3)}"/></g></svg>`;
+}
+let lastToggled=null;
+function toggle(d){const a=ACTION;lastToggled=d;setTimeout(()=>{lastToggled=null;},600);
   const has=S.actions.some(x=>x.date===d&&x.action===a);
   if(has)S.actions=S.actions.filter(x=>!(x.date===d&&x.action===a));else S.actions.push({date:d,action:a});
   save({type:'action',date:d,action:a,done:!has});
@@ -438,7 +463,6 @@ function renderProcess(){
   $('bars').innerHTML=bars;$('bars').style.display=bars?'':'none';
 }
 function renderMonth(){
-  if($('monthView').hidden)return;
   const monthCur=new Date(weekStart.getFullYear(),weekStart.getMonth(),1);
   const T=trained(),y=monthCur.getFullYear(),mo=monthCur.getMonth();
   $('mLbl').textContent=monthCur.toLocaleDateString(LOC,{month:'long',year:'numeric'});
@@ -447,7 +471,7 @@ function renderMonth(){
   for(let i=0;i<lead;i++)h+='<div class="blank"></div>';
   let c=0;
   for(let d=1;d<=n;d++){const k=iso(new Date(y,mo,d)),on=T.has(k);if(on)c++;
-    h+=`<button class="day${on?' on':''}${k===todayIso?' today':''}${k>todayIso?' fut':''}" data-wd="${k}" title="${fmtD(k)}" aria-pressed="${on}">${d}</button>`;}
+    h+=`<button class="day${on?' on':''}${k===todayIso?' today':''}${k>todayIso?' fut':''}" data-wd="${k}" title="${fmtD(k)}" aria-pressed="${on}">${d}${on?crossSVG(k):''}</button>`;}
   h+=`<div class="msum"><b>${c}</b> training ${c===1?'day':'days'} this month</div>`;
   $('month').innerHTML=h;
 }
@@ -461,7 +485,7 @@ function renderWeek(){
   h+='<div class="hd">Total</div>';
   let n=0;
   days.forEach(k=>{const on=T.has(k);if(on)n++;
-    h+=`<button class="chk${on?' on':''}${k===todayIso?' today':''}${k>todayIso?' fut':''}" data-wd="${k}" title="${fmtD(k)}" aria-pressed="${on}"></button>`;});
+    h+=`<button class="chk${on?' on':''}${k===todayIso?' today':''}${k>todayIso?' fut':''}" data-wd="${k}" title="${fmtD(k)}" aria-pressed="${on}">${on?crossSVG(k):''}</button>`;});
   h+=`<div class="tot${pw&&n>=pw?' hit':''}">${n}/${pw||7}</div>`;
   $('week').innerHTML=h+'</div>';
 }
@@ -488,7 +512,7 @@ let zoomI=(()=>{try{const v=+localStorage.getItem('training.zoom');return v>=0&&
 function drawChart(W,tw,dl){
   const wrap=$('chartWrap');wrap.querySelector('svg')?.remove();$('tip').style.display='none';
   if(!W.length)return;
-  const width=Math.max(320,wrap.clientWidth),height=240,m={l:44,r:14,t:12,b:26};
+  const width=Math.max(200,wrap.clientWidth),height=width<420?200:240,m={l:34,r:8,t:12,b:26};
   const tr=trend(W);
   const ref=Math.max(parse(W[W.length-1].date).getTime(),parse(todayIso).getTime());
   const t0=ZOOMS[zoomI][1]?Math.max(parse(W[0].date).getTime(),ref-ZOOMS[zoomI][1]*864e5):parse(W[0].date).getTime();
@@ -540,15 +564,18 @@ function renderActions(){
   const T=trained(),pw=perWeek();
   const jan1=new Date(year,0,1),dec31=new Date(year,11,31);
   const start=mondayOf(jan1);
-  const cs=12,gap=3,left=0,top=20;
-  let cells='',col=0,cnt=0,lastMonth=-1,labels='';
+  const cs=12,gap=3,left=3,top=22;
+  let cells='',xs='',col=0,cnt=0,lastMonth=-1,labels='';
   for(let d=new Date(start);d<=dec31;d.setDate(d.getDate()+1)){
     const row=(d.getDay()+6)%7;if(row===0&&d>start)col++;
     if(d<jan1)continue;
     const k=iso(d),isDone=T.has(k),fut=k>todayIso,isT=k===todayIso;
     if(isDone)cnt++;
     if(d.getMonth()!==lastMonth&&(d.getDate()===1&&lastMonth<0||row===0&&d.getDate()<=7)){lastMonth=d.getMonth();labels+=`<text x="${left+col*(cs+gap)}" y="12" font-size="12" font-weight="600" fill="var(--muted)">${d.toLocaleDateString(LOC,{month:'short'})}</text>`;}
-    cells+=`<rect class="c" data-d="${k}" x="${left+col*(cs+gap)}" y="${top+row*(cs+gap)}" width="${cs}" height="${cs}" rx="3" fill="${isDone?'var(--cell-done)':'var(--cell)'}" ${fut&&!isDone?'opacity=".45"':''} ${isT?'stroke="var(--cell-today)" stroke-width="1.5"':''}><title>${fmtD(k)}${isDone?' · trained':''}</title></rect>`;
+    const cx0=left+col*(cs+gap),cy0=top+row*(cs+gap);
+    cells+=`<rect class="c" data-d="${k}" x="${cx0}" y="${cy0}" width="${cs}" height="${cs}" rx="3" fill="var(--cell)" ${fut?'opacity=".45"':''} ${isT?'stroke="var(--cell-today)" stroke-width="1.5"':''}><title>${fmtD(k)}${isDone?' · trained':''}</title></rect>`;
+    if(isDone){const hh=hashStr(k),o=((hh>>4)&3)-1.5;
+      xs+=`<path class="yx" d="M${cx0-2.5+o} ${cy0-2} L${cx0+cs+2.5} ${cy0+cs+2+o*.5} M${cx0+cs+2} ${cy0-2.5+o*.5} L${cx0-2} ${cy0+cs+2.5}"/>`;}
   }
   const dl=['Mon','','Wed','','Fri','','Sun'].map((t,i)=>t?`<text x="0" y="${top+i*(cs+gap)+11}" font-size="11" fill="var(--muted)">${t}</text>`:'').join('');
   const w=left+(col+1)*(cs+gap),h=top+7*(cs+gap);
@@ -573,9 +600,9 @@ function renderActions(){
   const gp=yGoal?Math.min(100,Math.round(cnt/yGoal*100)):0, ep=yGoal?Math.min(100,Math.round(expected/yGoal*100)):0;
   const pace=cnt-expected;
   const paceTxt=expected?(pace===0?'on pace':Math.abs(pace)+' '+(Math.abs(pace)===1?'day':'days')+' '+(pace>0?'ahead':'behind')):'';
-  $('actions').innerHTML=`<div class="calsum"><span><b>${cnt}</b>${yGoal?' / '+yGoal:''} days</span>${paceTxt?`<span>${paceTxt}</span>`:''}</div>
-    ${yGoal?`<div class="track thin"><i style="width:${gp}%;background:var(--accent)"></i></div>`:''}
-    <div class="heat"><svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMinYMin meet">${labels}${cells}</svg></div>`;
+  $('actSum').innerHTML=`<div class="calsum"><span><b>${cnt}</b>${yGoal?' / '+yGoal:''} days in ${year}</span>${paceTxt?`<span>${paceTxt}</span>`:''}</div>
+    ${yGoal?`<div class="track thin"><i style="width:${gp}%;background:var(--accent)"></i></div>`:''}`;
+  $('actions').innerHTML=`<div class="heat"><svg viewBox="0 0 ${w+3} ${h+3}" preserveAspectRatio="xMinYMin meet">${labels}${cells}${xs}</svg></div>`;
 }
 
 // ---------- events ----------
@@ -585,9 +612,10 @@ document.addEventListener('click',e=>{
   const c=e.target.closest('rect.c');
   if(c){toggle(c.dataset.d);return;}
   const del=e.target.closest('[data-del]');
-  if(del){const d=del.dataset.del;if(!confirm('Delete the measurement of '+fmtD(d)+'?'))return;S.weight=S.weight.filter(w=>w.date!==d);save({type:'weight',date:d,delete:true});return;}
+  if(del){const d=del.dataset.del,w=S.weight.find(x=>x.date===d);
+    dialog(`<h3>Delete measurement?</h3><p>${fmtD(d)} · ${w?fmtKg(w.kg)+' kg':''}</p>`,()=>{S.weight=S.weight.filter(x=>x.date!==d);save({type:'weight',date:d,delete:true});},'Delete');return;}
   const go=e.target.closest('[data-go]');
-  if(go){const g=go.dataset.go;if(g==='week')$('week').scrollIntoView({behavior:'smooth',block:'center'});else openEdit(g);return;}
+  if(go){const g=go.dataset.go;if(g==='week')$('actionCard').scrollIntoView({behavior:'smooth',block:'center'});else openEdit(g);return;}
   const ed=e.target.closest('[data-edit]');
   if(ed)openEdit(ed.dataset.edit);
 });
@@ -616,13 +644,16 @@ $('selYear').onchange=e=>{year=+e.target.value;
 $('selWeek').onchange=e=>{weekStart=parse(e.target.value);renderWeek();renderMonth();};
 $('zoom').value=zoomI;$('zLbl').textContent=ZOOMS[zoomI][0];
 $('zoom').oninput=e=>{zoomI=+e.target.value;$('zLbl').textContent=ZOOMS[zoomI][0];try{localStorage.setItem('training.zoom',zoomI)}catch(_){};renderWeight();};
-$('wListToggle').onclick=()=>{const l=$('wList'),open=l.hidden;l.hidden=!open;$('wListToggle').textContent=open?'Hide measurements ▴':'Show measurements ▾';};
-$('monthToggle').onclick=()=>{const v=$('monthView'),open=v.hidden;v.hidden=!open;$('monthToggle').setAttribute('aria-expanded',open);$('monthToggle').textContent=open?'Hide month view ▴':'Show month view ▾';renderMonth();};
+$('wListToggle').onclick=()=>{const l=$('wList'),open=l.hidden;l.hidden=!open;$('wListToggle').textContent=open?'Measurements ▴':'Measurements ▾';};
+let actView=(()=>{try{return localStorage.getItem('training.view')||'week'}catch(e){return 'week'}})();
+function setView(v){actView=v;$('actionCard').dataset.view=v;document.querySelectorAll('#viewSeg button').forEach(b=>b.classList.toggle('on',b.dataset.view===v));try{localStorage.setItem('training.view',v)}catch(e){}}
+document.querySelectorAll('#viewSeg button').forEach(b=>b.onclick=()=>setView(b.dataset.view));
+setView(actView);
 let rt;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(renderWeight,150);});
 
 // ---------- dialogs ----------
-function dialog(html,onSave){
-  const f=$('dlgForm');f.innerHTML=html+`<div class="row" style="justify-content:flex-end;margin-top:18px"><button class="ghost" value="cancel">Cancel</button><button class="primary" value="ok">Save</button></div>`;
+function dialog(html,onSave,okLabel){
+  const f=$('dlgForm');f.innerHTML=html+`<div class="row" style="justify-content:flex-end;margin-top:18px"><button class="ghost" value="cancel">Cancel</button><button class="primary" value="ok">${okLabel||'Save'}</button></div>`;
   const dlg=$('dlg');dlg.returnValue='';dlg.showModal();
   dlg.onclose=()=>{if(dlg.returnValue==='ok')onSave(f);};
 }
