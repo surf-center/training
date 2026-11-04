@@ -62,13 +62,15 @@ h1{font-size:22px;font-weight:800;margin:0;letter-spacing:-.3px}
 .stack[aria-expanded="false"] .scard:nth-child(3){transform:translateY(23px) scale(.9);z-index:0;opacity:.6}
 .stack[aria-expanded="false"] .scard:nth-child(2)>*,.stack[aria-expanded="false"] .scard:nth-child(3)>*{visibility:hidden}
 .stack .scard:first-child{position:relative;z-index:2}
-.stack[aria-expanded="true"]{margin-bottom:16px;cursor:default}
+.stack[aria-expanded="true"]{margin-bottom:16px}
 .more-n{margin-left:auto;margin-right:10px;font-size:11px;font-weight:800;color:var(--muted);background:var(--surface2);border-radius:20px;padding:2px 8px;letter-spacing:0}
 .stack[aria-expanded="true"] .more-n{display:none}
 .stack-less{display:none;margin:10px auto 0;border:none;background:none;font-family:var(--font);font-size:12px;font-weight:800;color:var(--muted);cursor:pointer}
 .stack[aria-expanded="true"] .stack-less{display:block}
 .wform{display:grid;grid-template-columns:minmax(0,1fr) 92px auto;gap:8px;margin-top:16px}
-@media (max-width:560px){.wform{grid-template-columns:minmax(0,1fr) 72px auto}.wform input{font-size:14px;padding:0 8px}.wform button.primary{padding:0 16px}}
+.wform input{min-width:0;width:100%;box-sizing:border-box}
+.wform input[type=date]{-webkit-appearance:none;appearance:none;text-align:left}
+@media (max-width:560px){.wform{grid-template-columns:minmax(0,1fr) 96px}.wform button.primary{grid-column:1/-1}.wform input{font-size:15px;padding:0 12px}}
 .wform input,.wform button{height:44px;margin:0;border-radius:12px}
 .wform input{font-size:15px;font-weight:700;padding:0 12px}
 .wform button.primary{padding:0 20px;font-size:14px}
@@ -80,7 +82,8 @@ h1{font-size:22px;font-weight:800;margin:0;letter-spacing:-.3px}
 .wtable td.kg{font-weight:900}
 .wtable .up{color:var(--good)}.wtable .dn{color:var(--warn)}.wtable .nc{color:var(--muted)}
 .wtable th:last-child,.wtable td:last-child{text-align:right;width:36px}
-.wtable button{background:none;border:none;color:var(--muted2);cursor:pointer;font-size:14px;padding:2px 4px}
+.wtable button{background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;display:inline-flex;border-radius:8px}
+.wtable button:hover{color:var(--bad);background:var(--surface)}
 .grid3{display:grid;grid-template-columns:1.3fr .8fr 1.3fr;gap:16px;margin-bottom:16px}
 .grid3 .card{margin:0}
 .big{font-size:17px;font-weight:700;margin-top:8px;white-space:pre-wrap}
@@ -271,6 +274,27 @@ button.ghost{font-weight:700;border-radius:11px}
 .period select+select{border-left:1px solid var(--border);border-radius:0 9px 9px 0}
 .iconbtn{border-radius:11px}
 @media (max-width:560px){.countdown{font-size:32px}.stat .v{font-size:28px}.chk{border-radius:12px}.st .n{width:40px;height:40px}.steps::before,.steps .fill{top:18px}}
+/* ===== progress stepper, refined ===== */
+.process .steps{margin-top:20px}
+.process .steps::before{top:21px;height:4px;left:12.5%;right:12.5%;background:var(--surface2);border-radius:4px}
+.process .steps .fill{top:21px;height:4px;border-radius:4px;background:linear-gradient(90deg,var(--accent),#60a5fa)}
+.process .st .n{width:46px;height:46px;border:none;background:var(--surface2);color:var(--muted);font-size:15px;font-weight:900;transition:transform .15s}
+.process .st:hover .n{transform:translateY(-2px)}
+.process .st.ok .n{background:linear-gradient(145deg,#3b82f6,var(--accent));color:#fff;box-shadow:0 6px 16px rgba(37,99,235,.32)}
+.process .st.now .n{background:var(--surface);color:var(--accent);box-shadow:inset 0 0 0 3px var(--accent);animation:pulse 2.2s ease-out infinite}
+@keyframes pulse{0%{box-shadow:inset 0 0 0 3px var(--accent),0 0 0 0 rgba(37,99,235,.35)}70%{box-shadow:inset 0 0 0 3px var(--accent),0 0 0 12px rgba(37,99,235,0)}100%{box-shadow:inset 0 0 0 3px var(--accent),0 0 0 0 rgba(37,99,235,0)}}
+.process .st .t{font-size:13px;font-weight:800;margin-top:12px;color:var(--text)}
+.process .st:not(.ok):not(.now) .t{color:var(--muted)}
+.process .st .v{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;-webkit-line-clamp:unset}
+.process .st.now .v{color:var(--accent);font-weight:800}
+.process .bars{border-top:none;margin-top:24px;padding-top:0}
+@media (max-width:560px){
+  .process .st .n{width:40px;height:40px;font-size:14px}
+  .process .steps::before,.process .steps .fill{top:18px}
+  .process .st .t{font-size:12px;margin-top:9px}
+  .process .st .v{display:block;font-size:10.5px}
+}
+@media (prefers-reduced-motion:reduce){.process .st.now .n{animation:none}}
 </style>
 </head>
 <body>
@@ -492,7 +516,7 @@ function renderProcess(){
   ];
   const firstOpen=steps.findIndex(x=>!x.ok);
   $('steps').innerHTML=`<div class="fill" style="width:${Math.max(0,(Math.max(0,(firstOpen<0?4:firstOpen))-1))/3*75}%"></div>`+steps.map((x,i)=>
-    `<div class="st${x.ok?' ok':''}${i===firstOpen?' now':''}" data-go="${x.go}"><div class="n">${x.ok?'✓':i+1}</div><div class="t">${x.t}</div><div class="v" title="${esc(x.v)}">${esc(x.v)}</div></div>`).join('');
+    `<div class="st${x.ok?' ok':''}${i===firstOpen?' now':''}" data-go="${x.go}"><div class="n">${x.ok?'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>':i+1}</div><div class="t">${x.t}</div><div class="v" title="${esc(x.v)}">${esc(x.v)}</div></div>`).join('');
   // progress bars: time and weight
   const W=[...S.weight].sort((a,b)=>a.date.localeCompare(b.date));
   let bars='';
@@ -548,7 +572,7 @@ function renderWeight(){
   {const up=tw?tw>=(W.length?startWeight(W).kg:0):false;
    $('wList').innerHTML=W.length?`<table><thead><tr><th>Date</th><th>kg</th><th>Change</th><th></th></tr></thead><tbody>${[...W].map((w,i)=>{const d=i?w.kg-W[i-1].kg:null;
      const cls=d===null||Math.abs(d)<0.05?'nc':((d>0)===up?'up':'dn');
-     return `<tr><td>${fmtD(w.date)}</td><td class="kg">${fmtKg(w.kg)}</td><td class="${cls}">${d===null?'–':(d>0?'+':'')+fmtKg(d)}</td><td><button title="Delete" data-del="${w.date}">✕</button></td></tr>`;}).reverse().join('')}</tbody></table>`:'';}
+     return `<tr><td>${fmtD(w.date)}</td><td class="kg">${fmtKg(w.kg)}</td><td class="${cls}">${d===null?'–':(d>0?'+':'')+fmtKg(d)}</td><td><button title="Delete" aria-label="Delete measurement" data-del="${w.date}"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg></button></td></tr>`;}).reverse().join('')}</tbody></table>`:'';}
   drawChart(W,tw,dl);
 }
 
@@ -704,7 +728,7 @@ $('wListToggle').onclick=()=>{const l=$('wList'),open=l.hidden;l.hidden=!open;$(
 // stack: collapsed like notifications, tap to expand
 $('stack').addEventListener('click',e=>{if(e.target.closest('[data-edit]'))return;const st=$('stack');
   if(e.target.closest('#stackLess')){st.setAttribute('aria-expanded','false');return;}
-  if(st.getAttribute('aria-expanded')==='false')st.setAttribute('aria-expanded','true');});
+  st.setAttribute('aria-expanded',st.getAttribute('aria-expanded')==='false'?'true':'false');});
 let actView=(()=>{try{return localStorage.getItem('training.view')||'week'}catch(e){return 'week'}})();
 function setView(v){actView=v;setTimeout(renderSum,0);$('actionCard').dataset.view=v;document.querySelectorAll('#viewSeg button').forEach(b=>b.classList.toggle('on',b.dataset.view===v));try{localStorage.setItem('training.view',v)}catch(e){}}
 document.querySelectorAll('#viewSeg button').forEach(b=>b.onclick=()=>setView(b.dataset.view));
