@@ -336,13 +336,12 @@ button.ghost{font-weight:700;border-radius:11px}
 @media (max-width:420px){#intro .in-term{font-size:23px}#intro .in-final .word{font-size:54px}#intro .in-final .eq{font-size:38px}}
 /* ===== laptop layout ===== */
 @media (min-width:1000px){
-  .wrap{max-width:1180px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:22px;align-items:start;padding-top:40px}
+  .wrap{max-width:1180px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;align-items:stretch;padding-top:40px}
   .wrap>header{grid-column:1/-1;margin-bottom:0}
   .wrap>#actionCard{grid-column:1;grid-row:2}
-  .wrap>#progCard{grid-column:2;grid-row:2}
-  .wrap>.stack{grid-column:1/-1;grid-row:3}
+  .wrap>.stack{grid-column:2;grid-row:2;align-content:start}
   .wrap>.card{margin:0}
-  .stack,.stack[aria-expanded]{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin:0;cursor:default}
+  .stack,.stack[aria-expanded]{display:grid;grid-template-columns:minmax(0,1fr);gap:22px;margin:0;cursor:default}
   .stack .scard,.stack[aria-expanded] .scard:nth-child(n){position:relative!important;transform:none!important;opacity:1!important;height:auto!important;margin:0!important;pointer-events:auto!important;z-index:auto!important}
   .stack[aria-expanded] .scard:nth-child(n)>*{visibility:visible!important}
   .stack .more-n,.stack .stack-less{display:none!important}
@@ -967,9 +966,9 @@ function setProg(open){$('pmore').hidden=!open;$('progToggle').textContent=open?
 $('progToggle').onclick=()=>setProg($('pmore').hidden);
 setProg((()=>{try{return localStorage.getItem('training.prog')==='1'}catch(e){return false}})());
 function placeProgress(){
-  const pc=$('progCard'),st=$('stack'),narrow=innerWidth<1000,inStack=pc.parentElement===st;
-  if(narrow&&!inStack){st.insertBefore(pc,$('stackLess'));pc.classList.add('scard');}
-  else if(!narrow&&inStack){st.after(pc);pc.classList.remove('scard');}
+  // Progress always lives in the stack: collapsed pile on phones, a column of 4 on laptops
+  const pc=$('progCard'),st=$('stack');
+  if(pc.parentElement!==st){st.insertBefore(pc,$('stackLess'));pc.classList.add('scard');}
   $('stackN').textContent='+'+(st.querySelectorAll('.scard').length-1);
   if(!$('pmore').hidden)renderWeight();
 }
