@@ -213,6 +213,9 @@ dialog label{display:block;font-size:11px;font-weight:600;color:var(--muted);mar
 .xm path{fill:none;stroke:var(--text);stroke-width:16;stroke-linecap:round;stroke-linejoin:round}
 .xm.new path{stroke-dasharray:110;stroke-dashoffset:110;animation:draw .18s ease-out forwards}
 .xm.new path+path{animation-delay:.14s}
+.xm.ck path{stroke:var(--accent);stroke-width:15}
+.cday.today.on{border-color:transparent}
+.xm.ck.new path{stroke-dasharray:130;stroke-dashoffset:130;animation:draw .32s ease-out forwards}
 @keyframes draw{to{stroke-dashoffset:0}}
 .heat svg .yx{fill:none;stroke:var(--text);stroke-width:3.4;stroke-linecap:round;pointer-events:none}
 button.big{font-size:13px;padding:9px 18px;margin-left:auto;line-height:inherit}
@@ -752,7 +755,9 @@ function renderProcess(){
 }
 // One round, cross-able day; identical in week and month view.
 function dayBtn(k,T,cls=''){const on=T.has(k),d=parse(k).getDate();
-  return `<div class="dc"><button class="cday${on?' on':''}${k===todayIso?' today':''}${k>todayIso?' fut':''}${cls}" data-wd="${k}" title="${fmtD(k)}" aria-pressed="${on}"><span>${d}</span>${on?crossSVG(k):''}</button></div>`;}
+  return `<div class="dc"><button class="cday${on?' on':''}${k===todayIso?' today':''}${k>todayIso?' fut':''}${cls}" data-wd="${k}" title="${fmtD(k)}" aria-pressed="${on}"><span>${d}</span>${on?(k===todayIso?checkSVG(k):crossSVG(k)):''}</button></div>`;}
+// today, once trained: a blue hand-drawn checkmark (earlier days keep their black cross)
+function checkSVG(k){return `<svg class="xm ck${k===lastToggled?' new':''}" viewBox="0 0 100 100" aria-hidden="true"><path d="M16 54 Q30 66 41 80 Q60 44 88 16"/></svg>`;}
 const countTxt=(n,period)=>`<div class="msum"><b>${n}</b> training ${n===1?'day':'days'} ${period}</div>`;
 function renderMonth(){
   const monthCur=monthStart;
