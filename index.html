@@ -476,9 +476,11 @@ button.ghost{font-weight:700;border-radius:11px}
 // ---------- Storage: Google Sheet (Apps Script) or local ----------
 const LS_CFG='training.cfg', LS_DATA='training.data';
 const ls={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
-// The web app URL is not secret, so it is built in. The PIN is entered once per device (or comes from config.js locally).
+// Web app URL and PIN are built in on purpose (owner's choice: the data is not private),
+// so the page opens straight onto the data on every device. The PIN dialog only appears if the PIN is changed.
 const DEFAULT_URL='https://script.google.com/macros/s/AKfycbzZZcqDX0pMBG9Lu0TsbTM_HTidZblEwPNMPAlrH_S0ekKSBVOZ8qQoqcRpSbC2CfRn/exec';
-let cfg=ls.get(LS_CFG,null)||(window.TRAINING_CFG&&window.TRAINING_CFG.key?{url:window.TRAINING_CFG.url||DEFAULT_URL,key:window.TRAINING_CFG.key}:{url:DEFAULT_URL,key:''});
+const DEFAULT_PIN='3209';
+let cfg={url:DEFAULT_URL,key:DEFAULT_PIN};
 if(!cfg.url)cfg.url=DEFAULT_URL;
 let S={settings:{},weight:[],actions:[]};
 const remote=()=>!!(cfg.url&&cfg.key);
