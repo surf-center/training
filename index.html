@@ -239,8 +239,7 @@ button.big{font-size:13px;padding:9px 18px;margin-left:auto;line-height:inherit}
 @media (max-width:700px){.ygrid{grid-template-columns:repeat(3,1fr);gap:14px 12px}}
 /* ===== bold & clean ===== */
 .ttl .step{font-size:11px;vertical-align:2px;margin-right:7px}
-.step.xstep{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;padding:0;box-sizing:border-box}
-.step.xstep svg{width:12px;height:12px;fill:none;stroke:#fff;stroke-width:15;stroke-linecap:round}
+.calicon{width:21px;height:21px;margin-right:8px;vertical-align:-4px;fill:none;stroke:var(--accent);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 .ttl{font-family:var(--font);font-size:17px;font-weight:800;text-transform:none;letter-spacing:-.3px;color:var(--text)}
 body{font-size:15px}
 h1{font-size:30px;font-weight:900;letter-spacing:-.6px}
@@ -520,7 +519,7 @@ button.ghost{font-weight:700;border-radius:11px}
   <!-- This week -->
   <div class="card" id="actionCard">
     <div class="label">
-      <span class="ttl"><span class="step xstep" aria-hidden="true"><svg viewBox="0 0 100 100"><path d="M22 22 Q50 48 79 80"/><path d="M80 20 Q52 52 20 81"/></svg></span>Action</span>
+      <span class="ttl"><svg class="calicon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3.5"/><path d="M8 3v4M16 3v4"/><path d="M9.5 11.5l5 5M14.5 11.5l-5 5"/></svg>Action</span>
       <div class="seg" role="tablist" id="viewSeg">
         <button data-view="week" role="tab">Week</button><button data-view="month" role="tab">Month</button><button data-view="year" role="tab">Year</button>
       </div>
