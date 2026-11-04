@@ -744,7 +744,7 @@ function renderWeek(){
   const T=trained(),pw=perWeek();
   const n=days.filter(k=>T.has(k)).length;
   const isThis=iso(mondayOf(new Date()))===days[0];
-  $('week').innerHTML=`<div class="mhead"><b>${fmtDs(days[0])} – ${fmtDs(days[6])}</b></div><div class="dgrid">${days.map(k=>dayBtn(k,T)).join('')}</div>`
+  $('week').innerHTML=`<div class="mhead"><b>Week ${isoWeek(weekStart)}</b></div><div class="dgrid">${days.map(k=>dayBtn(k,T)).join('')}</div>`
     +countTxt(n,isThis?'this week':'in this week');
 }
 
