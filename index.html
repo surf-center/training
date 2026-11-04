@@ -55,10 +55,11 @@ h1{font-size:22px;font-weight:800;margin:0;letter-spacing:-.3px}
 .stack{position:relative;margin-bottom:34px;cursor:pointer}
 .stack .scard{margin:0;transition:transform .28s cubic-bezier(.2,.8,.2,1),opacity .2s}
 .stack .scard+.scard{margin-top:12px}
-.stack[aria-expanded="false"] .scard:nth-child(2),.stack[aria-expanded="false"] .scard:nth-child(3){position:absolute;left:0;right:0;top:0;height:100%;margin:0;overflow:hidden;pointer-events:none}
+.stack[aria-expanded="false"] .scard:nth-child(2),.stack[aria-expanded="false"] .scard:nth-child(3),.stack[aria-expanded="false"] .scard:nth-child(4){position:absolute;left:0;right:0;top:0;height:100%;margin:0;overflow:hidden;pointer-events:none}
 .stack[aria-expanded="false"] .scard:nth-child(2){transform:translateY(12px) scale(.95);z-index:1;opacity:.85}
 .stack[aria-expanded="false"] .scard:nth-child(3){transform:translateY(23px) scale(.9);z-index:0;opacity:.6}
-.stack[aria-expanded="false"] .scard:nth-child(2)>*,.stack[aria-expanded="false"] .scard:nth-child(3)>*{visibility:hidden}
+.stack[aria-expanded="false"] .scard:nth-child(4){transform:translateY(23px) scale(.9);z-index:0;opacity:0}
+.stack[aria-expanded="false"] .scard:nth-child(2)>*,.stack[aria-expanded="false"] .scard:nth-child(3)>*,.stack[aria-expanded="false"] .scard:nth-child(4)>*{visibility:hidden}
 .stack .scard:first-child{position:relative;z-index:2}
 .stack[aria-expanded="true"]{margin-bottom:16px}
 .more-n{margin-left:auto;margin-right:10px;font-size:11px;font-weight:800;color:var(--muted);background:var(--surface2);border-radius:20px;padding:2px 8px;letter-spacing:0}
@@ -335,7 +336,9 @@ button.ghost{font-weight:700;border-radius:11px}
 @media (min-width:1000px){
   .wrap{max-width:1180px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:22px;align-items:start;padding-top:40px}
   .wrap>header{grid-column:1/-1;margin-bottom:0}
-  .wrap>.stack{grid-column:1/-1}
+  .wrap>#actionCard{grid-column:1;grid-row:2}
+  .wrap>#progCard{grid-column:2;grid-row:2}
+  .wrap>.stack{grid-column:1/-1;grid-row:3}
   .wrap>.card{margin:0}
   .stack,.stack[aria-expanded]{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin:0;cursor:default}
   .stack .scard,.stack[aria-expanded] .scard:nth-child(n){position:relative!important;transform:none!important;opacity:1!important;height:auto!important;margin:0!important;pointer-events:auto!important;z-index:auto!important}
@@ -506,10 +509,27 @@ button.ghost{font-weight:700;border-radius:11px}
     </div>
   </header>
 
+  <!-- This week -->
+  <div class="card" id="actionCard">
+    <div class="label">
+      <span class="ttl"><span class="step">A</span>Action</span>
+      <div class="seg" role="tablist" id="viewSeg">
+        <button data-view="week" role="tab">Week</button><button data-view="month" role="tab">Month</button><button data-view="year" role="tab">Year</button>
+      </div>
+    </div>
+    <div id="actSum"></div>
+    <div id="week" class="view"></div>
+    <div id="monthView" class="view">
+      <b id="mLbl" hidden></b>
+      <div class="month" id="month"></div>
+    </div>
+    <div id="yearView" class="view"><div id="actions"></div></div>
+  </div>
+
   <!-- Goal / Deadline / Plan as a stack (tap to expand) -->
   <div class="stack" id="stack" aria-expanded="false">
     <div class="card scard">
-      <div class="label"><span class="ttl"><span class="step">1</span>Goal</span><span class="more-n">+2</span><button class="edit" data-edit="goal">Edit</button></div>
+      <div class="label"><span class="ttl"><span class="step">1</span>Goal</span><span class="more-n" id="stackN">+2</span><button class="edit" data-edit="goal">Edit</button></div>
       <div class="countdown" id="goalView">–</div>
       <div class="sub" id="goalSub"></div>
     </div>
@@ -524,23 +544,6 @@ button.ghost{font-weight:700;border-radius:11px}
       <div class="sub" id="planSub"></div>
     </div>
     <button class="stack-less" id="stackLess">Show less ▴</button>
-  </div>
-
-  <!-- This week -->
-  <div class="card" id="actionCard">
-    <div class="label">
-      <span class="ttl"><span class="step">4</span>Action</span>
-      <div class="seg" role="tablist" id="viewSeg">
-        <button data-view="week" role="tab">Week</button><button data-view="month" role="tab">Month</button><button data-view="year" role="tab">Year</button>
-      </div>
-    </div>
-    <div id="actSum"></div>
-    <div id="week" class="view"></div>
-    <div id="monthView" class="view">
-      <b id="mLbl" hidden></b>
-      <div class="month" id="month"></div>
-    </div>
-    <div id="yearView" class="view"><div id="actions"></div></div>
   </div>
 
   <!-- Progress -->
@@ -937,8 +940,10 @@ $('zoom').value=zoomI;$('zLbl').textContent=ZOOMS[zoomI][0];
 $('zoom').oninput=e=>{zoomI=+e.target.value;$('zLbl').textContent=ZOOMS[zoomI][0];try{localStorage.setItem('training.zoom',zoomI)}catch(_){};renderWeight();};
 $('wListToggle').onclick=()=>{const l=$('wList'),open=l.hidden;l.hidden=!open;$('wListToggle').textContent=open?'Hide measurements ▴':'Show measurements ▾';};
 // stack: collapsed like notifications, tap to expand
-$('stack').addEventListener('click',e=>{if(e.target.closest('[data-edit]'))return;const st=$('stack');
+$('stack').addEventListener('click',e=>{const st=$('stack');
   if(e.target.closest('#stackLess')){st.setAttribute('aria-expanded','false');return;}
+  // taps on controls or inside the Progress card never toggle the stack (unless it is still collapsed)
+  if(e.target.closest('[data-edit],button,input,select,label,a,#chartWrap,.wtable')||(st.getAttribute('aria-expanded')==='true'&&e.target.closest('#progCard')))return;
   st.setAttribute('aria-expanded',st.getAttribute('aria-expanded')==='false'?'true':'false');});
 // light by default; dark only when chosen (remembered per device)
 const MOON='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
@@ -953,6 +958,14 @@ function setProg(open){$('pmore').hidden=!open;$('progToggle').textContent=open?
   try{localStorage.setItem('training.prog',open?'1':'0')}catch(e){}if(open)renderWeight();}
 $('progToggle').onclick=()=>setProg($('pmore').hidden);
 setProg((()=>{try{return localStorage.getItem('training.prog')==='1'}catch(e){return false}})());
+function placeProgress(){
+  const pc=$('progCard'),st=$('stack'),narrow=innerWidth<1000,inStack=pc.parentElement===st;
+  if(narrow&&!inStack){st.insertBefore(pc,$('stackLess'));pc.classList.add('scard');}
+  else if(!narrow&&inStack){st.after(pc);pc.classList.remove('scard');}
+  $('stackN').textContent='+'+(st.querySelectorAll('.scard').length-1);
+  if(!$('pmore').hidden)renderWeight();
+}
+placeProgress();window.addEventListener('resize',()=>placeProgress());
 let actView=(()=>{try{return localStorage.getItem('training.view')||'week'}catch(e){return 'week'}})();
 function setView(v){actView=v;setTimeout(()=>{renderSum();if(typeof fillPeriod==='function')fillPeriod();},0);$('actionCard').dataset.view=v;document.querySelectorAll('#viewSeg button').forEach(b=>b.classList.toggle('on',b.dataset.view===v));try{localStorage.setItem('training.view',v)}catch(e){}}
 document.querySelectorAll('#viewSeg button').forEach(b=>b.onclick=()=>setView(b.dataset.view));
