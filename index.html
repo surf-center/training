@@ -319,7 +319,7 @@ async function load(){
     if(!j.ok)throw new Error(j.error||'Error');
     S={settings:j.settings||{},weight:j.weight||[],actions:j.actions||[]};
     ls.set(LS_DATA,S);setSync('ok','Connected to Google Sheet');
-  }catch(e){S=ls.get(LS_DATA,S);setSync('err','Sheet unreachable: '+e.message);}
+  }catch(e){S=ls.get(LS_DATA,S);setSync('err','Sheet unreachable: '+e.message);if(/invalid key/i.test(e.message))setTimeout(askKey,300);}
   render();
 }
 
@@ -651,9 +651,10 @@ $('btnSettings').onclick=()=>dialog(`<h3>Google Sheet connection</h3><p>Paste th
   });
 
 load();
-// first visit on a device: ask only for the key
-if(!cfg.key)setTimeout(()=>dialog(`<h3>Connect</h3><p>Enter your key once on this device to load your data.</p><label>Key</label><input name="key" type="password" autocomplete="current-password">`,
-  async f=>{const k=f.key.value.trim();if(!k)return;cfg={url:cfg.url||DEFAULT_URL,key:k};ls.set(LS_CFG,cfg);await load();}),300);
+// first visit on a device (or a wrong key): ask only for the key
+function askKey(){if($('dlg').open)return;dialog(`<h3>Connect</h3><p>Enter your key once on this device to load your data.</p><label>Key</label><input name="key" type="password" autocomplete="current-password">`,
+  async f=>{const k=f.key.value.trim();if(!k)return;cfg={url:DEFAULT_URL,key:k};ls.set(LS_CFG,cfg);await load();});}
+if(!cfg.key)setTimeout(askKey,300);
 </script>
 </body>
 </html>
