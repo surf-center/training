@@ -216,6 +216,7 @@ dialog label{display:block;font-size:11px;font-weight:600;color:var(--muted);mar
 .heat svg .yx{fill:none;stroke:var(--text);stroke-width:3.4;stroke-linecap:round;pointer-events:none}
 button.big{font-size:13px;padding:9px 18px;margin-left:auto;line-height:inherit}
 /* ===== round days ===== */
+.month{margin-top:16px}
 .dgrid,.month{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;max-width:520px;margin:0 auto}
 .dc{display:flex;justify-content:center;align-items:center;min-width:0}
 .cday{position:relative;overflow:visible;width:100%;max-width:46px;aspect-ratio:1/1;border-radius:50%;border:2px solid var(--border);background:var(--surface2);cursor:pointer;padding:0;font-family:var(--font);font-size:14px;font-weight:800;color:var(--text2);display:flex;align-items:center;justify-content:center}
@@ -236,7 +237,8 @@ button.big{font-size:13px;padding:9px 18px;margin-left:auto;line-height:inherit}
 .yd .xm path{stroke-width:18}
 @media (max-width:700px){.ygrid{grid-template-columns:repeat(3,1fr);gap:14px 12px}}
 /* ===== bold & clean ===== */
-.ttl{font-family:var(--font);font-size:20px;font-weight:800;text-transform:none;letter-spacing:-.3px;color:var(--text)}
+.ttl .step{font-size:11px;vertical-align:2px;margin-right:7px}
+.ttl{font-family:var(--font);font-size:17px;font-weight:800;text-transform:none;letter-spacing:-.3px;color:var(--text)}
 body{font-size:15px}
 h1{font-size:30px;font-weight:900;letter-spacing:-.6px}
 .card{border:none;border-radius:22px;padding:22px 22px;box-shadow:0 1px 2px rgba(15,23,42,.04),0 8px 24px rgba(15,23,42,.06)}
@@ -507,17 +509,17 @@ button.ghost{font-weight:700;border-radius:11px}
   <!-- Goal / Deadline / Plan as a stack (tap to expand) -->
   <div class="stack" id="stack" aria-expanded="false">
     <div class="card scard">
-      <div class="label"><span><span class="step">1</span>Goal</span><span class="more-n">+2</span><button class="edit" data-edit="goal">Edit</button></div>
+      <div class="label"><span class="ttl"><span class="step">1</span>Goal</span><span class="more-n">+2</span><button class="edit" data-edit="goal">Edit</button></div>
       <div class="countdown" id="goalView">–</div>
       <div class="sub" id="goalSub"></div>
     </div>
     <div class="card scard">
-      <div class="label"><span><span class="step">2</span>Deadline</span><button class="edit" data-edit="deadline">Edit</button></div>
+      <div class="label"><span class="ttl"><span class="step">2</span>Deadline</span><button class="edit" data-edit="deadline">Edit</button></div>
       <div class="countdown" id="dlCount">–</div>
       <div class="sub" id="dlDate"></div>
     </div>
     <div class="card scard">
-      <div class="label"><span><span class="step">3</span>Plan</span><button class="edit" data-edit="plan">Edit</button></div>
+      <div class="label"><span class="ttl"><span class="step">3</span>Plan</span><button class="edit" data-edit="plan">Edit</button></div>
       <div class="countdown" id="planView">–</div>
       <div class="sub" id="planSub"></div>
     </div>
@@ -527,7 +529,7 @@ button.ghost{font-weight:700;border-radius:11px}
   <!-- This week -->
   <div class="card" id="actionCard">
     <div class="label">
-      <span><span class="step">4</span>Action</span>
+      <span class="ttl"><span class="step">4</span>Action</span>
       <div class="seg" role="tablist" id="viewSeg">
         <button data-view="week" role="tab">Week</button><button data-view="month" role="tab">Month</button><button data-view="year" role="tab">Year</button>
       </div>
@@ -535,7 +537,7 @@ button.ghost{font-weight:700;border-radius:11px}
     <div id="actSum"></div>
     <div id="week" class="view"></div>
     <div id="monthView" class="view">
-      <div class="mhead"><b id="mLbl"></b></div>
+      <b id="mLbl" hidden></b>
       <div class="month" id="month"></div>
     </div>
     <div id="yearView" class="view"><div id="actions"></div></div>
@@ -721,7 +723,7 @@ function renderProcess(){
     const start=goalStart();
     const tot=Math.max(1,(parse(st.deadline)-parse(start))/864e5),el=Math.min(tot,Math.max(0,(parse(todayIso)-parse(start))/864e5));
     const p=Math.round(el/tot*100);
-    bars+=`<div class="bar"><div class="top"><span>Time</span><b>${p}% elapsed</b></div><div class="track"><i style="width:${p}%;background:var(--muted)"></i></div><div class="ends"><span>${fmtDs(start)}</span><span>${fmtD(st.deadline)}</span></div></div>`;
+    bars+=`<div class="bar"><div class="top"><span>Time</span><b>${Math.max(0,Math.round((parse(st.deadline)-parse(todayIso))/864e5))} days left</b></div><div class="track"><i style="width:${p}%;background:var(--text)"></i></div><div class="ends"><span>${fmtDs(start)}</span><span>${fmtD(st.deadline)}</span></div></div>`;
   }
   const tw=Number(st.targetKg);
   if(tw&&W.length){
@@ -750,7 +752,7 @@ function renderWeek(){
   const T=trained(),pw=perWeek();
   const n=days.filter(k=>T.has(k)).length;
   const isThis=iso(mondayOf(new Date()))===days[0];
-  $('week').innerHTML=`<div class="mhead"><b>Week ${isoWeek(weekStart)}</b></div><div class="dgrid">${days.map(k=>dayBtn(k,T)).join('')}</div>`
+  $('week').innerHTML=`<div class="dgrid" style="margin-top:16px">${days.map(k=>dayBtn(k,T)).join('')}</div>`
     +countTxt(n,isThis?'this week':'in this week');
 }
 
@@ -867,7 +869,7 @@ function renderActions(){
 // The goal is the plan (days per week) spread over the days of that period, counted from the goal start.
 function renderSum(){
   const T=trained(),pw=perWeek();let a,b,label;
-  if(actView==='week'){const e=new Date(weekStart);e.setDate(e.getDate()+6);a=iso(weekStart);b=iso(e);label='this week';}
+  if(actView==='week'){const e=new Date(weekStart);e.setDate(e.getDate()+6);a=iso(weekStart);b=iso(e);label=iso(mondayOf(new Date()))===a?'this week':'in week '+isoWeek(weekStart);}
   else if(actView==='month'){const f=new Date(weekStart.getFullYear(),weekStart.getMonth(),1),l=new Date(f.getFullYear(),f.getMonth()+1,0);a=iso(f);b=iso(l);label='in '+f.toLocaleDateString(LOC,{month:'long'});}
   else{a=year+'-01-01';b=year+'-12-31';label='in '+year;}
   const from=[a,goalStart()].sort()[1];
