@@ -253,7 +253,7 @@ h1{font-size:30px;font-weight:900;letter-spacing:-.6px}
 .st .v{font-size:13px;font-weight:600}
 .bars{gap:24px;margin-top:22px;padding-top:18px}
 .bar .top{font-size:13px;font-weight:700;color:var(--text2)}
-.bar .top b{font-size:20px;font-weight:900;letter-spacing:-.4px}
+.bar .top b{font-size:15px;font-weight:700;letter-spacing:0;color:var(--text2)}
 .track{height:14px;border:none;border-radius:8px}
 .track i{border-radius:8px}
 .bar .ends{font-size:11px;font-weight:600}
@@ -666,6 +666,7 @@ function trend(W){
 }
 let year=new Date().getFullYear();
 let weekStart=mondayOf(new Date());
+let monthStart=new Date(new Date().getFullYear(),new Date().getMonth(),1);
 
 // A hand-drawn looking cross, slightly different per day (seeded by the date), larger than its box.
 function hashStr(k){let h=0;for(const c of k)h=(h*31+c.charCodeAt(0))|0;return h;}
@@ -740,7 +741,7 @@ function dayBtn(k,T,cls=''){const on=T.has(k),d=parse(k).getDate();
   return `<div class="dc"><button class="cday${on?' on':''}${k===todayIso?' today':''}${k>todayIso?' fut':''}${cls}" data-wd="${k}" title="${fmtD(k)}" aria-pressed="${on}"><span>${d}</span>${on?crossSVG(k):''}</button></div>`;}
 const countTxt=(n,period)=>`<div class="msum"><b>${n}</b> training ${n===1?'day':'days'} ${period}</div>`;
 function renderMonth(){
-  const monthCur=new Date(weekStart.getFullYear(),weekStart.getMonth(),1);
+  const monthCur=monthStart;
   const T=trained(),y=monthCur.getFullYear(),mo=monthCur.getMonth();
   $('mLbl').textContent=monthCur.toLocaleDateString(LOC,{month:'long',year:'numeric'});
   const first=new Date(y,mo,1),n=new Date(y,mo+1,0).getDate(),lead=(first.getDay()+6)%7;
@@ -872,7 +873,7 @@ function renderActions(){
 function renderSum(){
   const T=trained(),pw=perWeek();let a,b,label;
   if(actView==='week'){const e=new Date(weekStart);e.setDate(e.getDate()+6);a=iso(weekStart);b=iso(e);label=iso(mondayOf(new Date()))===a?'this week':'in week '+isoWeek(weekStart);}
-  else if(actView==='month'){const f=new Date(weekStart.getFullYear(),weekStart.getMonth(),1),l=new Date(f.getFullYear(),f.getMonth()+1,0);a=iso(f);b=iso(l);label='in '+f.toLocaleDateString(LOC,{month:'long'});}
+  else if(actView==='month'){const f=monthStart,l=new Date(f.getFullYear(),f.getMonth()+1,0);a=iso(f);b=iso(l);label='in '+f.toLocaleDateString(LOC,{month:'long'});}
   else{a=year+'-01-01';b=year+'-12-31';label='in '+year;}
   const from=[a,goalStart()].sort()[1];
   const days=(x,y)=>x>y?0:(parse(y)-parse(x))/864e5+1;
@@ -916,13 +917,21 @@ function fillPeriod(){
     const sm=m.getMonth()===e.getMonth();
     opts.push(`<option value="${k}"${k===ws?' selected':''}>W${isoWeek(m)} · ${sm?m.getDate():fmtDs(k)}–${fmtDs(iso(e))}</option>`);
   }
-  $('selWeek').innerHTML=opts.join('');
+  if(actView==='month'){
+    $('selWeek').innerHTML=[...Array(12)].map((_,m)=>{const d=new Date(year,m,1);return `<option value="${m}"${monthStart.getFullYear()===year&&monthStart.getMonth()===m?' selected':''}>${d.toLocaleDateString(LOC,{month:'long'})}</option>`;}).join('');
+    $('selWeek').setAttribute('aria-label','Month');
+  }else{$('selWeek').innerHTML=opts.join('');$('selWeek').setAttribute('aria-label','Week');}
+  $('selWeek').hidden=actView==='year';
 }
 $('selYear').onchange=e=>{year=+e.target.value;
   const cur=mondayOf(new Date());
   weekStart=cur.getFullYear()===year?cur:mondayOf(new Date(year,0,1));
-  fillPeriod();renderWeek();renderActions();renderMonth();};
-$('selWeek').onchange=e=>{weekStart=parse(e.target.value);renderWeek();renderMonth();renderSum();};
+  const now=new Date();monthStart=new Date(year,now.getFullYear()===year?now.getMonth():0,1);
+  fillPeriod();renderWeek();renderActions();renderMonth();renderSum();};
+$('selWeek').onchange=e=>{
+  if(actView==='month'){monthStart=new Date(year,+e.target.value,1);const t=new Date(monthStart);t.setDate(4);weekStart=mondayOf(t);}
+  else{weekStart=parse(e.target.value);const t=new Date(weekStart);t.setDate(t.getDate()+3);monthStart=new Date(t.getFullYear(),t.getMonth(),1);}
+  renderWeek();renderMonth();renderSum();};
 $('zoom').value=zoomI;$('zLbl').textContent=ZOOMS[zoomI][0];
 $('zoom').oninput=e=>{zoomI=+e.target.value;$('zLbl').textContent=ZOOMS[zoomI][0];try{localStorage.setItem('training.zoom',zoomI)}catch(_){};renderWeight();};
 $('wListToggle').onclick=()=>{const l=$('wList'),open=l.hidden;l.hidden=!open;$('wListToggle').textContent=open?'Hide measurements ▴':'Show measurements ▾';};
@@ -944,7 +953,7 @@ function setProg(open){$('pmore').hidden=!open;$('progToggle').textContent=open?
 $('progToggle').onclick=()=>setProg($('pmore').hidden);
 setProg((()=>{try{return localStorage.getItem('training.prog')==='1'}catch(e){return false}})());
 let actView=(()=>{try{return localStorage.getItem('training.view')||'week'}catch(e){return 'week'}})();
-function setView(v){actView=v;setTimeout(renderSum,0);$('actionCard').dataset.view=v;document.querySelectorAll('#viewSeg button').forEach(b=>b.classList.toggle('on',b.dataset.view===v));try{localStorage.setItem('training.view',v)}catch(e){}}
+function setView(v){actView=v;setTimeout(()=>{renderSum();if(typeof fillPeriod==='function')fillPeriod();},0);$('actionCard').dataset.view=v;document.querySelectorAll('#viewSeg button').forEach(b=>b.classList.toggle('on',b.dataset.view===v));try{localStorage.setItem('training.view',v)}catch(e){}}
 document.querySelectorAll('#viewSeg button').forEach(b=>b.onclick=()=>setView(b.dataset.view));
 setView(actView);
 let rt;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(renderWeight,150);});
