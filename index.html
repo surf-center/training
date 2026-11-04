@@ -266,6 +266,7 @@ h1{font-size:30px;font-weight:900;letter-spacing:-.6px}
 .calsum{font-size:14px;font-weight:600}
 .calsum b{font-size:34px;font-weight:900;letter-spacing:-1px}
 #actSum .track{margin-bottom:22px}
+.dgrid.wk{margin-top:30px;margin-bottom:8px;gap:10px}
 .track.thin{height:8px}
 .stat .v{font-size:32px;font-weight:900;letter-spacing:-.8px}
 .stat .l{font-size:11px;font-weight:800}
@@ -768,8 +769,8 @@ function renderWeek(){
   const T=trained(),pw=perWeek();
   const n=days.filter(k=>T.has(k)).length;
   const isThis=iso(mondayOf(new Date()))===days[0];
-  $('week').innerHTML=`<div class="dgrid" style="margin-top:16px">${days.map(k=>dayBtn(k,T)).join('')}</div>`
-    +countTxt(n,isThis?'this week':'in this week');
+  // the count already sits in the summary above, so the week view is just the 7 days (calmer)
+  $('week').innerHTML=`<div class="dgrid wk">${days.map(k=>dayBtn(k,T)).join('')}</div>`;
 }
 
 function renderWeight(){
