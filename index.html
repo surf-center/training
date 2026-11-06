@@ -493,8 +493,9 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:
 .gtext{display:block;font-size:30px;line-height:1.1;font-weight:900;letter-spacing:-.6px}
 .gnote{display:block;font-size:14px;line-height:1.45;font-weight:600;color:var(--text2);margin-top:4px}
 .chk-i{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-radius:16px;background:var(--surface2);font-weight:700;font-size:16px;color:var(--text);-webkit-tap-highlight-color:transparent}
+.checks .cgroup+.nolab{margin-top:-8px}
 .pill{all:unset;box-sizing:border-box;cursor:pointer;height:48px;border-radius:14px;background:var(--surface2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font-weight:800;font-size:13px;color:var(--text);-webkit-tap-highlight-color:transparent;transition:background .15s,color .15s}
-.pill i{font-style:normal;font-size:10px;font-weight:800;color:var(--accent)}.pill.on{background:var(--text);color:var(--surface)}.pill.on i{color:#93c5fd}
+.pill i{font-style:normal;font-size:10px;font-weight:800;color:var(--accent)}.pill.on{background:var(--accent);color:#fff}
 .chk-i .bx{position:relative;flex:none;width:30px;height:30px;border-radius:50%;background:var(--surface);box-shadow:inset 0 0 0 2px var(--muted2)}
 .chk-i.on .bx{background:transparent}
 .chk-i .xm path{stroke-width:15}
@@ -890,7 +891,7 @@ const CHK_X='2026-11-06Dinner';
 // remembered open/closed sections (per device)
 const UI=(()=>{try{return Object.assign({bonus:false,trend:false,details:false,hist:false},JSON.parse(localStorage.getItem('training.ui')||'{}'))}catch(e){return {bonus:false,trend:false}}})();
 const saveUI=()=>{try{localStorage.setItem('training.ui',JSON.stringify(UI))}catch(e){}};
-const pill=(d,a)=>{const on=has(d,a);return `<button type="button" class="pill${on?' on':''}" data-item="${a}" data-day="${d}"><span>${a}</span>${BONUS[a]?`<i>+${BONUS[a]}</i>`:''}</button>`;};
+const pill=(d,a)=>{const on=has(d,a);return `<button type="button" class="pill${on?' on':''}" data-item="${a}" data-day="${d}"><span>${a}</span></button>`;};
 const chk=(d,a)=>{if(mod==='food')return pill(d,a);const on=has(d,a);return `<button type="button" class="chk-i${on?' on':''}" data-item="${a}" data-day="${d}"><span>${ITEM_LBL[a]||a}${BONUS[a]&&mod==='food'?`<i class="bp">+${BONUS[a]}</i>`:''}${ITEM_HINT[a]?`<small class="hint">${ITEM_HINT[a]}</small>`:''}</span><span class="bx">${on?crossSVG(CHK_X,false):''}</span></button>`;};
 // a 500 ml bottle; the cross is drawn on top once it's drunk
 // a 500 ml shaker: lid + cup; once drunk the cup fills blue to ~60%
@@ -904,10 +905,11 @@ function checksHTML(d){const M=MODS[mod];let h='';
     h+=`<div class="water"><div class="wtop"><span class="wlbl"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5c3 4 6.2 7.4 6.2 10.7a6.2 6.2 0 0 1-12.4 0C5.8 10.9 9 7.5 12 3.5z"/></svg>Water</span><b>${L(n*W.ml)} <i>/ ${L(W.goal*W.ml)} L</i></b></div>
       <div class="bottles">${[...Array(W.max)].map((_,i)=>`<button type="button" class="bt${i<n?' on':''}${i===W.goal-1?' goal':''}" data-water="${i+1}" data-day="${d}" aria-label="${(i+1)*W.ml} ml">${bottle('bw'+d+i,i<n)}</button>`).join('')}</div></div>`;}
   M.groups.forEach(g=>{
+    if(g.bonus&&mod==='food'){h+=`<div class="cg-i c${g.cols} nolab">${g.items.map(a=>chk(d,a)).join('')}</div>`;return;}
     if(g.bonus){ // bonus folds away: the header shows what you earned, tap to open
       const open=UI.bonus,pts=bonusPts(mod,d);
       h+=`<div class="cgroup"><button type="button" class="cg-l cg-tog" data-tog="bonus">Bonus${pts?` · <b>+${pts}</b> today`:''}<span>${open?'Hide ▴':'Show ▾'}</span></button>${open?`<div class="cg-i c${g.cols}">${g.items.map(a=>chk(d,a)).join('')}</div>`:''}</div>`;return;}
-    h+=`<div class="cgroup">${g.label?`<div class="cg-l">${g.label}</div>`:''}<div class="cg-i${g.cols?' c'+g.cols:''}">${g.items.map(a=>chk(d,a)).join('')}</div></div>`;});
+    h+=`<div class="cgroup">${g.label&&mod!=='food'?`<div class="cg-l">${g.label}</div>`:''}<div class="cg-i${g.cols?' c'+g.cols:''}">${g.items.map(a=>chk(d,a)).join('')}</div></div>`;});
   return h;}
 // ---------- scores (0-100): what you did vs what your plan asks, per module and in total ----------
 // A day's value: Training 1 if trained; Food = share of ticks done (water counts as one, up to the goal); Sleep = share of ticks.
@@ -1071,6 +1073,11 @@ function renderMods(){const U=userMods();if(!U.includes(mod))mod=U[0];
     $('dlCount').textContent=w.total?w.streak+(w.streak===1?' week':' weeks'):'–';
     $('dlDate').innerHTML=w.total?`In a row · best ${w.best} · ${w.on} of ${w.total} weeks ≥ ${targetOf(mod)}`:'<span class="empty">Counts from your first full week</span>';
     $('planView').textContent='≥ '+targetOf(mod)+' / week';$('planSub').textContent=mod==='food'?'Week score · a day is max 100, bonus fills gaps':'Week score · average of your nights (Good = 80)';}
+  { // Food/Sleep: Plan comes before Weeks on target; Training keeps Goal, Deadline, Plan
+    const dc=$('dlCount').closest('.scard'),pc=$('planView').closest('.scard');
+    if(mod!=='training'&&pc.nextElementSibling!==dc)dc.before(pc);
+    if(mod==='training'&&dc.nextElementSibling!==pc)pc.before(dc);
+    const [a1,b1]=mod==='training'?[dc,pc]:[pc,dc];a1.querySelector('.step').textContent='2';b1.querySelector('.step').textContent='3';}
   const st=$('stack'),more=[...st.querySelectorAll('.scard')].filter(c=>!c.hidden&&c.id!=='actionCard');$('stackN').textContent='+'+more.length;
   // tell what else is in the pile: the other cards' titles
   $('histMore').textContent=more.map(c=>{const t=c.querySelector('.ttl');return t?t.textContent.replace(/^\d/,'').trim():'';}).filter(Boolean).join(' · ');
