@@ -67,13 +67,14 @@ h1{font-size:22px;font-weight:800;margin:0;letter-spacing:-.3px}
 .stack[aria-expanded="true"] .more-n{display:none}
 .stack-less{display:none;margin:10px auto 0;border:none;background:none;font-family:var(--font);font-size:12px;font-weight:800;color:var(--muted);cursor:pointer}
 .stack[aria-expanded="true"] .stack-less{display:block}
-.wform{display:grid;grid-template-columns:minmax(0,1fr) 92px auto;gap:8px;margin-top:16px}
+.wform{display:grid;grid-template-columns:minmax(0,1fr) 112px;gap:8px;margin-top:16px}
 .wform input{min-width:0;width:100%;box-sizing:border-box}
-.wform input[type=date]{-webkit-appearance:none;appearance:none;text-align:left}
-@media (max-width:560px){.wform{grid-template-columns:minmax(0,1fr) 96px}.wform button.primary{grid-column:1/-1}.wform input{font-size:15px;padding:0 12px}}
+.wform input[type=date],.wform input[type=time]{-webkit-appearance:none;appearance:none;text-align:left}
+@media (max-width:560px){.wform{grid-template-columns:minmax(0,1fr) 104px}.wform input{font-size:15px;padding:0 12px}}
 .wform input,.wform button{height:44px;margin:0;border-radius:12px}
 .wform input{font-size:15px;font-weight:700;padding:0 12px}
 .wform button.primary{padding:0 20px;font-size:14px}
+.wtable .dt i.tm{font-style:normal;color:var(--muted);font-weight:600;margin-left:4px}
 .linkbtn{display:block;width:100%;margin-top:10px;border:none;background:none;font-family:var(--font);font-size:12px;font-weight:800;color:var(--muted);cursor:pointer;padding:6px}
 .wtable{margin-top:4px;max-height:280px;overflow:auto;border-radius:12px;background:var(--surface2)}
 .wtable table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
@@ -721,6 +722,7 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:
     <div class="bars" id="bars"></div>
     <div class="wform">
       <input type="date" id="wDate" aria-label="Date">
+      <input type="time" id="wTime" aria-label="Time of measurement">
       <input type="text" id="wKg" placeholder="kg" inputmode="decimal" autocomplete="off" pattern="[0-9]+([.,][0-9])?" aria-label="Weight in kg">
       <button class="primary" id="wAdd">Save</button>
     </div>
@@ -945,6 +947,12 @@ function weeksOnTarget(m){const st=startOf(m),tg=targetOf(m);if(!st)return {stre
   for(let mon=iso(mondayOf(parse(st)));mon<=last;mon=addD(mon,7)){const v=modScore(m,mon,addD(mon,6));if(v==null)continue;total++;const ok=v>=tg;res.push(ok);if(ok){on++;run++;best=Math.max(best,run);}else run=0;}
   for(let i=res.length-1;i>=0&&res[i];i--)streak++;
   return {streak,best,on,total};}
+// days in a row whose day score reached the target (today only counts once it is on target), plus best run and totals
+function daysOnTarget(m){const st=startOf(m),tg=targetOf(m);if(!st)return {streak:0,best:0,on:0,total:0};
+  let best=0,run=0,on=0,total=0;const res=[];
+  for(let d=st;d<=todayIso;d=addD(d,1)){const ok=(modScore(m,d,d)||0)>=tg;if(d===todayIso&&!ok)break;total++;res.push(ok);if(ok){on++;run++;best=Math.max(best,run);}else run=0;}
+  let streak=0;for(let i=res.length-1;i>=0&&res[i];i--)streak++;
+  return {streak,best,on,total};}
 // Training days done vs planned within [a..b] (from the goal start up to today)
 function trainCount(a,b){const st=startOf('training');if(!st)return [0,0];const from=a>st?a:st,to=b<todayIso?b:todayIso;if(from>to)return [0,0];
   let c=0;for(let d=from;d<=to;d=addD(d,1))if(has(d,'Training'))c++;
@@ -1061,13 +1069,13 @@ function renderMods(){const U=userMods();if(!U.includes(mod))mod=U[0];
     // short title + a few lines (an older 'Title: details' goal is split on the colon)
     let gt=g,gn=st[mod+'GoalNote'];if(gn==null){const i=g.indexOf(':');if(st[mod+'Goal']&&i>0){gt=g.slice(0,i);gn=g.slice(i+1).trim();}else gn=M.note||'';}
     $('goalView').innerHTML=`<span class="gtext">${esc(gt)}</span>`;$('goalSub').innerHTML=`<span class="gnote">${esc(gn).replace(/\n/g,'<br>')}</span>`;
-    // habits never end: instead of a deadline, count weeks in a row on target (finished weeks only)
-    $('dlTtl').textContent='Weeks on target';$('dlEdit').hidden=true;
-    const w=weeksOnTarget(mod);
-    $('dlCount').textContent=w.total?w.streak+(w.streak===1?' week':' weeks'):'–';
-    $('dlDate').innerHTML=w.total?`In a row · best ${w.best} · ${w.on} of ${w.total} weeks ≥ ${targetOf(mod)}`:'<span class="empty">Counts from your first full week</span>';
+    // habits never end: instead of a deadline, count days in a row on target
+    $('dlTtl').textContent='Days on target';$('dlEdit').hidden=true;
+    const w=daysOnTarget(mod);
+    $('dlCount').textContent=w.total?w.streak+(w.streak===1?' day':' days'):'–';
+    $('dlDate').innerHTML=w.total?`In a row · best ${w.best} · ${w.on} of ${w.total} days ≥ ${targetOf(mod)}`:'<span class="empty">Counts from your first day</span>';
     $('planView').textContent='≥ '+targetOf(mod)+' / week';$('planSub').textContent=mod==='food'?'Week score · a day is max 100, bonus fills gaps':'Week score · average of your nights (Good = 80)';}
-  { // Food/Sleep: Plan comes before Weeks on target; Training keeps Goal, Deadline, Plan
+  { // Food/Sleep: Plan comes before Days on target; Training keeps Goal, Deadline, Plan
     const dc=$('dlCount').closest('.scard'),pc=$('planView').closest('.scard');
     if(mod!=='training'&&pc.nextElementSibling!==dc)dc.before(pc);
     if(mod==='training'&&dc.nextElementSibling!==pc)pc.before(dc);
@@ -1156,7 +1164,7 @@ function renderWeight(){
     const toward=d=>tw?(Math.sign(tw-first)===Math.sign(d)||d===0):d<=0;
     // big current weight, with the date and the change since the previous measurement
     const prev=W.length>1?W[W.length-2].kg:null,ch=prev===null?null:last-prev;
-    h+=`<div class="cur"><div class="cur-v">${fmtKg(last)}<span>kg</span></div><div class="cur-l">Current weight · ${fmtDs(W[W.length-1].date)}${ch===null||Math.abs(ch)<0.05?'':` · <b class="${toward(ch)?'up':'dn'}">${ch>0?'+':''}${fmtKg(ch)} kg</b>`}</div></div>`;
+    h+=`<div class="cur"><div class="cur-v">${fmtKg(last)}<span>kg</span></div><div class="cur-l">Current weight · ${fmtDs(W[W.length-1].date)}${W[W.length-1].time?' · '+W[W.length-1].time:''}${ch===null||Math.abs(ch)<0.05?'':` · <b class="${toward(ch)?'up':'dn'}">${ch>0?'+':''}${fmtKg(ch)} kg</b>`}</div></div>`;
     // forecast: where the trend lands at the deadline
     const tr=trend(W),tf=dl?parse(dl).getTime():null;
     if(tr&&tf&&tf>tr.lastT){const fk=tr.at(tf),ok=tw?Math.abs(fk-tw)<=0.5||(tw>=first?fk>=tw:fk<=tw):true;
@@ -1166,7 +1174,7 @@ function renderWeight(){
   {const up=tw?tw>=(W.length?startWeight(W).kg:0):false;
    $('wList').innerHTML=W.length?`<table><thead><tr><th>kg</th><th>Change</th><th>Date</th><th></th></tr></thead><tbody>${[...W].map((w,i)=>{const d=i?w.kg-W[i-1].kg:null;
      const cls=d===null||Math.abs(d)<0.05?'nc':((d>0)===up?'up':'dn');
-     return `<tr><td class="kg">${fmtKg(w.kg)}</td><td class="chg ${cls}">${d===null?'–':(d>0?'+':'')+fmtKg(d)}</td><td class="dt">${fmtDs(w.date)}${w.date.slice(0,4)!==String(new Date().getFullYear())?' '+w.date.slice(2,4):''}</td><td><button title="Delete" aria-label="Delete measurement" data-del="${w.date}"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg></button></td></tr>`;}).reverse().join('')}</tbody></table>`:'';}
+     return `<tr><td class="kg">${fmtKg(w.kg)}</td><td class="chg ${cls}">${d===null?'–':(d>0?'+':'')+fmtKg(d)}</td><td class="dt">${fmtDs(w.date)}${w.date.slice(0,4)!==String(new Date().getFullYear())?' '+w.date.slice(2,4):''}${w.time?` <i class="tm">${w.time}</i>`:''}</td><td><button title="Delete" aria-label="Delete measurement" data-del="${w.date}"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg></button></td></tr>`;}).reverse().join('')}</tbody></table>`:'';}
 }
 
 // Chart zoom: how far back the chart shows (0 = everything)
@@ -1317,9 +1325,10 @@ document.addEventListener('click',e=>{
   const ed=e.target.closest('[data-edit]');
   if(ed)openEdit(ed.dataset.edit);
 });
-$('wDate').value=todayIso;
+const nowHM=()=>{const n=new Date();return String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');};
+$('wDate').value=todayIso;$('wTime').value=nowHM();
 $('wAdd').onclick=()=>{const d=$('wDate').value,kg=Math.round(parseFloat(String($('wKg').value).replace(',','.'))*10)/10;if(!d||!(kg>=20&&kg<=300))return;
-  S.weight=S.weight.filter(w=>w.date!==d);S.weight.push({date:d,kg});$('wKg').value='';save({type:'weight',date:d,kg});};
+  const time=$('wTime').value||'';S.weight=S.weight.filter(w=>w.date!==d);S.weight.push({date:d,kg,time});$('wKg').value='';$('wTime').value=nowHM();save({type:'weight',date:d,kg,time});};
 $('wKg').addEventListener('keydown',e=>{if(e.key==='Enter')$('wAdd').click();});
 // ---------- period menu (year + week) ----------
 function fillPeriod(){
