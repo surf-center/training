@@ -215,7 +215,6 @@ dialog label{display:block;font-size:11px;font-weight:600;color:var(--muted);mar
 .xm.new path{stroke-dasharray:110;stroke-dashoffset:110;animation:draw .18s ease-out forwards}
 .xm.new path+path{animation-delay:.14s}
 .xm.ck path{stroke:var(--accent)}
-.dgrid.wk.tw .xm path{stroke:var(--accent)} /* Training Today: the whole week in blue */
 .cday.today.on{border-color:transparent}
 @keyframes draw{to{stroke-dashoffset:0}}
 .heat svg .yx{fill:none;stroke:var(--text);stroke-width:3.4;stroke-linecap:round;pointer-events:none}
@@ -803,8 +802,8 @@ const MODS={
     icon:'<rect x="4.4" y="5" width="4" height="14" rx="1.5"/><rect x="15.6" y="5" width="4" height="14" rx="1.5"/><path d="M8.4 12h7.2M2 9.3v5.4M22 9.3v5.4"/>'},
   food:{label:'Nutrition',title:'Nutrition',plan:'foodPerWeek',def:6,target:'foodTarget',tdef:85,
     water:{max:8,goal:5,ml:500},
-    groups:[{label:'Meals',items:['Breakfast','Lunch','Dinner'],cols:3},{label:'Bonus',items:['Creatine','Protein','Evening','Snack'],cols:4,bonus:true}],
-    goal:'Fuel the gains',note:'2.5 L water, breakfast, lunch and dinner every day.\nBonus: creatine, protein, an evening meal or a snack.',
+    groups:[{label:'Meals',items:['Breakfast','Lunch','Dinner'],cols:3},{label:'Bonus',items:['Creatine','Protein','Snack','Evening'],cols:4,bonus:true}],
+    goal:'Fuel the gains',note:'2.5 L water, breakfast, lunch and dinner every day.\nBonus: creatine, protein, a snack or a late meal after dinner.',
     icon:'<path d="M7 3v18M4.5 3v5.5a2.5 2.5 0 0 0 5 0V3M17.5 21V3c-2.2 1.2-3.5 4-3.5 7.5V13h3.5"/>'},
   sleep:{label:'Sleep',title:'Sleep',plan:'sleepPerWeek',def:5,target:'sleepTarget',tdef:75,
     groups:[],rating:true, // one rating per night: Sleep:1..5 = 20..100
@@ -812,7 +811,7 @@ const MODS={
     icon:'<path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.8 6.8 0 0 0 10.5 10.5z"/>'},
 };
 Object.values(MODS).forEach(M=>{M.items=M.groups.flatMap(g=>g.items);M.base=M.groups.filter(g=>!g.bonus).flatMap(g=>g.items);M.bonus=M.groups.filter(g=>g.bonus).flatMap(g=>g.items);});
-const ITEM_LBL={Training:'Trained today'};
+const ITEM_LBL={Training:'Trained today',Evening:'Late meal'}; // stored key stays 'Evening' so old ticks keep counting
 const ITEM_HINT={};
 const userMods=()=>{const m=(S.modules||['training']).filter(x=>MODS[x]);return m.length?m:['training'];};
 let mod=(()=>{try{return localStorage.getItem('training.mod')||'training'}catch(e){return 'training'}})();
@@ -885,7 +884,7 @@ const CHK_X='2026-11-06Dinner';
 // remembered open/closed sections (per device)
 const UI=(()=>{try{return Object.assign({bonus:false,trend:false,details:false,hist:false},JSON.parse(localStorage.getItem('training.ui')||'{}'))}catch(e){return {bonus:false,trend:false}}})();
 const saveUI=()=>{try{localStorage.setItem('training.ui',JSON.stringify(UI))}catch(e){}};
-const pill=(d,a)=>{const on=has(d,a);return `<button type="button" class="pill${on?' on':''}" data-item="${a}" data-day="${d}"><span>${a}</span></button>`;};
+const pill=(d,a)=>{const on=has(d,a);return `<button type="button" class="pill${on?' on':''}" data-item="${a}" data-day="${d}"><span>${ITEM_LBL[a]||a}</span></button>`;};
 const chk=(d,a)=>{if(mod==='food')return pill(d,a);const on=has(d,a);return `<button type="button" class="chk-i${on?' on':''}" data-item="${a}" data-day="${d}"><span>${ITEM_LBL[a]||a}${BONUS[a]&&mod==='food'?`<i class="bp">+${BONUS[a]}</i>`:''}${ITEM_HINT[a]?`<small class="hint">${ITEM_HINT[a]}</small>`:''}</span><span class="bx">${on?crossSVG(CHK_X,false):''}</span></button>`;};
 // a 500 ml bottle; the cross is drawn on top once it's drunk
 // a 500 ml shaker: lid + cup; once drunk the cup fills blue to ~60%
