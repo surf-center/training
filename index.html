@@ -664,8 +664,12 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:
 .q-slide p::before{content:'“';display:block;font-size:44px;line-height:.6;height:22px;color:var(--accent)}
 .q-dots{display:flex;justify-content:center;gap:6px;padding:4px 0 18px}
 .q-dots button{all:unset;cursor:pointer;width:7px;height:7px;border-radius:50%;background:var(--border)}.q-dots button.on{background:var(--accent);width:18px;border-radius:4px}
-body:not(.ov) #quoteCard{display:none}
-@media (min-width:1000px){.wrap>#quoteCard{grid-column:1/-1;grid-row:3;max-width:720px;width:100%;justify-self:center}}
+.q-ov{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(15,23,42,.35);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);opacity:0;transition:opacity .2s}
+.q-ov.in{opacity:1}.q-ov[hidden]{display:none}
+.q-ov .quotes{position:relative;width:100%;max-width:520px;margin:0;transform:translateY(10px) scale(.98);transition:transform .25s cubic-bezier(.2,.8,.2,1)}.q-ov.in .quotes{transform:none}
+.q-ov .q-slide{min-height:240px;padding:44px 28px 18px}.q-ov .q-slide p{font-size:28px}
+.q-x{all:unset;cursor:pointer;position:absolute;top:10px;right:12px;z-index:2;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;line-height:1;color:var(--muted);background:var(--surface2)}
+@media (max-width:430px){header{gap:8px}.hdr-right{gap:6px!important}header .themebtn{width:34px;height:34px}.hello,header h1{font-size:25px}}
 </style>
 </head>
 <body>
@@ -681,6 +685,7 @@ body:not(.ov) #quoteCard{display:none}
         <select id="selYear" aria-label="Year"></select>
         <select id="selWeek" aria-label="Week"></select>
       </div>
+      <button class="themebtn" id="quoteBtn" title="Quotes" aria-label="Open quotes" hidden><svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M4 17.5c0-3.6 1.2-7.4 4.6-10.5l1.6 1.4C8.4 10.3 7.6 12 7.5 13.6c1.6 0 2.9 1.3 2.9 2.9S9.1 19.4 7.3 19.4C5.4 19.4 4 18.2 4 17.5zm9.6 0c0-3.6 1.2-7.4 4.6-10.5l1.6 1.4c-1.8 1.9-2.6 3.6-2.7 5.2 1.6 0 2.9 1.3 2.9 2.9s-1.3 2.9-3.1 2.9c-1.9 0-3.3-1.2-3.3-1.9z"/></svg></button>
       <button class="themebtn" id="playBtn" title="Play intro" aria-label="Play intro"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg></button>
       <button class="themebtn" id="themeBtn" title="Light / dark" aria-label="Toggle dark mode"></button>
     </div>
@@ -695,10 +700,13 @@ body:not(.ov) #quoteCard{display:none}
     <div class="ov-trend"><button type="button" class="ov-th cg-tog" data-tog="trend"><span>Last 12 weeks</span><b id="ovTrendTxt"></b></button><div id="ovSpark"></div></div>
   </div>
 
-  <!-- Score: personal motivating slides (Quotes tab in the sheet), swipe left/right -->
-  <div class="card quotes" id="quoteCard" hidden>
-    <div class="q-track" id="qTrack"></div>
-    <div class="q-dots" id="qDots"></div>
+  <!-- personal motivating slides (Quotes tab in the sheet): opened with the quote button, swipe left/right -->
+  <div class="q-ov" id="qOverlay" hidden>
+    <div class="card quotes" id="quoteCard">
+      <button type="button" class="q-x" id="qClose" aria-label="Close">×</button>
+      <div class="q-track" id="qTrack"></div>
+      <div class="q-dots" id="qDots"></div>
+    </div>
   </div>
 
   <!-- Food / Sleep: today's checklist -->
@@ -1040,12 +1048,16 @@ function ring(v){const r=54,c=2*Math.PI*r,p=v==null?0:v/100;
   return `<svg viewBox="0 0 140 140" class="ring"><circle cx="70" cy="70" r="${r}" class="rbg"/><circle cx="70" cy="70" r="${r}" class="rfg" stroke-dasharray="${c}" stroke-dashoffset="${c*(1-p)}" transform="rotate(-90 70 70)"/>
     <text x="70" y="78" text-anchor="middle" class="rnum">${v==null?'–':v}</text><text x="70" y="100" text-anchor="middle" class="rlab">score</text></svg>`;}
 // personal slides: native horizontal swipe with snap; the dots follow and can be tapped
-function renderQuotes(){const Q=(S.quotes||[]).filter(Boolean),c=$('quoteCard');c.hidden=!ov||!Q.length;if(c.hidden)return;
+function renderQuotes(){const Q=(S.quotes||[]).filter(Boolean),c=$('quoteCard');$('quoteBtn').hidden=!Q.length;if(!Q.length){$('qOverlay').hidden=true;return;}
   const key=Q.join('\n');if(c.dataset.k===key)return;c.dataset.k=key;
   $('qTrack').innerHTML=Q.map(q=>`<div class="q-slide"><p>${esc(q)}</p></div>`).join('');
   $('qDots').innerHTML=Q.length>1?Q.map((_,i)=>`<button type="button" aria-label="Slide ${i+1}" data-q="${i}"${i?'':' class="on"'}></button>`).join(''):'';
   $('qTrack').scrollLeft=0;}
 $('qTrack').addEventListener('scroll',()=>{const t=$('qTrack'),i=Math.round(t.scrollLeft/t.clientWidth);$('qDots').querySelectorAll('button').forEach((b,k)=>b.classList.toggle('on',k===i));},{passive:true});
+const openQuotes=open=>{$('qOverlay').hidden=!open;if(open){renderQuotes();requestAnimationFrame(()=>$('qOverlay').classList.add('in'));}else $('qOverlay').classList.remove('in');};
+$('quoteBtn').onclick=()=>openQuotes(true);$('qClose').onclick=()=>openQuotes(false);
+$('qOverlay').addEventListener('click',e=>{if(e.target===$('qOverlay'))openQuotes(false);});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('qOverlay').hidden)openQuotes(false);});
 $('qDots').addEventListener('click',e=>{const b=e.target.closest('[data-q]');if(!b)return;const t=$('qTrack');t.scrollTo({left:+b.dataset.q*t.clientWidth,behavior:'smooth'});});
 function renderOverview(){if(!ov)return;
   const sc=scoresAt(ovP,todayIso),tot=totalScore(sc),prev=totalScore(scoresAt(ovP,prevKey(ovP,todayIso)));
