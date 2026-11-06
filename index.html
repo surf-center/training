@@ -238,7 +238,7 @@ button.big{font-size:13px;padding:9px 18px;margin-left:auto;line-height:inherit}
 .yd.today{box-shadow:0 0 0 1.5px var(--text)}
 .yd.fut{opacity:.45}
 .yd .xm path{stroke-width:18}
-/* year view: trained days are just a loose blue hand-drawn cross, no filled dot behind it */
+/* year view: trained days are just a loose hand-drawn cross (blue only for today), no filled dot behind it */
 .yd.on{background:transparent}
 @media (max-width:700px){.ygrid{grid-template-columns:repeat(3,1fr);gap:14px 12px}}
 /* ===== bold & clean ===== */
@@ -861,7 +861,7 @@ function renderActions(){
     const f=new Date(year,mo,1),n=new Date(year,mo+1,0).getDate(),lead=(f.getDay()+6)%7;let c=0,g='';
     for(let i=0;i<lead;i++)g+='<i></i>';
     for(let d=1;d<=n;d++){const k=iso(new Date(year,mo,d)),on=T.has(k);if(on){c++;cnt++;}
-      g+=`<button class="yd${on?' on':''}${k===todayIso?' today':''}${k>todayIso?' fut':''}" data-wd="${k}" title="${fmtD(k)}" aria-pressed="${on}">${on?crossSVG(k,true):''}</button>`;}
+      g+=`<button class="yd${on?' on':''}${k===todayIso?' today':''}${k>todayIso?' fut':''}" data-wd="${k}" title="${fmtD(k)}" aria-pressed="${on}">${on?crossSVG(k,k===todayIso):''}</button>`;}
     months+=`<div class="ym"><div class="ymh"><b>${f.toLocaleDateString(LOC,{month:'short'})}</b>${c?`<span>${c}</span>`:''}</div><div class="ymg">${g}</div></div>`;
   }
   // weeks on plan: finished weeks of this year since the first training day, plus this week once it already hits the plan
