@@ -404,7 +404,7 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:
 .dgrid.wk.tw{display:flex;justify-content:space-between;max-width:none;margin:16px 0 2px;gap:0}.dgrid.wk.tw .dc{flex:none;width:36px}
 #todayCard>.label{align-items:center}
 @media (max-width:430px){.hist-h span.hist-s{display:none}}
-@media (max-width:999px){.stack[aria-expanded="false"] #actionCard{padding-top:30px;padding-bottom:30px}}
+@media (max-width:999px){.stack[aria-expanded="false"] #actionCard{padding-top:33px;padding-bottom:27px}.stack[aria-expanded="false"] #actionCard .hist-h span.hist-m{line-height:1;margin-top:0}}
 .calhead{display:flex;gap:8px;align-items:center;margin:16px 0 4px}#actionCard .period select{border-radius:9px!important}.calhead .seg{flex:none}.calhead .seg button{padding:7px 9px;font-size:12px}
 #actionCard:not([data-view="year"]) .period #selYear{display:none}#actionCard .period select{width:100%}
 #actionCard .period{display:flex;flex:1;min-width:0;margin:0;background:var(--surface2);box-shadow:none}#actionCard .period #selWeek{flex:1}
@@ -436,6 +436,7 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:
 .spark .sgrid{stroke:var(--border);stroke-width:1;stroke-dasharray:3 4}
 .spark .sline{fill:none;stroke:var(--accent);stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}
 .spark .sdot{fill:var(--surface);stroke:var(--accent);stroke-width:2}.spark .snow{fill:var(--accent)}
+#overCard>.label{justify-content:flex-start;gap:12px;flex-wrap:nowrap}#overCard>.label .ttl .calicon{width:24px;height:24px;margin:0;vertical-align:middle}#overCard>.label .ttl{display:flex}
 @media (max-width:420px){.ring{width:128px;height:128px}#ovSeg button{padding-left:9px;padding-right:9px}}
 .water{display:grid;gap:8px}
 .wtop{display:flex;justify-content:space-between;align-items:baseline;font-weight:800;font-size:16px}
@@ -661,8 +662,8 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:
 
   <!-- Overview: one score for everything -->
   <div class="card" id="overCard" hidden>
-    <div class="label"><span class="ttl"><svg class="calicon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.2s-7.6-4.6-7.6-10.2A4.3 4.3 0 0 1 12 7.3a4.3 4.3 0 0 1 7.6 2.7c0 5.6-7.6 10.2-7.6 10.2z"/></svg>Your score</span>
-      <div class="seg" id="ovSeg"><button data-p="day">Day</button><button data-p="week">Week</button><button data-p="month">Month</button><button data-p="year">Year</button></div></div>
+    <div class="label"><span class="ttl"><svg class="calicon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.2s-7.6-4.6-7.6-10.2A4.3 4.3 0 0 1 12 7.3a4.3 4.3 0 0 1 7.6 2.7c0 5.6-7.6 10.2-7.6 10.2z"/></svg></span>
+      <div class="seg" id="ovSeg" aria-label="Score period"><button data-p="day">Day</button><button data-p="week">Week</button><button data-p="month">Month</button><button data-p="year">Year</button></div></div>
     <div class="ov-top"><div id="ovRing"></div><div class="ov-side"><div class="ov-delta" id="ovDelta"></div><div class="ov-note" id="ovNote"></div></div></div>
     <div class="ov-rows" id="ovRows"></div>
     <div class="ov-trend"><button type="button" class="ov-th cg-tog" data-tog="trend"><span>Last 12 weeks</span><b id="ovTrendTxt"></b></button><div id="ovSpark"></div></div>
@@ -803,7 +804,7 @@ const MODS={
   food:{label:'Nutrition',title:'Nutrition',plan:'foodPerWeek',def:6,target:'foodTarget',tdef:85,
     water:{max:8,goal:5,ml:500},
     groups:[{label:'Meals',items:['Breakfast','Lunch','Dinner'],cols:3},{label:'Bonus',items:['Creatine','Protein','Snack','Evening'],cols:4,bonus:true}],
-    goal:'Fuel the gains',note:'2.5 L water, breakfast, lunch and dinner every day.\nBonus: creatine, protein, a snack or a late meal after dinner.',
+    goal:'Fuel the gains',note:'2.5 L water, breakfast, lunch and dinner every day.\nBonus: creatine, protein, a snack or quark after dinner.',
     icon:'<path d="M7 3v18M4.5 3v5.5a2.5 2.5 0 0 0 5 0V3M17.5 21V3c-2.2 1.2-3.5 4-3.5 7.5V13h3.5"/>'},
   sleep:{label:'Sleep',title:'Sleep',plan:'sleepPerWeek',def:5,target:'sleepTarget',tdef:75,
     groups:[],rating:true, // one rating per night: Sleep:1..5 = 20..100
@@ -811,7 +812,7 @@ const MODS={
     icon:'<path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.8 6.8 0 0 0 10.5 10.5z"/>'},
 };
 Object.values(MODS).forEach(M=>{M.items=M.groups.flatMap(g=>g.items);M.base=M.groups.filter(g=>!g.bonus).flatMap(g=>g.items);M.bonus=M.groups.filter(g=>g.bonus).flatMap(g=>g.items);});
-const ITEM_LBL={Training:'Trained today',Evening:'Late meal'}; // stored key stays 'Evening' so old ticks keep counting
+const ITEM_LBL={Training:'Trained today',Evening:'Quark'}; // stored key stays 'Evening' so old ticks keep counting
 const ITEM_HINT={};
 const userMods=()=>{const m=(S.modules||['training']).filter(x=>MODS[x]);return m.length?m:['training'];};
 let mod=(()=>{try{return localStorage.getItem('training.mod')||'training'}catch(e){return 'training'}})();
