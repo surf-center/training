@@ -386,6 +386,10 @@ button.ghost{font-weight:700;border-radius:11px}
 .tabbar button.on{color:var(--accent);background:rgba(37,99,235,.11)}
 :root[data-theme="dark"] .tabbar{background:rgba(19,26,38,.6);border-color:rgba(255,255,255,.09);box-shadow:0 12px 32px rgba(0,0,0,.4)}
 body.has-tabbar .wrap{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
+/* small phones: a more compact pill */
+@media (max-width:430px){.tabbar{gap:2px;padding:4px}.tabbar button{min-width:0;padding:6px 12px 5px;font-size:10px;gap:1px}.tabbar svg{width:20px;height:20px}}
+/* home-screen app (no Safari toolbar): sit low, just above the home indicator */
+@media (display-mode:standalone){.tabbar{bottom:max(8px,calc(env(safe-area-inset-bottom) - 12px))}body.has-tabbar .wrap{padding-bottom:calc(84px + env(safe-area-inset-bottom))}}
 .checks{display:grid;gap:16px;margin-top:14px}
 .tin-h{display:flex;justify-content:space-between;align-items:baseline;margin-top:14px}.tin-t{font-weight:800;font-size:18px}
 .tin-sep{height:1px;background:var(--border);margin:22px 0 4px}
