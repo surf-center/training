@@ -456,7 +456,7 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:
 .cday.rated svg{width:100%;height:100%;fill:none;stroke:var(--text);stroke-width:1.8;stroke-linecap:round}.cday.rated svg .eye{fill:var(--text);stroke:none}
 .cday.rated.today svg{stroke:var(--accent)}.cday.rated.today svg .eye{fill:var(--accent)}
 .dl{font-style:normal;font-weight:900;margin-left:6px}.dl.up{color:var(--accent)}.dl.dn{color:var(--text)}.calsum .dl{margin-left:0}
-.dsc{display:flex;align-items:baseline;gap:3px}.dsc b{font-size:26px;font-weight:900;letter-spacing:-.8px;color:var(--text)}.dsc i{font-style:normal;font-size:14px;font-weight:800;color:var(--accent)}.dsc .dsep{width:1px;height:20px;background:var(--border);margin:0 8px;align-self:center}
+.dsc{display:flex;align-items:center;gap:7px}.dsc .dring{width:22px;height:22px;fill:none;stroke-width:3;stroke-linecap:round}.dsc .dring circle{stroke:var(--accent)}.dsc .dring .bg{stroke:var(--cell)}.dsc b{font-size:18px!important;letter-spacing:-.3px!important}.dsc b{font-size:26px;font-weight:900;letter-spacing:-.8px;color:var(--text)}.dsc i{font-style:normal;font-size:14px;font-weight:800;color:var(--accent)}.dsc .dsep{width:1px;height:20px;background:var(--border);margin:0 8px;align-self:center}
 .dsc small{font-size:11px;font-weight:700;color:var(--muted);margin-left:5px;text-transform:uppercase;letter-spacing:.05em}
 .calsum .psc{color:var(--muted)}.calsum .psc.ok{color:var(--accent);font-weight:800}.calsum .psc b{font-size:22px;font-weight:900;color:var(--accent);margin-left:4px;letter-spacing:-.5px}
 .wlbl{display:inline-flex;align-items:center;gap:6px}.wlbl svg{width:18px;height:18px;fill:none;stroke:var(--accent);stroke-width:2.2;stroke-linejoin:round}
@@ -1001,7 +1001,8 @@ function renderToday(){const tc=$('todayCard'),ti=$('todayIn');tc.hidden=true;
   // today's score: basics 0-100, Food bonus on top
   const base=Math.min(100,Math.round(frac(mod,todayIso)*100+bonusPts(mod,todayIso))),bon=0; // bonus can make up for a missed item, never above 100
   const [ma,mb]=period('month',todayIso,mod),msc=modScore(mod,ma,mb);
-  $('dayScore').innerHTML=`<b>${base}</b>${bon?`<i>+${bon}</i>`:''}<small>day</small>${msc!=null?`<span class="dsep"></span><b>${msc}</b><small>month</small>`:''}`;
+  // today's score as a small filling ring with the number next to it
+  $('dayScore').innerHTML=`<svg class="dring" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" class="bg"/><circle cx="12" cy="12" r="9.5" pathLength="100" stroke-dasharray="${base} 100" transform="rotate(-90 12 12)"/></svg><b>${base}</b>`;
   $('checks').innerHTML=checksHTML(todayIso);}
 
 // ---------- render ----------
