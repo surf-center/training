@@ -994,7 +994,7 @@ let rt;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(rend
 
 // ---------- dialogs ----------
 function dialog(html,onSave,okLabel){
-  const f=$('dlgForm');f.innerHTML=html+`<div class="row" style="justify-content:flex-end;margin-top:18px"><button class="ghost" value="cancel">Cancel</button><button class="primary" value="ok">${okLabel||'Save'}</button></div>`;
+  const f=$('dlgForm');f.innerHTML=html+`<div class="row" style="justify-content:flex-end;margin-top:18px"><button class="ghost" type="button" onclick="this.closest('dialog').close('cancel')">Cancel</button><button class="primary" value="ok">${okLabel||'Save'}</button></div>`;
   const dlg=$('dlg');dlg.returnValue='';dlg.showModal();
   dlg.onclose=()=>{if(dlg.returnValue==='ok')onSave(f);};
 }
@@ -1071,16 +1071,25 @@ function playIntro(force){
   const guard=setInterval(()=>{if(run!==introRun||done){clearInterval(guard);return;}if(!paused&&performance.now()>due+3000)end();},1000);
 }
 // log in once per device: name + password from the sheet's Users tab -> token kept on this device
-function askLogin(msg){if($('dlg').open)return;
-  dialog(`<h3>Log in</h3><p>${msg?`<b style="color:var(--warn)">${msg}</b><br>`:''}Once per device. You stay logged in after that.</p>
-    <label>Name</label><input name="name" autocomplete="username" autocapitalize="words" value="${auth?auth.name:''}">
-    <label>Password</label><input name="pw" type="password" autocomplete="current-password">`,
-  async f=>{const name=f.name.value.trim(),pw=f.pw.value;if(!name||!pw)return askLogin('Fill in both fields');
-    setSync('busy','Logging in…');
+function askLogin(msg){const dlg=$('dlg'),f=$('dlgForm');if(dlg.open)return;
+  // own login form: Enter logs in (the generic dialog would treat Enter as Cancel), stays open while logging in
+  f.innerHTML=`<h3>Log in</h3><p>Once per device. You stay logged in after that.</p>
+    <label>Name</label><input name="name" autocomplete="username" autocapitalize="words" autocorrect="off" spellcheck="false" value="${auth?auth.name:(ls.get('training.lastName','')||'')}">
+    <label>Password</label><input name="pw" type="password" autocomplete="current-password">
+    <p class="lerr" style="color:var(--warn);font-weight:600;min-height:1.2em;margin:10px 0 0">${msg||''}</p>
+    <div class="row" style="justify-content:flex-end;margin-top:12px"><button class="primary" type="submit" style="min-width:110px">Log in</button></div>`;
+  const btn=f.querySelector('button'),err=f.querySelector('.lerr');
+  f.onsubmit=async e=>{e.preventDefault();const name=f.name.value.trim(),pw=f.pw.value.trim();
+    if(!name||!pw){err.textContent='Fill in both fields';return;}
+    btn.disabled=true;btn.textContent='Logging in…';err.textContent='';setSync('busy','Logging in…');
     try{const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({type:'login',name,password:pw})});
       const j=await r.json();if(!j.ok)throw new Error(j.error||'Error');
-      auth={name:j.user,token:j.token};ls.set(LS_AUTH,auth);setData(j);showWho();setSync('ok','Connected to Google');render();
-    }catch(e){setSync('err','Not logged in');askLogin(e.message);}},'Log in');}
+      auth={name:j.user,token:j.token};ls.set(LS_AUTH,auth);ls.set('training.lastName',j.user);
+      f.onsubmit=null;dlg.close();setData(j);showWho();setSync('ok','Connected to Google');render();
+    }catch(e2){err.textContent=/fetch|network|load failed/i.test(e2.message)?'No connection, try again':e2.message;
+      btn.disabled=false;btn.textContent='Log in';setSync('err','Not logged in');f.pw.select();}};
+  dlg.onclose=()=>{f.onsubmit=null;};
+  dlg.returnValue='';dlg.showModal();setTimeout(()=>(f.name.value?f.pw:f.name).focus(),50);}
 $('who').onclick=()=>{if(!auth)return askLogin();
   dialog(`<h3>${auth.name}</h3><p>Logged in on this device. Log out to switch to another person.</p>`,()=>{logout();askLogin();},'Log out');};
 // old single-PIN setup: clean up
