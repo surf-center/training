@@ -423,7 +423,7 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:
 .ring .rfg{fill:none;stroke:var(--accent);stroke-width:12;stroke-linecap:round;transition:stroke-dashoffset .8s cubic-bezier(.2,.8,.2,1)}
 .ring .rnum{font:900 40px Poppins,sans-serif;fill:var(--text);letter-spacing:-1.5px}
 .ring .rlab{font:700 11px Poppins,sans-serif;fill:var(--muted);text-transform:uppercase;letter-spacing:.1em}
-.ov-delta{display:flex;align-items:baseline;gap:6px;font-size:14px;font-weight:600;color:var(--muted);line-height:1.1;white-space:nowrap}.ov-delta b{font-size:26px;font-weight:900;letter-spacing:-.5px}
+.ov-delta{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:6px;row-gap:0;font-size:14px;font-weight:600;color:var(--muted);line-height:1.15}.ov-delta b{font-size:26px;font-weight:900;letter-spacing:-.5px}
 .ov-delta b.up{color:var(--accent)}.ov-delta b.dn{color:var(--text)}
 .ov-note{margin-top:5px;font-size:13.5px;font-weight:700;line-height:1.3;color:var(--text)}.ov-side{min-width:0;flex:1}
 .ov-x{position:relative;display:inline-block;width:26px;height:26px;vertical-align:middle;margin-right:4px}.ov-x .xm{left:0;top:0;width:100%;height:100%}
@@ -446,7 +446,7 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:
 .spark .sline{fill:none;stroke:var(--accent);stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}
 .spark .sdot{fill:var(--surface);stroke:var(--accent);stroke-width:2}.spark .snow{fill:var(--accent)}
 #overCard>.label{justify-content:flex-start;gap:12px;flex-wrap:nowrap}#overCard>.label .ttl .calicon{width:24px;height:24px;margin:0;vertical-align:middle}#overCard>.label .ttl{display:flex}
-@media (max-width:420px){.ring{width:128px;height:128px}#ovSeg button{padding-left:9px;padding-right:9px}}
+@media (max-width:420px){.ov-top{gap:14px}.ring{width:120px;height:120px}#ovSeg button{padding-left:9px;padding-right:9px}}
 .water{display:grid;gap:8px}
 .wtop{display:flex;justify-content:space-between;align-items:baseline;font-weight:800;font-size:16px}
 .wtop b{font-size:22px;font-weight:900;letter-spacing:-.5px}.wtop b i{font-style:normal;font-size:14px;font-weight:700;color:var(--muted)}
