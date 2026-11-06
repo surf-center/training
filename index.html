@@ -439,6 +439,7 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard,body.ov 
 .cg-l svg{width:17px;height:17px;fill:none;stroke:var(--accent);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .cg-i{display:grid;gap:8px}.cg-i.c2{grid-template-columns:1fr 1fr}.cg-i.c3{grid-template-columns:repeat(3,minmax(0,1fr))}
 .cg-i.c3 .chk-i{flex-direction:column;align-items:flex-start;gap:10px;padding:12px 12px 14px;font-size:14px}
+.chk-i .hint{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-top:2px}
 .chk-i .bp{font-style:normal;font-size:12px;font-weight:800;color:var(--accent);margin-left:5px}
 .calsum .psc em,.ov-v i{font-style:normal;font-size:13px;font-weight:800;color:var(--accent);margin-left:3px}
 .cg-i.c2 .chk-i{font-size:15px;padding:13px 14px}
@@ -756,7 +757,7 @@ const MODS={
     icon:'<path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/>'},
   food:{label:'Food',title:'Food',plan:'foodPerWeek',def:6,
     water:{max:8,goal:5,ml:500},
-    groups:[{label:'Meals',items:['Breakfast','Lunch','Dinner'],cols:3},{label:'Bonus · up to +20',items:['Creatine','Protein','Evening'],cols:3,bonus:true}],
+    groups:[{label:'Meals',items:['Breakfast','Lunch','Dinner'],cols:3},{label:'Bonus · up to +20',items:['Creatine','Protein','Evening','Snack'],cols:2,bonus:true}],
     goal:'Fuel the gains: 2.5 L water, breakfast, lunch and dinner every day',
     icon:'<path d="M7 3v18M4.5 3v5.5a2.5 2.5 0 0 0 5 0V3M17.5 21V3c-2.2 1.2-3.5 4-3.5 7.5V13h3.5"/>'},
   sleep:{label:'Sleep',title:'Sleep',plan:'sleepPerWeek',def:5,
@@ -766,6 +767,7 @@ const MODS={
 };
 Object.values(MODS).forEach(M=>{M.items=M.groups.flatMap(g=>g.items);M.base=M.groups.filter(g=>!g.bonus).flatMap(g=>g.items);M.bonus=M.groups.filter(g=>g.bonus).flatMap(g=>g.items);});
 const ITEM_LBL={};
+const ITEM_HINT={Snack:'protein or carbs'};
 const userMods=()=>{const m=(S.modules||['training']).filter(x=>MODS[x]);return m.length?m:['training'];};
 let mod=(()=>{try{return localStorage.getItem('training.mod')||'training'}catch(e){return 'training'}})();
 const perWeek=()=>{const M=MODS[mod],n=parseInt(S.settings[M.plan],10);return n>=1&&n<=7?n:M.def;};
@@ -821,7 +823,7 @@ function toggleItem(d,a){lastToggled=d;setTimeout(()=>{lastToggled=null;},600);
 }
 // tap on a calendar day: one-item modules toggle directly, Food opens that day's checklist
 function toggle(d){const M=MODS[mod];if(M.items.length===1&&!M.water)return toggleItem(d,M.items[0]);openDay(d);}
-const chk=(d,a)=>{const on=has(d,a);return `<button type="button" class="chk-i${on?' on':''}" data-item="${a}" data-day="${d}"><span>${ITEM_LBL[a]||a}${BONUS[a]&&mod==='food'?`<i class="bp">+${BONUS[a]}</i>`:''}</span><span class="bx">${on?crossSVG(d+a,d===todayIso):''}</span></button>`;};
+const chk=(d,a)=>{const on=has(d,a);return `<button type="button" class="chk-i${on?' on':''}" data-item="${a}" data-day="${d}"><span>${ITEM_LBL[a]||a}${BONUS[a]&&mod==='food'?`<i class="bp">+${BONUS[a]}</i>`:''}${ITEM_HINT[a]?`<small class="hint">${ITEM_HINT[a]}</small>`:''}</span><span class="bx">${on?crossSVG(d+a,d===todayIso):''}</span></button>`;};
 // a 500 ml bottle; the cross is drawn on top once it's drunk
 const BOTTLE='<svg class="btl" viewBox="4.6 3.2 14.8 26.2" aria-hidden="true"><path d="M6.2 4.1h11.6v4H6.2z"/><path d="M6.2 8.1h11.6v17.6a2.6 2.6 0 0 1-2.6 2.6H8.8a2.6 2.6 0 0 1-2.6-2.6z"/></svg>';
 const L=ml=>(ml/1000).toLocaleString(LOC,{minimumFractionDigits:1,maximumFractionDigits:1});
@@ -843,7 +845,7 @@ function frac(m,d){const M=MODS[m];
   if(M.water){n+=Math.min(waterN(d),M.water.goal)/M.water.goal;t+=1;}
   return n/t;}
 // bonus on top of the basics: creatine +5, protein +5, evening meal +15; at most +20 so a day tops out at 120
-const BONUS={Creatine:5,Protein:5,Evening:15},BONUS_MAX=20;
+const BONUS={Creatine:5,Protein:5,Evening:15,Snack:5},BONUS_MAX=20;
 const bonusPts=(m,d)=>Math.min(BONUS_MAX,MODS[m].bonus.filter(a=>has(d,a)).reduce((t,a)=>t+(BONUS[a]||5),0));
 // average bonus per day over the period (only days since the start, up to today)
 function modBonus(m,a,b){const st=startOf(m);if(!st||!MODS[m].bonus.length)return 0;const from=a>st?a:st,to=b<todayIso?b:todayIso;if(from>to)return 0;
