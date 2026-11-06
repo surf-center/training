@@ -616,7 +616,7 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard,body.ov 
 
   <!-- Food / Sleep: today's checklist -->
   <div class="card" id="todayCard" hidden>
-    <div class="label"><span class="ttl" id="todayTtl">Today</span><button class="edit" data-edit="modplan" id="modPlan"></button></div>
+    <div class="label"><span class="ttl" id="todayTtl">Today</span></div>
     <div class="checks" id="checks"></div>
   </div>
 
@@ -931,7 +931,6 @@ function openDay(d){const dlg=$('dlg'),f=$('dlgForm');if(dlg.open)return;
 function renderToday(){const tc=$('todayCard');if(mod==='training'){tc.hidden=true;return;}
   tc.hidden=false;const M=MODS[mod],pw=perWeek();
   $('todayTtl').innerHTML=`<svg class="calicon" viewBox="0 0 24 24" aria-hidden="true">${M.icon}</svg>Today`;
-  $('modPlan').textContent=`Goal ≥ ${targetOf(mod)} / week`;
   $('checks').innerHTML=checksHTML(todayIso);}
 
 // ---------- render ----------
