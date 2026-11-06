@@ -444,6 +444,7 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:
 .wline s{position:absolute;top:-4px;bottom:-4px;width:2px;margin-left:-1px;background:var(--text);border-radius:2px}
 .wscale{position:relative;display:flex;justify-content:space-between;font-size:11px;font-weight:600;color:var(--muted);height:14px}
 .wscale span:nth-child(2){position:absolute;transform:translateX(-50%);color:var(--text);font-weight:700}
+.water.wrow{display:flex;align-items:center;gap:8px}.wdrop{flex:none;width:20px;height:20px;fill:none;stroke:var(--accent);stroke-width:2.2;stroke-linejoin:round}.wrow .bottles{flex:1;margin:0}
 .bottles{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:4px;margin-top:6px}
 .bt{all:unset;position:relative;cursor:pointer;aspect-ratio:3/4;display:grid;place-items:center;-webkit-tap-highlight-color:transparent}
 .bt .btl{display:block;width:70%;height:auto;fill:none;stroke:var(--muted2);stroke-width:1.6;stroke-linejoin:round;transition:stroke .2s}
@@ -468,7 +469,7 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:
 .cday.rated svg{width:100%;height:100%;fill:none;stroke:var(--text);stroke-width:1.8;stroke-linecap:round}.cday.rated svg .eye{fill:var(--text);stroke:none}
 .cday.rated.today svg{stroke:var(--accent)}.cday.rated.today svg .eye{fill:var(--accent)}
 .dl{font-style:normal;font-weight:900;margin-left:6px}.dl.up{color:var(--accent)}.dl.dn{color:var(--text)}.calsum .dl{margin-left:0}
-.dsc{display:flex;align-items:center;gap:7px;white-space:nowrap}.dsc:has(b.big){align-items:baseline;gap:5px}.dsc b.big{font-size:30px!important;font-weight:900;letter-spacing:-1px!important}.dsc b.big+small{text-transform:none;font-size:13px;margin-left:0}
+.dsc{display:flex;align-items:center;gap:7px;white-space:nowrap}.dsc:has(b.big){align-items:baseline;gap:5px}.dsc b.big{line-height:1}.dsc b.big+small{line-height:1;margin:0;align-self:baseline;display:inline-block}.dsc b.big{font-size:30px!important;font-weight:900;letter-spacing:-1px!important}.dsc b.big+small{text-transform:none;font-size:13px;margin-left:0}
 .calsum{white-space:nowrap}.calsum>span:first-child{overflow:hidden;text-overflow:ellipsis}.hist-s{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 @media (max-width:430px){.calsum{font-size:12px}.calsum b{font-size:28px!important}}.dsc .dring{width:22px;height:22px;fill:none;stroke-width:3;stroke-linecap:round}.dsc .dring circle{stroke:var(--accent)}.dsc .dring .bg{stroke:var(--cell)}.dsc b{font-size:18px!important;letter-spacing:-.3px!important}.dsc b{font-size:26px;font-weight:900;letter-spacing:-.8px;color:var(--text)}.dsc i{font-style:normal;font-size:14px;font-weight:800;color:var(--accent)}.dsc .dsep{width:1px;height:20px;background:var(--border);margin:0 8px;align-self:center}
 .dsc small{font-size:11px;font-weight:700;color:var(--muted);margin-left:5px;text-transform:uppercase;letter-spacing:.05em}
@@ -807,7 +808,7 @@ const fmtKg=v=>(Math.round(v*10)/10).toLocaleString(LOC,{minimumFractionDigits:1
 const MODS={
   training:{label:'Training',title:'Training',groups:[{items:['Training']}],plan:'daysPerWeek',def:0,
     icon:'<rect x="4.4" y="5" width="4" height="14" rx="1.5"/><rect x="15.6" y="5" width="4" height="14" rx="1.5"/><path d="M8.4 12h7.2M2 9.3v5.4M22 9.3v5.4"/>'},
-  food:{label:'Food',title:'Food',plan:'foodPerWeek',def:6,target:'foodTarget',tdef:85,
+  food:{label:'Nutrition',title:'Nutrition',plan:'foodPerWeek',def:6,target:'foodTarget',tdef:85,
     water:{max:8,goal:5,ml:500},
     groups:[{label:'Meals',items:['Breakfast','Lunch','Dinner'],cols:3},{label:'Bonus',items:['Creatine','Protein','Evening','Snack'],cols:4,bonus:true}],
     goal:'Fuel the gains',note:'2.5 L water, breakfast, lunch and dinner every day.\nBonus: creatine, protein, an evening meal or a snack.',
@@ -902,8 +903,8 @@ function checksHTML(d){const M=MODS[mod];let h='';
   if(M.rating){const r=rateOf(d);
     h+=`<div class="rate"><div class="faces">${RATE.map((x,i)=>`<button type="button" class="fc${r===i+1?' on':''}" data-rate="${i+1}" data-day="${d}" aria-label="${x.l}">${face(i)}<span>${x.l}</span></button>`).join('')}</div></div>`;}
   if(M.water){const W=M.water,n=waterN(d);
-    h+=`<div class="water"><div class="wtop"><span class="wlbl"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5c3 4 6.2 7.4 6.2 10.7a6.2 6.2 0 0 1-12.4 0C5.8 10.9 9 7.5 12 3.5z"/></svg>Water</span><b>${L(n*W.ml)} <i>/ ${L(W.goal*W.ml)} L</i></b></div>
-      <div class="bottles">${[...Array(W.max)].map((_,i)=>`<button type="button" class="bt${i<n?' on':''}${i===W.goal-1?' goal':''}" data-water="${i+1}" data-day="${d}" aria-label="${(i+1)*W.ml} ml">${bottle('bw'+d+i,i<n)}</button>`).join('')}</div></div>`;}
+    h+=`<div class="water wrow"><svg class="wdrop" viewBox="0 0 24 24" aria-label="Water"><path d="M12 3.5c3 4 6.2 7.4 6.2 10.7a6.2 6.2 0 0 1-12.4 0C5.8 10.9 9 7.5 12 3.5z"/></svg>
+      <div class="bottles">${[...Array(W.max)].map((_,i)=>`<button type="button" class="bt${i<n?' on':''}" data-water="${i+1}" data-day="${d}" aria-label="${(i+1)*W.ml} ml">${bottle('bw'+d+i,i<n)}</button>`).join('')}</div></div>`;}
   M.groups.forEach(g=>{
     if(g.bonus&&mod==='food'){h+=`<div class="cg-i c${g.cols} nolab">${g.items.map(a=>chk(d,a)).join('')}</div>`;return;}
     if(g.bonus){ // bonus folds away: the header shows what you earned, tap to open
@@ -1338,7 +1339,7 @@ function fillPeriod(){
     opts.push(`<option value="${k}"${k===ws?' selected':''}>W${isoWeek(m)}</option>`);
   }
   if(actView==='month'){
-    $('selWeek').innerHTML=[...Array(12)].map((_,m)=>{const d=new Date(year,m,1);return `<option value="${m}"${monthStart.getFullYear()===year&&monthStart.getMonth()===m?' selected':''}>${d.toLocaleDateString(LOC,{month:'short'}).replace('.','')}</option>`;}).join('');
+    $('selWeek').innerHTML=[...Array(12)].map((_,m)=>{const d=new Date(year,m,1);return `<option value="${m}"${monthStart.getFullYear()===year&&monthStart.getMonth()===m?' selected':''}>${d.toLocaleDateString(LOC,{month:'long'})}</option>`;}).join('');
     $('selWeek').setAttribute('aria-label','Month');
   }else{$('selWeek').innerHTML=opts.join('');$('selWeek').setAttribute('aria-label','Week');}
   $('selWeek').hidden=actView==='year';
