@@ -758,7 +758,7 @@ const fmtKg=v=>(Math.round(v*10)/10).toLocaleString(LOC,{minimumFractionDigits:1
 // Modules (switched on per person in the sheet's Users tab). A day counts as done when all its items are ticked.
 const MODS={
   training:{label:'Training',title:'Action',groups:[{items:['Training']}],plan:'daysPerWeek',def:0,
-    icon:'<path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/>'},
+    icon:'<rect x="4.4" y="5" width="4" height="14" rx="1.5"/><rect x="15.6" y="5" width="4" height="14" rx="1.5"/><path d="M8.4 12h7.2M2 9.3v5.4M22 9.3v5.4"/>'},
   food:{label:'Food',title:'Food',plan:'foodPerWeek',def:6,target:'foodTarget',tdef:85,
     water:{max:8,goal:5,ml:500},
     groups:[{label:'Meals',items:['Breakfast','Lunch','Dinner'],cols:3},{label:'Bonus · up to +20',items:['Creatine','Protein','Evening','Snack'],cols:2,bonus:true}],
