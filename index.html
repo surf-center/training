@@ -426,10 +426,12 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard,body.ov 
 .bt .btl{display:block;width:70%;height:auto;fill:none;stroke:var(--muted2);stroke-width:1.6;stroke-linejoin:round;transition:stroke .2s}
 .bt.on .btl{stroke:var(--text)}
 .cday .pring{position:absolute;inset:-4px;width:calc(100% + 8px);height:calc(100% + 8px);pointer-events:none;overflow:visible}
-.cday .pring circle{fill:none;stroke:var(--accent);stroke-width:3.2;stroke-linecap:round}
+.cday .pring circle{fill:none;stroke:var(--text);stroke-width:3.2;stroke-linecap:round}
+.cday.today .pring circle{stroke:var(--accent)}
 .cday.part{border-color:transparent}
 .dc{position:relative}.dc .dpc{display:none}
-.dgrid.wk .dc .dpc{display:block;position:absolute;left:0;right:0;top:calc(100% + 4px);text-align:center;font-style:normal;font-size:11px;font-weight:700;color:var(--accent)}
+.dgrid.wk .dc .dpc{display:block;position:absolute;left:0;right:0;top:calc(100% + 4px);text-align:center;font-style:normal;font-size:11px;font-weight:700;color:var(--text)}
+.dgrid.wk .dc .dpc.td{color:var(--accent)}
 .dgrid.wk{margin-bottom:22px}
 .dl{font-style:normal;font-weight:900;margin-left:6px}.dl.up{color:var(--accent)}.dl.dn{color:var(--text)}.calsum .dl{margin-left:0}
 .dsc{display:flex;align-items:baseline;gap:3px}.dsc b{font-size:26px;font-weight:900;letter-spacing:-.8px;color:var(--text)}.dsc i{font-style:normal;font-size:14px;font-weight:800;color:var(--accent)}.dsc .dsep{width:1px;height:20px;background:var(--border);margin:0 8px;align-self:center}
@@ -1017,7 +1019,7 @@ function renderProcess(){
 function dayBtn(k,T,cls=''){const on=T.has(k),d=parse(k).getDate();
   const f=!on&&mod!=='training'&&k<=todayIso?frac(mod,k):0,pc=Math.round(f*100),full=on&&mod!=='training';
   const ringSvg=f>0?`<svg class="pring" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18" pathLength="100" stroke-dasharray="${pc} 100" transform="rotate(-90 20 20)"/></svg>`:'';
-  return `<div class="dc"><button class="cday${on?' on':''}${f>0?' part':''}${k===todayIso?' today':''}${k>todayIso?' fut':''}${cls}" data-wd="${k}" title="${fmtD(k)}${f>0?' · '+pc+'%':''}" aria-pressed="${on}"><span>${d}</span>${ringSvg}${on?crossSVG(k,k===todayIso):''}</button>${f>0?`<i class="dpc">${pc}%</i>`:full?'<i class="dpc">100%</i>':''}</div>`;}
+  return `<div class="dc"><button class="cday${on?' on':''}${f>0?' part':''}${k===todayIso?' today':''}${k>todayIso?' fut':''}${cls}" data-wd="${k}" title="${fmtD(k)}${f>0?' · '+pc+'%':''}" aria-pressed="${on}"><span>${d}</span>${ringSvg}${on?crossSVG(k,k===todayIso):''}</button>${f>0?`<i class="dpc${k===todayIso?' td':''}">${pc}%</i>`:full?`<i class="dpc${k===todayIso?' td':''}">100%</i>`:''}</div>`;}
 const countTxt=(n,period)=>`<div class="msum"><b>${n}</b> training ${n===1?'day':'days'} ${period}</div>`;
 function renderMonth(){
   const monthCur=monthStart;
