@@ -1,6 +1,6 @@
 {
-  "name": "Training",
-  "short_name": "Training",
+  "name": "My Health",
+  "short_name": "My Health",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
