@@ -401,7 +401,9 @@ body.has-tabbar .wrap{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
 body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:none!important}
 .hist-h{gap:10px}.hist-h span.ttl{font-size:18px;color:var(--text);text-transform:none;letter-spacing:-.2px;font-weight:800}.hist-h span.hist-s{margin-left:auto;font-size:13px;font-weight:700;color:var(--muted);text-transform:none;letter-spacing:0}.hist-h::after{content:'▾';color:var(--accent);font-size:12px}#actionCard.open .hist-h::after{content:'▴'}
 #actionCard:not(.open)>*:not(.label){display:none!important}#actionCard:not(.open){padding-top:18px;padding-bottom:18px}#actionCard>.label{margin:0}
-.dgrid.wk.tw{margin:14px auto 4px}
+.dgrid.wk.tw{max-width:none;margin:16px 0 2px;gap:6px}
+#todayCard>.label{align-items:center}
+@media (max-width:430px){.hist-h span.hist-s{display:none}}
 .calhead{display:flex;gap:8px;align-items:center;margin:16px 0 4px}.calhead .seg{flex:none}.calhead .seg button{padding:7px 9px;font-size:12px}
 #actionCard:not([data-view="year"]) .period #selYear{display:none}#actionCard .period select{width:100%}
 #actionCard .period{display:flex;flex:1;min-width:0;margin:0;background:var(--surface2);box-shadow:none}#actionCard .period #selWeek{flex:1}
@@ -445,7 +447,7 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:
 .bottles{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:4px;margin-top:6px}
 .bt{all:unset;position:relative;cursor:pointer;aspect-ratio:3/4;display:grid;place-items:center;-webkit-tap-highlight-color:transparent}
 .bt .btl{display:block;width:70%;height:auto;fill:none;stroke:var(--muted2);stroke-width:1.6;stroke-linejoin:round;transition:stroke .2s}
-.bt.on .btl{stroke:var(--accent);fill:var(--accent)}.bt.goal::after{content:'';position:absolute;left:50%;bottom:-7px;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:var(--muted2)}
+.bt.on .btl{stroke:var(--accent)}.bt .btl .wtr{fill:var(--accent);stroke:none}.bt.goal::after{content:'';position:absolute;left:50%;bottom:-7px;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:var(--muted2)}
 .cday .pring{position:absolute;inset:-4px;width:calc(100% + 8px);height:calc(100% + 8px);pointer-events:none;overflow:visible}
 .cday .pring circle{fill:none;stroke:var(--text);stroke-width:3.2;stroke-linecap:round}
 .cday.today .pring circle{stroke:var(--accent)}
@@ -491,6 +493,8 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:
 .gtext{display:block;font-size:30px;line-height:1.1;font-weight:900;letter-spacing:-.6px}
 .gnote{display:block;font-size:14px;line-height:1.45;font-weight:600;color:var(--text2);margin-top:4px}
 .chk-i{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-radius:16px;background:var(--surface2);font-weight:700;font-size:16px;color:var(--text);-webkit-tap-highlight-color:transparent}
+.pill{all:unset;box-sizing:border-box;cursor:pointer;height:48px;border-radius:14px;background:var(--surface2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font-weight:800;font-size:13px;color:var(--text);-webkit-tap-highlight-color:transparent;transition:background .15s,color .15s}
+.pill i{font-style:normal;font-size:10px;font-weight:800;color:var(--accent)}.pill.on{background:var(--text);color:var(--surface)}.pill.on i{color:#93c5fd}
 .chk-i .bx{position:relative;flex:none;width:30px;height:30px;border-radius:50%;background:var(--surface);box-shadow:inset 0 0 0 2px var(--muted2)}
 .chk-i.on .bx{background:transparent}
 .chk-i .xm path{stroke-width:15}
@@ -668,7 +672,7 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:
   <!-- This week -->
   <div class="card" id="actionCard">
     <div class="label">
-      <button type="button" class="hist-h cg-tog" data-tog="hist"><span class="ttl">History</span><span class="hist-s" id="histSum"></span></button>
+      <button type="button" class="hist-h cg-tog" data-tog="hist"><span class="ttl">History &amp; objective</span><span class="hist-s" id="histSum"></span></button>
       <div class="seg" role="tablist" id="viewSeg">
         <button data-view="week" role="tab">Week</button><button data-view="month" role="tab">Month</button><button data-view="year" role="tab">Year</button>
       </div>
@@ -886,16 +890,19 @@ const CHK_X='2026-11-06Dinner';
 // remembered open/closed sections (per device)
 const UI=(()=>{try{return Object.assign({bonus:false,trend:false,details:false,hist:false},JSON.parse(localStorage.getItem('training.ui')||'{}'))}catch(e){return {bonus:false,trend:false}}})();
 const saveUI=()=>{try{localStorage.setItem('training.ui',JSON.stringify(UI))}catch(e){}};
-const chk=(d,a)=>{const on=has(d,a);return `<button type="button" class="chk-i${on?' on':''}" data-item="${a}" data-day="${d}"><span>${ITEM_LBL[a]||a}${BONUS[a]&&mod==='food'?`<i class="bp">+${BONUS[a]}</i>`:''}${ITEM_HINT[a]?`<small class="hint">${ITEM_HINT[a]}</small>`:''}</span><span class="bx">${on?crossSVG(CHK_X,false):''}</span></button>`;};
+const pill=(d,a)=>{const on=has(d,a);return `<button type="button" class="pill${on?' on':''}" data-item="${a}" data-day="${d}"><span>${a}</span>${BONUS[a]?`<i>+${BONUS[a]}</i>`:''}</button>`;};
+const chk=(d,a)=>{if(mod==='food')return pill(d,a);const on=has(d,a);return `<button type="button" class="chk-i${on?' on':''}" data-item="${a}" data-day="${d}"><span>${ITEM_LBL[a]||a}${BONUS[a]&&mod==='food'?`<i class="bp">+${BONUS[a]}</i>`:''}${ITEM_HINT[a]?`<small class="hint">${ITEM_HINT[a]}</small>`:''}</span><span class="bx">${on?crossSVG(CHK_X,false):''}</span></button>`;};
 // a 500 ml bottle; the cross is drawn on top once it's drunk
-const BOTTLE='<svg class="btl" viewBox="4.6 3.2 14.8 26.2" aria-hidden="true"><path d="M6.2 4.1h11.6v4H6.2z"/><path d="M6.2 8.1h11.6v17.6a2.6 2.6 0 0 1-2.6 2.6H8.8a2.6 2.6 0 0 1-2.6-2.6z"/></svg>';
+// a 500 ml shaker: lid + cup; once drunk the cup fills blue to ~60%
+const BODY='M6.2 8.1h11.6v17.6a2.6 2.6 0 0 1-2.6 2.6H8.8a2.6 2.6 0 0 1-2.6-2.6z';
+const bottle=(id,on)=>`<svg class="btl" viewBox="4.6 3.2 14.8 26.2" aria-hidden="true"><defs><clipPath id="${id}"><path d="${BODY}"/></clipPath></defs>${on?`<rect class="wtr" x="5" y="16" width="14" height="13" clip-path="url(#${id})"/>`:''}<path d="M6.2 4.1h11.6v4H6.2z"/><path d="${BODY}"/></svg>`;
 const L=ml=>(ml/1000).toLocaleString(LOC,{minimumFractionDigits:1,maximumFractionDigits:1});
 function checksHTML(d){const M=MODS[mod];let h='';
   if(M.rating){const r=rateOf(d);
     h+=`<div class="rate"><div class="faces">${RATE.map((x,i)=>`<button type="button" class="fc${r===i+1?' on':''}" data-rate="${i+1}" data-day="${d}" aria-label="${x.l}">${face(i)}<span>${x.l}</span></button>`).join('')}</div></div>`;}
   if(M.water){const W=M.water,n=waterN(d);
     h+=`<div class="water"><div class="wtop"><span class="wlbl"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5c3 4 6.2 7.4 6.2 10.7a6.2 6.2 0 0 1-12.4 0C5.8 10.9 9 7.5 12 3.5z"/></svg>Water</span><b>${L(n*W.ml)} <i>/ ${L(W.goal*W.ml)} L</i></b></div>
-      <div class="bottles">${[...Array(W.max)].map((_,i)=>`<button type="button" class="bt${i<n?' on':''}${i===W.goal-1?' goal':''}" data-water="${i+1}" data-day="${d}" aria-label="${(i+1)*W.ml} ml">${BOTTLE}</button>`).join('')}</div></div>`;}
+      <div class="bottles">${[...Array(W.max)].map((_,i)=>`<button type="button" class="bt${i<n?' on':''}${i===W.goal-1?' goal':''}" data-water="${i+1}" data-day="${d}" aria-label="${(i+1)*W.ml} ml">${bottle('bw'+d+i,i<n)}</button>`).join('')}</div></div>`;}
   M.groups.forEach(g=>{
     if(g.bonus){ // bonus folds away: the header shows what you earned, tap to open
       const open=UI.bonus,pts=bonusPts(mod,d);
@@ -1285,7 +1292,7 @@ document.addEventListener('click',e=>{
   const it=e.target.closest('[data-item]');
   if(it){const d=it.dataset.day;toggleItem(d,it.dataset.item);const dc=$('dayChecks');if(dc)dc.innerHTML=checksHTML(d);return;}
   const tg=e.target.closest('[data-tog]');
-  if(tg){UI[tg.dataset.tog]=!UI[tg.dataset.tog];saveUI();if(tg.dataset.tog==='hist'){$('actionCard').classList.toggle('open',UI.hist);return;}if(tg.dataset.tog==='trend'||tg.dataset.tog==='details')renderOverview();else{renderToday();const dc=$('dayChecks');if(dc)dc.innerHTML=checksHTML(dc.dataset.day||todayIso);}return;}
+  if(tg){UI[tg.dataset.tog]=!UI[tg.dataset.tog];saveUI();if(tg.dataset.tog==='hist'){if(innerWidth<1000){UI.hist=!UI.hist;setStack(!($('stack').getAttribute('aria-expanded')==='true'&&$('actionCard').classList.contains('open')));}else $('actionCard').classList.toggle('open',UI.hist);return;}if(tg.dataset.tog==='trend'||tg.dataset.tog==='details')renderOverview();else{renderToday();const dc=$('dayChecks');if(dc)dc.innerHTML=checksHTML(dc.dataset.day||todayIso);}return;}
   const rb=e.target.closest('[data-rate]');
   if(rb){const d=rb.dataset.day;setRating(d,+rb.dataset.rate);const dc=$('dayChecks');if(dc)dc.innerHTML=checksHTML(d);return;}
   const wb=e.target.closest('[data-water]');
@@ -1340,11 +1347,13 @@ $('zoom').value=zoomI;$('zLbl').textContent=ZOOMS[zoomI][0];
 $('zoom').oninput=e=>{zoomI=+e.target.value;$('zLbl').textContent=ZOOMS[zoomI][0];try{localStorage.setItem('training.zoom',zoomI)}catch(_){};renderWeight();};
 $('wListToggle').onclick=()=>{const l=$('wList'),open=l.hidden;l.hidden=!open;$('wListToggle').textContent=open?'Hide measurements ▴':'Show measurements ▾';};
 // stack: collapsed like notifications, tap to expand
-$('stack').addEventListener('click',e=>{const st=$('stack');
-  if(e.target.closest('#stackLess')){st.setAttribute('aria-expanded','false');return;}
-  // taps on controls or inside the Progress card never toggle the stack (unless it is still collapsed)
-  if(e.target.closest('[data-edit],button,input,select,label,a,#chartWrap,.wtable')||(st.getAttribute('aria-expanded')==='true'&&e.target.closest('#progCard')))return;
-  st.setAttribute('aria-expanded',st.getAttribute('aria-expanded')==='false'?'true':'false');});
+// one tap opens everything: the stack unfolds and History (its top card) opens with it
+function setStack(open){$('stack').setAttribute('aria-expanded',open?'true':'false');UI.hist=open;saveUI();$('actionCard').classList.toggle('open',open);}
+$('stack').addEventListener('click',e=>{const st=$('stack'),isOpen=st.getAttribute('aria-expanded')==='true';
+  if(e.target.closest('#stackLess')){setStack(false);return;}
+  // taps on controls, or inside an open History/Progress card, never fold the stack
+  if(e.target.closest('[data-edit],button,input,select,label,a,#chartWrap,.wtable')||(isOpen&&e.target.closest('#progCard,#actionCard')))return;
+  setStack(!isOpen);});
 // light by default; dark only when chosen (remembered per device)
 const MOON='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
 const SUN='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
@@ -1369,6 +1378,7 @@ placeProgress();window.addEventListener('resize',()=>placeProgress());
 // period picker + Week/Month/Year sit together right above the calendar they control
 {const ch=document.createElement('div');ch.className='calhead';$('actSum').before(ch);ch.append(document.querySelector('.period'),$('viewSeg'));}
 $('actionCard').classList.toggle('open',UI.hist); // History starts folded
+if(innerWidth<1000)$('stack').setAttribute('aria-expanded',UI.hist?'true':'false');
 $('stack').prepend($('actionCard'));$('actionCard').classList.add('scard');$('actionCard').querySelector('.hist-h .ttl').after($('stackN')); // History heads the stack
 let actView=(()=>{try{return localStorage.getItem('training.view')||'week'}catch(e){return 'week'}})();
 function setView(v){actView=v;setTimeout(()=>{renderSum();if(typeof fillPeriod==='function')fillPeriod();},0);$('actionCard').dataset.view=v;document.querySelectorAll('#viewSeg button').forEach(b=>b.classList.toggle('on',b.dataset.view===v));try{localStorage.setItem('training.view',v)}catch(e){}}
