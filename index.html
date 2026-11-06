@@ -344,12 +344,11 @@ button.ghost{font-weight:700;border-radius:11px}
 @media (min-width:1000px){
   .wrap{max-width:1180px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;align-items:stretch;padding-top:40px}
   .wrap>header{grid-column:1/-1;margin-bottom:0}
-  .wrap>#actionCard{grid-column:1;grid-row:2}
-  .wrap>.stack{grid-column:2;grid-row:2;align-content:start}
-  .wrap>#todayCard{grid-column:2;grid-row:2;align-self:start}
+  .wrap>#todayCard{grid-column:1;grid-row:2;align-self:start}
+  .wrap>#actionCard{grid-column:1;grid-row:3;align-self:start}
+  .wrap>.stack{grid-column:2;grid-row:2/5;align-content:start}
   .wrap>#overCard{grid-column:1/-1;grid-row:2;max-width:720px;width:100%;justify-self:center}
-  body:not([data-mod="training"]) .wrap>#actionCard{grid-row:2;align-self:start}
-  body:not([data-mod="training"]) .wrap>.stack{grid-row:2}
+
   .wrap>.card{margin:0}
   .stack,.stack[aria-expanded]{display:grid;grid-template-columns:minmax(0,1fr);gap:22px;margin:0;cursor:default}
   .stack .scard,.stack[aria-expanded] .scard:nth-child(n){position:relative!important;transform:none!important;opacity:1!important;height:auto!important;margin:0!important;pointer-events:auto!important;z-index:auto!important}
@@ -400,6 +399,9 @@ body.has-tabbar .wrap{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
 .fc span{font-size:12px;font-weight:800}.fc i{font-style:normal;font-size:10px;font-weight:700;opacity:.7}
 .fc.on{background:var(--text);color:var(--surface)}
 body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:none!important}
+.hist-h{gap:10px}.hist-h span.ttl{font-size:18px;color:var(--text);text-transform:none;letter-spacing:-.2px;font-weight:800}.hist-h span.hist-s{margin-left:auto;font-size:13px;font-weight:700;color:var(--muted);text-transform:none;letter-spacing:0}.hist-h::after{content:'▾';color:var(--accent);font-size:12px}#actionCard.open .hist-h::after{content:'▴'}
+#actionCard:not(.open)>*:not(.label){display:none!important}#actionCard:not(.open){padding-top:18px;padding-bottom:18px}#actionCard>.label{margin:0}
+.dgrid.wk.tw{margin:14px auto 4px}
 .calhead{display:flex;gap:8px;align-items:center;margin:16px 0 4px}.calhead .seg{flex:none}.calhead .seg button{padding:7px 9px;font-size:12px}
 #actionCard .period #selYear{display:none}#actionCard[data-view="year"] .period{display:none}#actionCard .period select{width:100%}
 #actionCard .period{display:flex;flex:1;min-width:0;margin:0;background:var(--surface2);box-shadow:none}#actionCard .period #selWeek{flex:1}
@@ -443,7 +445,7 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:
 .bottles{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:4px;margin-top:6px}
 .bt{all:unset;position:relative;cursor:pointer;aspect-ratio:3/4;display:grid;place-items:center;-webkit-tap-highlight-color:transparent}
 .bt .btl{display:block;width:70%;height:auto;fill:none;stroke:var(--muted2);stroke-width:1.6;stroke-linejoin:round;transition:stroke .2s}
-.bt.on .btl{stroke:var(--text)}
+.bt.on .btl{stroke:var(--text);fill:var(--text)}.bt.goal::after{content:'';position:absolute;left:50%;bottom:-7px;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:var(--muted2)}
 .cday .pring{position:absolute;inset:-4px;width:calc(100% + 8px);height:calc(100% + 8px);pointer-events:none;overflow:visible}
 .cday .pring circle{fill:none;stroke:var(--text);stroke-width:3.2;stroke-linecap:round}
 .cday.today .pring circle{stroke:var(--accent)}
@@ -476,7 +478,8 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:
 .cg-l svg{width:17px;height:17px;fill:none;stroke:var(--accent);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .cg-i{display:grid;gap:8px}.cg-i.c2{grid-template-columns:1fr 1fr}.cg-i.c3{grid-template-columns:repeat(3,minmax(0,1fr))}
 .cg-i.c3,.cg-i.c4{grid-auto-rows:auto}.cg-i.c4{grid-template-columns:repeat(4,minmax(0,1fr))}
-.cg-i.c3 .chk-i,.cg-i.c4 .chk-i{flex-direction:column;justify-content:flex-start;align-items:center;text-align:center;gap:8px;padding:12px 4px;font-size:14px;height:96px;justify-content:space-between}
+.cg-i.c3 .chk-i,.cg-i.c4 .chk-i{flex-direction:column;justify-content:flex-start;align-items:center;text-align:center;gap:6px;padding:10px 4px;font-size:13px;height:74px;justify-content:space-between}
+.cg-i.c3 .chk-i .bx,.cg-i.c4 .chk-i .bx{width:24px;height:24px}
 .cg-i.c4 .chk-i{font-size:13px}.cg-i.c4 .chk-i .bp{display:block;margin:2px 0 0}
 .chk-i .hint{display:block;white-space:nowrap;font-size:11px;font-weight:600;color:var(--muted);margin-top:2px}
 .chk-i .bp{font-style:normal;font-size:12px;font-weight:800;color:var(--accent);margin-left:5px}
@@ -655,17 +658,19 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:
   </div>
 
   <!-- Food / Sleep: today's checklist -->
-  <div class="card" id="todayCard" hidden></div>
+  <div class="card" id="todayCard">
+    <div class="label"><span class="ttl"><svg class="calicon" id="actIcon" viewBox="0 0 24 24" aria-hidden="true"></svg><span id="actTtl">Training</span></span><span class="dsc" id="dayScore"></span></div>
+    <div id="todayIn"></div>
+  </div>
 
   <!-- This week -->
   <div class="card" id="actionCard">
     <div class="label">
-      <span class="ttl"><svg class="calicon" id="actIcon" viewBox="0 0 24 24" aria-hidden="true"></svg><span id="actTtl">Training</span></span>
+      <button type="button" class="hist-h cg-tog" data-tog="hist"><span class="ttl">History</span><span class="hist-s" id="histSum"></span></button>
       <div class="seg" role="tablist" id="viewSeg">
         <button data-view="week" role="tab">Week</button><button data-view="month" role="tab">Month</button><button data-view="year" role="tab">Year</button>
       </div>
     </div>
-    <div id="todayIn" hidden></div>
     <div id="actSum"></div>
     <div id="week" class="view"></div>
     <div id="monthView" class="view">
@@ -877,7 +882,7 @@ function toggle(d){const M=MODS[mod];if(M.items.length===1&&!M.water)return togg
 // every tick in the checklists uses the same hand-drawn cross (the one the user liked on Dinner)
 const CHK_X='2026-11-06Dinner';
 // remembered open/closed sections (per device)
-const UI=(()=>{try{return Object.assign({bonus:false,trend:false,details:false},JSON.parse(localStorage.getItem('training.ui')||'{}'))}catch(e){return {bonus:false,trend:false}}})();
+const UI=(()=>{try{return Object.assign({bonus:false,trend:false,details:false,hist:false},JSON.parse(localStorage.getItem('training.ui')||'{}'))}catch(e){return {bonus:false,trend:false}}})();
 const saveUI=()=>{try{localStorage.setItem('training.ui',JSON.stringify(UI))}catch(e){}};
 const chk=(d,a)=>{const on=has(d,a);return `<button type="button" class="chk-i${on?' on':''}" data-item="${a}" data-day="${d}"><span>${ITEM_LBL[a]||a}${BONUS[a]&&mod==='food'?`<i class="bp">+${BONUS[a]}</i>`:''}${ITEM_HINT[a]?`<small class="hint">${ITEM_HINT[a]}</small>`:''}</span><span class="bx">${on?crossSVG(CHK_X,false):''}</span></button>`;};
 // a 500 ml bottle; the cross is drawn on top once it's drunk
@@ -888,8 +893,7 @@ function checksHTML(d){const M=MODS[mod];let h='';
     h+=`<div class="rate"><div class="faces">${RATE.map((x,i)=>`<button type="button" class="fc${r===i+1?' on':''}" data-rate="${i+1}" data-day="${d}" aria-label="${x.l}">${face(i)}<span>${x.l}</span></button>`).join('')}</div></div>`;}
   if(M.water){const W=M.water,n=waterN(d);
     h+=`<div class="water"><div class="wtop"><span class="wlbl"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5c3 4 6.2 7.4 6.2 10.7a6.2 6.2 0 0 1-12.4 0C5.8 10.9 9 7.5 12 3.5z"/></svg>Water</span><b>${L(n*W.ml)} <i>/ ${L(W.goal*W.ml)} L</i></b></div>
-      <div class="wline"><i style="width:${n/W.max*100}%"></i><s style="left:${W.goal/W.max*100}%"></s></div>
-      <div class="bottles">${[...Array(W.max)].map((_,i)=>`<button type="button" class="bt${i<n?' on':''}" data-water="${i+1}" data-day="${d}" aria-label="${(i+1)*W.ml} ml">${BOTTLE}${i<n?crossSVG(CHK_X,false):''}</button>`).join('')}</div></div>`;}
+      <div class="bottles">${[...Array(W.max)].map((_,i)=>`<button type="button" class="bt${i<n?' on':''}${i===W.goal-1?' goal':''}" data-water="${i+1}" data-day="${d}" aria-label="${(i+1)*W.ml} ml">${BOTTLE}</button>`).join('')}</div></div>`;}
   M.groups.forEach(g=>{
     if(g.bonus){ // bonus folds away: the header shows what you earned, tap to open
       const open=UI.bonus,pts=bonusPts(mod,d);
@@ -1004,13 +1008,14 @@ function openDay(d){const dlg=$('dlg'),f=$('dlgForm');if(dlg.open)return;
     <div class="row" style="justify-content:flex-end;margin-top:16px"><button class="primary" type="button" onclick="this.closest('dialog').close()">Done</button></div>`;
   f.onsubmit=e=>e.preventDefault();dlg.onclose=()=>{f.onsubmit=null;};dlg.showModal();}
 // Today card (Food / Sleep): tick the items straight away
-function renderToday(){const tc=$('todayCard'),ti=$('todayIn');tc.hidden=true;
+function renderToday(){const tc=$('todayCard'),ti=$('todayIn');tc.hidden=false;
   ti.hidden=false;const M=MODS[mod],pw=perWeek();
   // Today lives inside the module card now: today's ticks on top, the period score and calendar below
-  ti.innerHTML=`<div class="tin-h"><span class="tin-t">Today</span><span class="dsc" id="dayScore"></span></div><div class="checks" id="checks"></div><div class="tin-sep"></div>`;
-  if(mod==='training'){ // training: just a tick next to Today (a bad session still counts)
-    const on=has(todayIso,'Training');
-    ti.innerHTML=`<div class="tin-h"><span class="tin-t">Today</span><button type="button" class="chk-i solo${on?' on':''}" data-item="Training" data-day="${todayIso}" aria-label="Trained today"><span class="bx">${on?crossSVG(CHK_X,false):''}</span></button></div><div class="tin-sep"></div>`;return;}
+  ti.innerHTML=`<div class="checks" id="checks"></div>`;$('dayScore').hidden=false;
+  if(mod==='training'){ // training: deliberately the week, not the day: tick this week's days
+    const mon=iso(mondayOf(new Date())),days=[...Array(7)].map((_,i)=>addD(mon,i)),T=trained(),n=days.filter(k=>T.has(k)).length,pw=perWeek();
+    $('dayScore').hidden=false;$('dayScore').innerHTML=`<b>${n}</b><small>/ ${pw||'–'} this week</small>`;
+    ti.innerHTML=`<div class="dgrid wk tw">${days.map(k=>dayBtn(k,T)).join('')}</div>`;return;}
   // today's score: basics 0-100, Food bonus on top
   const base=Math.min(100,Math.round(frac(mod,todayIso)*100+bonusPts(mod,todayIso))),bon=0; // bonus can make up for a missed item, never above 100
   const [ma,mb]=period('month',todayIso,mod),msc=modScore(mod,ma,mb);
@@ -1266,7 +1271,9 @@ function renderSum(){
     const prv=modScore(mod,pk,pb),pl={week:'last week',month:'last month',year:'last year'}[actView];
     const dl=sc!=null&&prv!=null?`<span class="dl ${sc-prv>=0?'up':'dn'}" title="vs ${pl}">${sc-prv>=0?'+':''}${sc-prv}</span> · `:'';
     const r=sc==null?'':`<span class="psc${sc>=tg?' ok':''}">${sc>=tg?'on target':(tg-sc)+' to go'}</span>`;
-    $('actSum').innerHTML=`<div class="calsum">${left}${r}</div><div class="track thin"><i style="width:${sc==null?0:Math.min(100,sc/tg*100)}%;background:var(--accent)"></i></div>`;return;}
+    $('actSum').innerHTML=`<div class="calsum">${left}${r}</div><div class="track thin"><i style="width:${sc==null?0:Math.min(100,sc/tg*100)}%;background:var(--accent)"></i></div>`;
+    $('histSum').textContent=sc==null?'':`${label.replace(/^in /,'')} · ${sc} / ${tg}`;return;}
+  $('histSum').textContent=`${label.replace(/^in /,'')} · ${cnt}${goal?' / '+goal:''}`;
   $('actSum').innerHTML=`<div class="calsum"><span><b>${cnt}</b>${goal?' / '+goal:''} days ${label}</span>${paceTxt?`<span>${paceTxt}</span>`:''}</div>
     ${goal?`<div class="track thin"><i style="width:${gp}%;background:var(--accent)"></i></div>`:''}`;
 }
@@ -1276,7 +1283,7 @@ document.addEventListener('click',e=>{
   const it=e.target.closest('[data-item]');
   if(it){const d=it.dataset.day;toggleItem(d,it.dataset.item);const dc=$('dayChecks');if(dc)dc.innerHTML=checksHTML(d);return;}
   const tg=e.target.closest('[data-tog]');
-  if(tg){UI[tg.dataset.tog]=!UI[tg.dataset.tog];saveUI();if(tg.dataset.tog==='trend'||tg.dataset.tog==='details')renderOverview();else{renderToday();const dc=$('dayChecks');if(dc)dc.innerHTML=checksHTML(dc.dataset.day||todayIso);}return;}
+  if(tg){UI[tg.dataset.tog]=!UI[tg.dataset.tog];saveUI();if(tg.dataset.tog==='hist'){$('actionCard').classList.toggle('open',UI.hist);return;}if(tg.dataset.tog==='trend'||tg.dataset.tog==='details')renderOverview();else{renderToday();const dc=$('dayChecks');if(dc)dc.innerHTML=checksHTML(dc.dataset.day||todayIso);}return;}
   const rb=e.target.closest('[data-rate]');
   if(rb){const d=rb.dataset.day;setRating(d,+rb.dataset.rate);const dc=$('dayChecks');if(dc)dc.innerHTML=checksHTML(d);return;}
   const wb=e.target.closest('[data-water]');
@@ -1359,6 +1366,7 @@ function placeProgress(){
 placeProgress();window.addEventListener('resize',()=>placeProgress());
 // period picker + Week/Month/Year sit together right above the calendar they control
 {const ch=document.createElement('div');ch.className='calhead';$('actSum').before(ch);ch.append(document.querySelector('.period'),$('viewSeg'));}
+$('actionCard').classList.toggle('open',UI.hist); // History starts folded
 let actView=(()=>{try{return localStorage.getItem('training.view')||'week'}catch(e){return 'week'}})();
 function setView(v){actView=v;setTimeout(()=>{renderSum();if(typeof fillPeriod==='function')fillPeriod();},0);$('actionCard').dataset.view=v;document.querySelectorAll('#viewSeg button').forEach(b=>b.classList.toggle('on',b.dataset.view===v));try{localStorage.setItem('training.view',v)}catch(e){}}
 document.querySelectorAll('#viewSeg button').forEach(b=>b.onclick=()=>setView(b.dataset.view));
