@@ -849,8 +849,10 @@ const MODS={
     icon:'<rect x="4.4" y="5" width="4" height="14" rx="1.5"/><rect x="15.6" y="5" width="4" height="14" rx="1.5"/><path d="M8.4 12h7.2M2 9.3v5.4M22 9.3v5.4"/>'},
   food:{label:'Nutrition',title:'Nutrition',plan:'foodPerWeek',def:6,target:'foodTarget',tdef:85,
     water:{max:8,goal:5,ml:500},
-    groups:[{label:'Meals',items:['Breakfast','Lunch','Dinner'],cols:3},{label:'Bonus',items:['Creatine','Protein','Snack','Evening'],cols:4,bonus:true}],
-    goal:'Fuel the gains',note:'2.5 L water, breakfast, lunch and dinner every day.\nBonus: creatine, protein, a snack or quark after dinner.',
+    groups:[{label:'Meals',items:['Breakfast','Lunch','Dinner'],cols:3},{label:'Extras',items:['Protein','Creatine','Evening','Snack'],cols:4,bonus:true}],
+    // every tick counts towards 100: water 20 (per bottle up to 5), meals 15 each, protein/creatine/quark 10, snack 5
+    pts:{Water:20,Breakfast:15,Lunch:15,Dinner:15,Protein:10,Creatine:10,Evening:10,Snack:5},
+    goal:'Fuel the gains',note:'2.5 L water, three meals, protein, creatine, quark and a snack.\nEverything ticked = 100.',
     icon:'<path d="M7 3v18M4.5 3v5.5a2.5 2.5 0 0 0 5 0V3M17.5 21V3c-2.2 1.2-3.5 4-3.5 7.5V13h3.5"/>'},
   sleep:{label:'Sleep',title:'Sleep',plan:'sleepPerWeek',def:5,target:'sleepTarget',tdef:75,
     groups:[],rating:true, // one rating per night: Sleep:1..5 = 20..100
@@ -978,14 +980,15 @@ const WEIGHT={training:40,food:30,sleep:30};
 function frac(m,d){const M=MODS[m];
   if(m==='training')return has(d,'Training')?1:0;
   if(M.rating)return rateOf(d)/5;
+  if(M.pts){let p=M.items.reduce((t,a)=>t+(has(d,a)?M.pts[a]||0:0),0);if(M.water)p+=M.pts.Water*Math.min(waterN(d),M.water.goal)/M.water.goal;return p/100;}
   let n=M.base.filter(a=>has(d,a)).length,t=M.base.length;
   if(M.water){n+=Math.min(waterN(d),M.water.goal)/M.water.goal;t+=1;}
   return n/t;}
-// bonus on top of the basics: creatine +5, protein +5, evening meal +10, snack +5; at most +25 so a day tops out at 125
-const BONUS={Creatine:5,Protein:5,Evening:10,Snack:5},BONUS_MAX=25;
+// no bonus any more: Nutrition items all have their own points within the 100 (see MODS.food.pts)
+const BONUS={},BONUS_MAX=0;
 // a day's points: basics plus bonus, never above 100
 const dayVal=(m,d)=>Math.min(100,Math.round(frac(m,d)*100+bonusPts(m,d)));
-const bonusPts=(m,d)=>Math.min(BONUS_MAX,MODS[m].bonus.filter(a=>has(d,a)).reduce((t,a)=>t+(BONUS[a]||5),0));
+const bonusPts=()=>0;
 // average bonus per day over the period (only days since the start, up to today)
 function modBonus(m,a,b){const st=startOf(m);if(!st||!MODS[m].bonus.length)return 0;const from=a>st?a:st,to=b<todayIso?b:todayIso;if(from>to)return 0;
   let s=0,n=0;for(let d=from;d<=to;d=addD(d,1)){s+=bonusPts(m,d);n++;}return Math.round(s/n);}
@@ -1038,7 +1041,7 @@ function weakest(m,a,b){const M=MODS[m],st=startOf(m);if(!st)return 'Not started
   const days=[];for(let d=from;d<=to;d=addD(d,1))days.push(d);
   if(M.rating){const r=days.map(rateOf).filter(Boolean);if(!r.length)return 'No nights rated yet';const av=r.reduce((x,y)=>x+y,0)/r.length;return `Average: ${RATE[Math.round(av)-1].l} · ${r.length} ${r.length===1?'night':'nights'} rated`;}
   if(m==='training'){const [c,g]=trainCount(a,b);return `${c} of ${g} training days`;}
-  const rows=M.base.map(it=>[it,days.filter(d=>has(d,it)).length]);
+  const rows=M.items.map(it=>[ITEM_LBL[it]||it,days.filter(d=>has(d,it)).length]);
   if(M.water)rows.unshift(['Water',days.filter(d=>waterN(d)>=M.water.goal).length]);
   rows.sort((x,y)=>x[1]-y[1]);const [it,n]=rows[0];
   return n>=days.length?'Everything done 💪':`Weakest: ${it} · ${n}/${days.length} ${days.length===1?'day':'days'}`;}
@@ -1151,7 +1154,7 @@ function renderMods(){const U=userMods();if(!U.includes(mod))mod=U[0];
     const w=daysOnTarget(mod);
     $('dlCount').textContent=w.total?w.streak+(w.streak===1?' day':' days'):'–';
     $('dlDate').innerHTML=w.total?`In a row · best ${w.best} · ${w.on} of ${w.total} days ≥ ${targetOf(mod)}`:'<span class="empty">Counts from your first day</span>';
-    $('planView').textContent='≥ '+targetOf(mod)+' / week';$('planSub').textContent=mod==='food'?'Week score · a day is max 100':'Week score · average of your nights';}
+    $('planView').textContent='≥ '+targetOf(mod)+' / week';$('planSub').textContent=mod==='food'?'Week score · everything ticked = 100':'Week score · average of your nights';}
   { // Food/Sleep: Plan comes before Days on target; Training keeps Goal, Deadline, Plan
     const dc=$('dlCount').closest('.scard'),pc=$('planView').closest('.scard');
     if(mod!=='training'&&pc.nextElementSibling!==dc)dc.before(pc);
@@ -1515,7 +1518,7 @@ function dialog(html,onSave,okLabel){
 }
 function openEdit(k){
   if(k==='modplan'){const M=MODS[mod];
-    return dialog(`<h3>${M.label} plan</h3><p>Your week score target. A perfect day = 100${mod==='food'?' (bonus can make up for a missed item)':''}. Below 100 leaves room for a night out or a bad night.</p><label>Target week score</label><input name="n" type="number" min="30" max="120" step="5" value="${targetOf(mod)}">`,
+    return dialog(`<h3>${M.label} plan</h3><p>Your week score target. A perfect day = 100${mod==='food'?' (everything ticked)':''}. Below 100 leaves room for a night out or a bad night.</p><label>Target week score</label><input name="n" type="number" min="30" max="120" step="5" value="${targetOf(mod)}">`,
       f=>{const n=Math.min(120,Math.max(30,parseInt(f.n.value,10)||0));if(n)saveSettings({[M.target]:String(n)});});}
   const st=S.settings;
   if(mod!=='training'&&(k==='goal'||k==='deadline'||k==='plan')){const M=MODS[mod];
