@@ -432,7 +432,8 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard,body.ov 
 .dgrid.wk .dc .dpc{display:block;position:absolute;left:0;right:0;top:calc(100% + 4px);text-align:center;font-style:normal;font-size:11px;font-weight:700;color:var(--accent)}
 .dgrid.wk{margin-bottom:22px}
 .dl{font-style:normal;font-weight:900;margin-left:6px}.dl.up{color:var(--accent)}.dl.dn{color:var(--text)}.calsum .dl{margin-left:0}
-.dsc{display:flex;align-items:baseline;gap:3px}.dsc b{font-size:26px;font-weight:900;letter-spacing:-.8px;color:var(--text)}.dsc i{font-style:normal;font-size:14px;font-weight:800;color:var(--accent)}.dsc small{font-size:11px;font-weight:700;color:var(--muted);margin-left:5px;text-transform:uppercase;letter-spacing:.05em}
+.dsc{display:flex;align-items:baseline;gap:3px}.dsc b{font-size:26px;font-weight:900;letter-spacing:-.8px;color:var(--text)}.dsc i{font-style:normal;font-size:14px;font-weight:800;color:var(--accent)}.dsc .dsep{width:1px;height:20px;background:var(--border);margin:0 8px;align-self:center}
+.dsc small{font-size:11px;font-weight:700;color:var(--muted);margin-left:5px;text-transform:uppercase;letter-spacing:.05em}
 .calsum .psc{color:var(--muted)}.calsum .psc.ok{color:var(--accent);font-weight:800}.calsum .psc b{font-size:22px;font-weight:900;color:var(--accent);margin-left:4px;letter-spacing:-.5px}
 .wlbl{display:inline-flex;align-items:center;gap:6px}.wlbl svg{width:18px;height:18px;fill:none;stroke:var(--accent);stroke-width:2.2;stroke-linejoin:round}
 .bt .xm{left:2%;top:12%;width:96%;height:auto;aspect-ratio:1/1}.bt .xm path{stroke-width:15}
@@ -936,7 +937,8 @@ function renderToday(){const tc=$('todayCard');if(mod==='training'){tc.hidden=tr
   $('todayTtl').innerHTML=`<svg class="calicon" viewBox="0 0 24 24" aria-hidden="true">${M.icon}</svg>Today`;
   // today's score: basics 0-100, Food bonus on top
   const base=Math.round(frac(mod,todayIso)*100),bon=bonusPts(mod,todayIso);
-  $('dayScore').innerHTML=`<b>${base}</b>${bon?`<i>+${bon}</i>`:''}<small>day score</small>`;
+  const [ma,mb]=period('month',todayIso,mod),msc=modScore(mod,ma,mb);
+  $('dayScore').innerHTML=`<b>${base}</b>${bon?`<i>+${bon}</i>`:''}<small>day</small>${msc!=null?`<span class="dsep"></span><b>${msc}</b><small>month</small>`:''}`;
   $('checks').innerHTML=checksHTML(todayIso);}
 
 // ---------- render ----------
