@@ -347,8 +347,8 @@ button.ghost{font-weight:700;border-radius:11px}
   .wrap>.stack{grid-column:2;grid-row:2;align-content:start}
   .wrap>#todayCard{grid-column:2;grid-row:2;align-self:start}
   .wrap>#overCard{grid-column:1/-1;grid-row:2;max-width:720px;width:100%;justify-self:center}
-  body:not([data-mod="training"]) .wrap>#actionCard{grid-row:2/4;align-self:start}
-  body:not([data-mod="training"]) .wrap>.stack{grid-row:3}
+  body:not([data-mod="training"]) .wrap>#actionCard{grid-row:2;align-self:start}
+  body:not([data-mod="training"]) .wrap>.stack{grid-row:2}
   .wrap>.card{margin:0}
   .stack,.stack[aria-expanded]{display:grid;grid-template-columns:minmax(0,1fr);gap:22px;margin:0;cursor:default}
   .stack .scard,.stack[aria-expanded] .scard:nth-child(n){position:relative!important;transform:none!important;opacity:1!important;height:auto!important;margin:0!important;pointer-events:auto!important;z-index:auto!important}
@@ -386,6 +386,8 @@ button.ghost{font-weight:700;border-radius:11px}
 :root[data-theme="dark"] .tabbar{background:rgba(19,26,38,.6);border-color:rgba(255,255,255,.09);box-shadow:0 12px 32px rgba(0,0,0,.4)}
 body.has-tabbar .wrap{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
 .checks{display:grid;gap:16px;margin-top:14px}
+.tin-h{display:flex;justify-content:space-between;align-items:baseline;margin-top:14px}.tin-t{font-weight:800;font-size:18px}
+.tin-sep{height:1px;background:var(--border);margin:22px 0 4px}
 .rate .rq{font-weight:800;font-size:16px;margin-bottom:12px}
 .faces{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
 .fc{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 2px 8px;border-radius:16px;background:var(--surface2);color:var(--muted);-webkit-tap-highlight-color:transparent;transition:background .2s,color .2s}
@@ -636,10 +638,7 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard,body.ov 
   </div>
 
   <!-- Food / Sleep: today's checklist -->
-  <div class="card" id="todayCard" hidden>
-    <div class="label"><span class="ttl" id="todayTtl">Today</span><span class="dsc" id="dayScore"></span></div>
-    <div class="checks" id="checks"></div>
-  </div>
+  <div class="card" id="todayCard" hidden></div>
 
   <!-- This week -->
   <div class="card" id="actionCard">
@@ -649,6 +648,7 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard,body.ov 
         <button data-view="week" role="tab">Week</button><button data-view="month" role="tab">Month</button><button data-view="year" role="tab">Year</button>
       </div>
     </div>
+    <div id="todayIn" hidden></div>
     <div id="actSum"></div>
     <div id="week" class="view"></div>
     <div id="monthView" class="view">
@@ -971,9 +971,10 @@ function openDay(d){const dlg=$('dlg'),f=$('dlgForm');if(dlg.open)return;
     <div class="row" style="justify-content:flex-end;margin-top:16px"><button class="primary" type="button" onclick="this.closest('dialog').close()">Done</button></div>`;
   f.onsubmit=e=>e.preventDefault();dlg.onclose=()=>{f.onsubmit=null;};dlg.showModal();}
 // Today card (Food / Sleep): tick the items straight away
-function renderToday(){const tc=$('todayCard');if(mod==='training'){tc.hidden=true;return;}
-  tc.hidden=false;const M=MODS[mod],pw=perWeek();
-  $('todayTtl').innerHTML=`<svg class="calicon" viewBox="0 0 24 24" aria-hidden="true">${M.icon}</svg>Today`;
+function renderToday(){const tc=$('todayCard'),ti=$('todayIn');tc.hidden=true;if(mod==='training'){ti.hidden=true;return;}
+  ti.hidden=false;const M=MODS[mod],pw=perWeek();
+  // Today lives inside the module card now: today's ticks on top, the period score and calendar below
+  ti.innerHTML=`<div class="tin-h"><span class="tin-t">Today</span><span class="dsc" id="dayScore"></span></div><div class="checks" id="checks"></div><div class="tin-sep"></div>`;
   // today's score: basics 0-100, Food bonus on top
   const base=Math.round(frac(mod,todayIso)*100),bon=bonusPts(mod,todayIso);
   const [ma,mb]=period('month',todayIso,mod),msc=modScore(mod,ma,mb);
