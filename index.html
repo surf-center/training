@@ -347,7 +347,7 @@ button.ghost{font-weight:700;border-radius:11px}
   .wrap>header{grid-column:1/-1;margin-bottom:0}
   .wrap>#todayCard{grid-column:1;grid-row:2;align-self:start}
   .wrap>#actionCard{grid-column:1;grid-row:3;align-self:start}
-  #actionCard>.label{display:none}
+  #actionCard>.label{pointer-events:none;margin-bottom:6px}#actionCard .hist-h span.hist-m{font-size:18px;font-weight:800;color:var(--text)}
   .wrap>.stack{grid-column:2;grid-row:2/5;align-content:start}
   .wrap>#overCard{grid-column:1/-1;grid-row:2;max-width:720px;width:100%;justify-self:center}
 
@@ -400,11 +400,12 @@ body.has-tabbar .wrap{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
 .fc span{font-size:12px;font-weight:800}.fc i{font-style:normal;font-size:10px;font-weight:700;opacity:.7}
 .fc.on{background:var(--text);color:var(--surface)}
 body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:none!important}
-.hist-h{gap:10px}.hist-t{display:flex;flex-direction:column;min-width:0}.hist-h span.hist-m{font-size:14px;font-weight:700;color:var(--muted);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-transform:none;letter-spacing:0;margin-top:2px}.stack[aria-expanded="true"] .hist-h span.hist-m{font-size:18px;font-weight:800;color:var(--text);letter-spacing:-.2px}.hist-h span.ttl{font-size:18px;color:var(--text);text-transform:none;letter-spacing:-.2px;font-weight:800}.hist-h span.hist-s{margin-left:auto;font-size:13px;font-weight:700;color:var(--muted);text-transform:none;letter-spacing:0}.hist-h::after{content:'▾';color:var(--accent);font-size:12px}#actionCard.open .hist-h::after{content:'▴'}
+.hist-h{gap:10px}.hist-t{display:flex;flex-direction:column;min-width:0}.hist-h span.hist-m{font-size:15px;font-weight:800;color:var(--text);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-transform:none;letter-spacing:0;margin-top:2px}.stack[aria-expanded="true"] .hist-h span.hist-m{font-size:18px;font-weight:800;color:var(--text);letter-spacing:-.2px}.hist-h span.ttl{font-size:18px;color:var(--text);text-transform:none;letter-spacing:-.2px;font-weight:800}.hist-h span.hist-s{margin-left:auto;font-size:13px;font-weight:700;color:var(--muted);text-transform:none;letter-spacing:0}
 #actionCard:not(.open)>*:not(.label){display:none!important}#actionCard:not(.open){padding-top:16px;padding-bottom:16px}#actionCard>.label{margin:0}
 .dgrid.wk.tw{display:flex;justify-content:space-between;max-width:none;margin:16px 0 2px;gap:0}.dgrid.wk.tw .dc{flex:none;width:36px}
 #todayCard>.label{align-items:center}
 @media (max-width:430px){.hist-h span.hist-s{display:none}}
+@media (max-width:999px){.stack[aria-expanded="false"] #actionCard{padding-top:30px;padding-bottom:30px}}
 .calhead{display:flex;gap:8px;align-items:center;margin:16px 0 4px}#actionCard .period select{border-radius:9px!important}.calhead .seg{flex:none}.calhead .seg button{padding:7px 9px;font-size:12px}
 #actionCard:not([data-view="year"]) .period #selYear{display:none}#actionCard .period select{width:100%}
 #actionCard .period{display:flex;flex:1;min-width:0;margin:0;background:var(--surface2);box-shadow:none}#actionCard .period #selWeek{flex:1}
@@ -445,7 +446,7 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:
 .wline s{position:absolute;top:-4px;bottom:-4px;width:2px;margin-left:-1px;background:var(--text);border-radius:2px}
 .wscale{position:relative;display:flex;justify-content:space-between;font-size:11px;font-weight:600;color:var(--muted);height:14px}
 .wscale span:nth-child(2){position:absolute;transform:translateX(-50%);color:var(--text);font-weight:700}
-.wamt{margin:-6px 0 0 28px;font-size:13px;font-weight:800;color:var(--text)}.wamt i{font-style:normal;color:var(--muted);font-weight:700}
+.wamt{margin:-4px 0 0 0;font-size:13px;font-weight:800;color:var(--text)}.wamt i{font-style:normal;color:var(--muted);font-weight:700}
 .water.wrow{display:flex;align-items:center;gap:8px}.wdrop{flex:none;width:20px;height:20px;fill:none;stroke:var(--accent);stroke-width:2.2;stroke-linejoin:round}.wrow .bottles{flex:1;margin:0}
 .bottles{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:4px;margin-top:6px}
 .bt{all:unset;position:relative;cursor:pointer;aspect-ratio:3/4;display:grid;place-items:center;-webkit-tap-highlight-color:transparent}
@@ -610,6 +611,7 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:
 .cur-v span{font-size:22px;font-weight:800;letter-spacing:0;margin-left:6px;color:var(--text)}
 .cur-l{margin-top:8px;font-size:13px;font-weight:600;color:var(--muted)}
 .cur-l b.up{color:var(--good)}.cur-l b.dn{color:var(--warn)}
+.wfc{display:flex;justify-content:space-between;align-items:baseline;margin:12px 0 10px;padding-top:12px;border-top:1px solid var(--border);font-size:13px;font-weight:700;color:var(--muted)}.wfc b{font-size:15px;font-weight:800;color:var(--text)}.wfc b.up{color:var(--good)}.wfc b.dn{color:var(--warn)}
 @media (max-width:560px){.cur-v{font-size:56px}}
 /* collapsed Progress: same size as Goal / Deadline / Plan */
 #progCard:has(#pmore[hidden]) .cur{margin-top:8px}
@@ -721,17 +723,6 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:
       <input type="date" id="wDate" aria-label="Date">
       <input type="number" id="wKg" step="0.1" min="20" max="300" placeholder="kg" inputmode="decimal" aria-label="Weight in kg">
       <button class="primary" id="wAdd">Save</button>
-    </div>
-    <div class="chart-head"><span>Weight</span>
-      <label class="zoom" title="Zoom the chart"><span id="zLbl">All</span><input type="range" id="zoom" min="0" max="4" step="1" value="0"></label>
-    </div>
-    <div class="chartwrap" id="chartWrap"><div class="tip" id="tip"></div></div>
-    <div class="legend">
-      <span><i style="background:var(--accent)"></i>Measured</span>
-      <span><i style="background:var(--good)"></i>Target</span>
-      <span><i style="background:var(--muted2)"></i>Plan</span>
-      <span><i style="background:var(--accent);opacity:.5"></i>Forecast</span>
-      <span>★ Highest</span>
     </div>
     <button class="linkbtn" id="wListToggle">Show measurements ▾</button>
     <div class="wtable" id="wList" hidden></div>
@@ -1083,7 +1074,7 @@ function renderMods(){const U=userMods();if(!U.includes(mod))mod=U[0];
     const [a1,b1]=mod==='training'?[dc,pc]:[pc,dc];a1.querySelector('.step').textContent='2';b1.querySelector('.step').textContent='3';}
   const st=$('stack'),more=[...st.querySelectorAll('.scard')].filter(c=>!c.hidden&&c.id!=='actionCard');$('stackN').textContent='+'+more.length;
   // tell what else is in the pile: the other cards' titles
-  $('histMore').textContent=st.getAttribute('aria-expanded')==='true'?'Calendar':'Open Stack';
+  $('histMore').textContent=histLbl(st.getAttribute('aria-expanded')==='true');
   renderToday();}
 const OV_ICON='<path d="M12 20.2s-7.6-4.6-7.6-10.2A4.3 4.3 0 0 1 12 7.3a4.3 4.3 0 0 1 7.6 2.7c0 5.6-7.6 10.2-7.6 10.2z"/>';
 function setMod(m){if(m==='overview'){if(ov)return;ov=true;}else{if(!ov&&m===mod)return;ov=false;mod=m;try{localStorage.setItem('training.mod',m)}catch(e){}}
@@ -1166,13 +1157,16 @@ function renderWeight(){
     // big current weight, with the date and the change since the previous measurement
     const prev=W.length>1?W[W.length-2].kg:null,ch=prev===null?null:last-prev;
     h+=`<div class="cur"><div class="cur-v">${fmtKg(last)}<span>kg</span></div><div class="cur-l">Current weight · ${fmtDs(W[W.length-1].date)}${ch===null||Math.abs(ch)<0.05?'':` · <b class="${toward(ch)?'up':'dn'}">${ch>0?'+':''}${fmtKg(ch)} kg</b>`}</div></div>`;
+    // forecast: where the trend lands at the deadline
+    const tr=trend(W),tf=dl?parse(dl).getTime():null;
+    if(tr&&tf&&tf>tr.lastT){const fk=tr.at(tf),ok=tw?Math.abs(fk-tw)<=0.5||(tw>=first?fk>=tw:fk<=tw):true;
+      h+=`<div class="wfc"><span>Forecast · ${fmtDs(dl)}</span><b class="${ok?'up':'dn'}">${fmtKg(fk)} kg</b></div>`;}
   }else h='<div class="sub">No measurements yet. Add your first weight below.</div>';
   $('wStats').innerHTML=h;
   {const up=tw?tw>=(W.length?startWeight(W).kg:0):false;
    $('wList').innerHTML=W.length?`<table><thead><tr><th>kg</th><th>Change</th><th>Date</th><th></th></tr></thead><tbody>${[...W].map((w,i)=>{const d=i?w.kg-W[i-1].kg:null;
      const cls=d===null||Math.abs(d)<0.05?'nc':((d>0)===up?'up':'dn');
      return `<tr><td class="kg">${fmtKg(w.kg)}</td><td class="chg ${cls}">${d===null?'–':(d>0?'+':'')+fmtKg(d)}</td><td class="dt">${fmtDs(w.date)}${w.date.slice(0,4)!==String(new Date().getFullYear())?' '+w.date.slice(2,4):''}</td><td><button title="Delete" aria-label="Delete measurement" data-del="${w.date}"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg></button></td></tr>`;}).reverse().join('')}</tbody></table>`:'';}
-  drawChart(W,tw,dl);
 }
 
 // Chart zoom: how far back the chart shows (0 = everything)
@@ -1355,12 +1349,11 @@ $('selWeek').onchange=e=>{
   if(actView==='month'){monthStart=new Date(year,+e.target.value,1);const t=new Date(monthStart);t.setDate(4);weekStart=mondayOf(t);}
   else{weekStart=parse(e.target.value);const t=new Date(weekStart);t.setDate(t.getDate()+3);monthStart=new Date(t.getFullYear(),t.getMonth(),1);}
   renderWeek();renderMonth();renderSum();};
-$('zoom').value=zoomI;$('zLbl').textContent=ZOOMS[zoomI][0];
-$('zoom').oninput=e=>{zoomI=+e.target.value;$('zLbl').textContent=ZOOMS[zoomI][0];try{localStorage.setItem('training.zoom',zoomI)}catch(_){};renderWeight();};
 $('wListToggle').onclick=()=>{const l=$('wList'),open=l.hidden;l.hidden=!open;$('wListToggle').textContent=open?'Hide measurements ▴':'Show measurements ▾';};
 // stack: collapsed like notifications, tap to expand
 // one tap opens everything: the stack unfolds and History (its top card) opens with it
-function setStack(open){$('stack').setAttribute('aria-expanded',open?'true':'false');$('histMore').textContent=open?'Calendar':'Open Stack';UI.hist=open;saveUI();$('actionCard').classList.toggle('open',open);}
+function histLbl(open){return open||innerWidth>=1000?'Calendar':'Open Stack';} // laptops: always the open Calendar card
+function setStack(open){$('stack').setAttribute('aria-expanded',open?'true':'false');$('histMore').textContent=histLbl(open);UI.hist=open;saveUI();$('actionCard').classList.toggle('open',open);}
 $('stack').addEventListener('click',e=>{const st=$('stack'),isOpen=st.getAttribute('aria-expanded')==='true';
   if(e.target.closest('#stackLess')){setStack(false);return;}
   // taps on controls, or inside an open History/Progress card, never fold the stack
@@ -1385,6 +1378,7 @@ function placeProgress(){
   // Calendar: on laptops a card of its own under Today (always open); on phones the top of the folded stack
   if(innerWidth>=1000){if(ac.parentElement===st){$('todayCard').after(ac);ac.classList.remove('scard');}ac.classList.add('open');}
   else if(ac.parentElement!==st){st.prepend(ac);ac.classList.add('scard');ac.classList.toggle('open',st.getAttribute('aria-expanded')==='true');}
+  $('histMore').textContent=histLbl(st.getAttribute('aria-expanded')==='true');
   if(pc.parentElement!==st){st.insertBefore(pc,$('stackLess'));pc.classList.add('scard');}
   $('stackN').textContent='+'+(st.querySelectorAll('.scard').length-1);
   if(!$('pmore').hidden)renderWeight();
