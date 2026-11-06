@@ -1162,7 +1162,7 @@ document.addEventListener('click',e=>{
   if(it){const d=it.dataset.day;toggleItem(d,it.dataset.item);const dc=$('dayChecks');if(dc)dc.innerHTML=checksHTML(d);return;}
   const wb=e.target.closest('[data-water]');
   if(wb){const d=wb.dataset.day;setWater(d,+wb.dataset.water);const dc=$('dayChecks');if(dc)dc.innerHTML=checksHTML(d);return;}
-  const tb=e.target.closest('[data-mod]');
+  const tb=e.target.closest('#tabbar [data-mod],.ov-row[data-mod]'); // not body[data-mod]
   if(tb){setMod(tb.dataset.mod);return;}
   const wc=e.target.closest('[data-wd]');
   if(wc){toggle(wc.dataset.wd);return;}
