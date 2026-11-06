@@ -612,6 +612,10 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:
 .cur-v span{font-size:22px;font-weight:800;letter-spacing:0;margin-left:6px;color:var(--text)}
 .cur-l{margin-top:8px;font-size:13px;font-weight:600;color:var(--muted)}
 .cur-l b.up{color:var(--good)}.cur-l b.dn{color:var(--warn)}
+.cur{cursor:pointer;-webkit-tap-highlight-color:transparent}.cur-l::after{content:' ⓘ';color:var(--accent);font-weight:800}
+.wpers{margin-top:12px;padding:12px 14px;border-radius:14px;background:var(--surface2);font-size:13px;font-weight:600;color:var(--muted)}
+.wp-r{display:flex;justify-content:space-between;align-items:baseline;padding:3px 0}.wp-r b{font-weight:800;color:var(--text)}.wp-r.now span,.wp-r.now b{color:var(--accent);font-weight:800}
+.wpers p{margin:8px 0 0;line-height:1.4}.wpers p.wp-s{font-size:11.5px;opacity:.85}
 .wfc{display:flex;justify-content:space-between;align-items:baseline;margin:12px 0 10px;padding-top:12px;border-top:1px solid var(--border);font-size:13px;font-weight:700;color:var(--muted)}.wfc b{font-size:15px;font-weight:800;color:var(--text)}.wfc b.up{color:var(--good)}.wfc b.dn{color:var(--warn)}
 @media (max-width:560px){.cur-v{font-size:56px}}
 /* collapsed Progress: same size as Goal / Deadline / Plan */
@@ -847,6 +851,20 @@ function startWeight(W){ // last measurement before the goal start day, else the
   return before.length?before[before.length-1]:W[0];
 }
 // Trend: linear fit over the last 6 weeks of measurements (at least 3 points).
+// Daily weight curve: you weigh least right after waking and most in the evening (food + drink).
+// kg gained per hour after 07:00, from your own timed measurements once there are enough, else a typical ~0.09%/h (~1 kg over a day)
+const hourOf=t=>{const m=/^(\d{1,2}):(\d{2})/.exec(t||'');return m?+m[1]+m[2]/60:null;};
+function dayCurve(W){
+  const kg=W.length?W[W.length-1].kg:80,def={slope:kg*0.0009,own:false,n:0};
+  const T=W.filter(w=>hourOf(w.time)!=null);if(T.length<5)return def;
+  const hs=T.map(w=>hourOf(w.time));if(Math.max(...hs)-Math.min(...hs)<4)return def;
+  // remove the long-term trend first (straight line over all measurements), then fit what is left against the hour
+  const t0=parse(W[0].date).getTime(),X=W.map(w=>(parse(w.date).getTime()-t0)/864e5),Y=W.map(w=>w.kg),n=W.length;
+  const mx=X.reduce((a,b)=>a+b)/n,my=Y.reduce((a,b)=>a+b)/n;let sxx=0,sxy=0;X.forEach((x,i)=>{sxx+=(x-mx)**2;sxy+=(x-mx)*(Y[i]-my);});
+  const b=sxx?sxy/sxx:0,res=T.map(w=>w.kg-(my+b*((parse(w.date).getTime()-t0)/864e5-mx)));
+  const mh=hs.reduce((a,c)=>a+c)/hs.length,mr=res.reduce((a,c)=>a+c)/res.length;let hh=0,hr=0;hs.forEach((h,i)=>{hh+=(h-mh)**2;hr+=(h-mh)*(res[i]-mr);});
+  const sl=hh?hr/hh:0;return sl>0&&sl<kg*0.003?{slope:sl,own:true,n:T.length}:def;}
+const atHour=(kg,from,to,sl)=>kg+sl*(Math.min(22,Math.max(7,to))-Math.min(22,Math.max(7,from)));
 function trend(W){
   if(W.length<2)return null;
   const lastT=parse(W[W.length-1].date).getTime();
@@ -1170,6 +1188,16 @@ function renderWeight(){
     if(tr&&tf&&tf>tr.lastT){const fk=tr.at(tf),ok=tw?Math.abs(fk-tw)<=0.5||(tw>=first?fk>=tw:fk<=tw):true;
       h+=`<div class="wfc"><span>Forecast · ${fmtDs(dl)}</span><b class="${ok?'up':'dn'}">${fmtKg(fk)} kg</b></div>`;}
   }else h='<div class="sub">No measurements yet. Add your first weight below.</div>';
+  if(W.length){const L=W[W.length-1],h0=hourOf(L.time),dc=dayCurve(W),f=v=>fmtKg(Math.round(v*10)/10);
+    // tap the latest measurement: where it sits in your day
+    const ph=`<div class="wpers" id="wPers" ${UI.pers?'':'hidden'}>`+(h0==null
+      ?`<p>Add the time to your next measurement to put it in perspective.</p>`
+      :`<div class="wp-r"><span>Morning · 07:00</span><b>≈ ${f(atHour(L.kg,h0,7,dc.slope))} kg</b></div>`
+       +`<div class="wp-r now"><span>Measured · ${L.time}</span><b>${f(L.kg)} kg</b></div>`
+       +`<div class="wp-r"><span>Evening · 21:00</span><b>≈ ${f(atHour(L.kg,h0,21,dc.slope))} kg</b></div>`)
+      +`<p>Highest reading: in the evening, after dinner. Lowest: right after waking. Same time each day gives the fairest trend.</p>`
+      +`<p class="wp-s">${dc.own?`Based on your ${dc.n} timed measurements`:'Typical day curve, ≈ '+f(dc.slope*14)+' kg from morning to evening. Becomes personal after 5 timed measurements.'}</p></div>`;
+    h=h.includes('<div class="wfc"')?h.replace('<div class="wfc"',ph+'<div class="wfc"'):h+ph;}
   $('wStats').innerHTML=h;
   {const up=tw?tw>=(W.length?startWeight(W).kg:0):false;
    $('wList').innerHTML=W.length?`<table><thead><tr><th>kg</th><th>Change</th><th>Date</th><th></th></tr></thead><tbody>${[...W].map((w,i)=>{const d=i?w.kg-W[i-1].kg:null;
@@ -1380,6 +1408,7 @@ $('themeBtn').onclick=()=>setTheme(document.documentElement.dataset.theme==='dar
 function setProg(open){$('pmore').hidden=!open;$('progToggle').textContent=open?'Show less ▴':'Show more ▾';$('progToggle').setAttribute('aria-expanded',open);
   try{localStorage.setItem('training.prog',open?'1':'0')}catch(e){}if(open)renderWeight();}
 $('progToggle').onclick=()=>setProg($('pmore').hidden);
+$('wStats').addEventListener('click',e=>{if(!e.target.closest('.cur'))return;UI.pers=!UI.pers;const p=$('wPers');if(p)p.hidden=!UI.pers;});
 setProg((()=>{try{return localStorage.getItem('training.prog')==='1'}catch(e){return false}})());
 function placeProgress(){
   // Progress always lives in the stack: collapsed pile on phones, a column of 4 on laptops
