@@ -30,7 +30,7 @@
 }
 :root[data-theme="dark"] .card{box-shadow:none;border:1px solid var(--border)}
 :root[data-theme="dark"]{color-scheme:dark}
-.themebtn{border:none;background:var(--surface);color:var(--text2);width:38px;height:38px;border-radius:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 2px rgba(15,23,42,.06),0 4px 12px rgba(15,23,42,.06);flex:none}
+.themebtn{border:none;background:var(--surface);color:var(--text2);width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 2px rgba(15,23,42,.06),0 4px 12px rgba(15,23,42,.06);flex:none}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html{accent-color:#2563eb;color-scheme:light}
@@ -346,6 +346,7 @@ button.ghost{font-weight:700;border-radius:11px}
   .wrap>header{grid-column:1/-1;margin-bottom:0}
   .wrap>#todayCard{grid-column:1;grid-row:2;align-self:start}
   .wrap>#actionCard{grid-column:1;grid-row:3;align-self:start}
+  #actionCard>.label{display:none}
   .wrap>.stack{grid-column:2;grid-row:2/5;align-content:start}
   .wrap>#overCard{grid-column:1/-1;grid-row:2;max-width:720px;width:100%;justify-self:center}
 
@@ -374,8 +375,7 @@ button.ghost{font-weight:700;border-radius:11px}
 .k6-t i,.k6-o i{font-style:normal;color:#fff}
 /* blue marker line that sweeps in under 'consistency in action' (works across wrapped lines) */
 .who{all:unset;cursor:pointer;font:inherit;font-weight:900;color:var(--text);padding:0 .08em;margin-left:-.08em;-webkit-tap-highlight-color:transparent;
-  /* marker stroke behind the lower half of the name */
-  background:linear-gradient(transparent 64%,#1d4ed8 64%,#1d4ed8 82%,transparent 82%)}
+  background:none}
 .who.out{color:var(--accent)}
 .tabbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom));z-index:40;display:flex;gap:4px;padding:6px;border-radius:999px;
   background:rgba(255,255,255,.58);-webkit-backdrop-filter:blur(22px) saturate(180%);backdrop-filter:blur(22px) saturate(180%);
@@ -399,12 +399,12 @@ body.has-tabbar .wrap{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
 .fc span{font-size:12px;font-weight:800}.fc i{font-style:normal;font-size:10px;font-weight:700;opacity:.7}
 .fc.on{background:var(--text);color:var(--surface)}
 body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:none!important}
-.hist-h{gap:10px}.hist-t{display:flex;flex-direction:column;min-width:0}.hist-h span.hist-m{font-size:14px;font-weight:700;color:var(--muted);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-transform:none;letter-spacing:0;margin-top:2px}@media (max-width:999px){.stack[aria-expanded="true"] #actionCard .label{display:none}}.hist-h span.ttl{font-size:18px;color:var(--text);text-transform:none;letter-spacing:-.2px;font-weight:800}.hist-h span.hist-s{margin-left:auto;font-size:13px;font-weight:700;color:var(--muted);text-transform:none;letter-spacing:0}.hist-h::after{content:'▾';color:var(--accent);font-size:12px}#actionCard.open .hist-h::after{content:'▴'}
+.hist-h{gap:10px}.hist-t{display:flex;flex-direction:column;min-width:0}.hist-h span.hist-m{font-size:14px;font-weight:700;color:var(--muted);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-transform:none;letter-spacing:0;margin-top:2px}.stack[aria-expanded="true"] .hist-h span.hist-m{font-size:18px;font-weight:800;color:var(--text);letter-spacing:-.2px}.hist-h span.ttl{font-size:18px;color:var(--text);text-transform:none;letter-spacing:-.2px;font-weight:800}.hist-h span.hist-s{margin-left:auto;font-size:13px;font-weight:700;color:var(--muted);text-transform:none;letter-spacing:0}.hist-h::after{content:'▾';color:var(--accent);font-size:12px}#actionCard.open .hist-h::after{content:'▴'}
 #actionCard:not(.open)>*:not(.label){display:none!important}#actionCard:not(.open){padding-top:16px;padding-bottom:16px}#actionCard>.label{margin:0}
-.dgrid.wk.tw{max-width:none;margin:16px 0 2px;gap:6px}
+.dgrid.wk.tw{display:flex;justify-content:space-between;max-width:none;margin:16px 0 2px;gap:0}.dgrid.wk.tw .dc{flex:none;width:36px}
 #todayCard>.label{align-items:center}
 @media (max-width:430px){.hist-h span.hist-s{display:none}}
-.calhead{display:flex;gap:8px;align-items:center;margin:16px 0 4px}.calhead .seg{flex:none}.calhead .seg button{padding:7px 9px;font-size:12px}
+.calhead{display:flex;gap:8px;align-items:center;margin:16px 0 4px}#actionCard .period select{border-radius:9px!important}.calhead .seg{flex:none}.calhead .seg button{padding:7px 9px;font-size:12px}
 #actionCard:not([data-view="year"]) .period #selYear{display:none}#actionCard .period select{width:100%}
 #actionCard .period{display:flex;flex:1;min-width:0;margin:0;background:var(--surface2);box-shadow:none}#actionCard .period #selWeek{flex:1}
 #actionCard[data-view="year"] .period #selYear{flex:1}
@@ -444,6 +444,7 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:
 .wline s{position:absolute;top:-4px;bottom:-4px;width:2px;margin-left:-1px;background:var(--text);border-radius:2px}
 .wscale{position:relative;display:flex;justify-content:space-between;font-size:11px;font-weight:600;color:var(--muted);height:14px}
 .wscale span:nth-child(2){position:absolute;transform:translateX(-50%);color:var(--text);font-weight:700}
+.wamt{margin:-6px 0 0 28px;font-size:13px;font-weight:800;color:var(--text)}.wamt i{font-style:normal;color:var(--muted);font-weight:700}
 .water.wrow{display:flex;align-items:center;gap:8px}.wdrop{flex:none;width:20px;height:20px;fill:none;stroke:var(--accent);stroke-width:2.2;stroke-linejoin:round}.wrow .bottles{flex:1;margin:0}
 .bottles{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:4px;margin-top:6px}
 .bt{all:unset;position:relative;cursor:pointer;aspect-ratio:3/4;display:grid;place-items:center;-webkit-tap-highlight-color:transparent}
@@ -494,8 +495,8 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:
 .gtext{display:block;font-size:30px;line-height:1.1;font-weight:900;letter-spacing:-.6px}
 .gnote{display:block;font-size:14px;line-height:1.45;font-weight:600;color:var(--text2);margin-top:4px}
 .chk-i{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-radius:16px;background:var(--surface2);font-weight:700;font-size:16px;color:var(--text);-webkit-tap-highlight-color:transparent}
-.checks .cgroup+.nolab{margin-top:-8px}
-.pill{all:unset;box-sizing:border-box;cursor:pointer;height:48px;border-radius:14px;background:var(--surface2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font-weight:800;font-size:13px;color:var(--text);-webkit-tap-highlight-color:transparent;transition:background .15s,color .15s}
+.checks .cgroup+.nolab{margin-top:-8px}.checks .cg-i:has(.pill){gap:6px}
+.pill{all:unset;box-sizing:border-box;cursor:pointer;height:44px;padding:0 4px;min-width:0;border-radius:12px;background:var(--surface2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font-weight:700;font-size:12.5px;white-space:nowrap;color:var(--text);-webkit-tap-highlight-color:transparent;transition:background .15s,color .15s}
 .pill i{font-style:normal;font-size:10px;font-weight:800;color:var(--accent)}.pill.on{background:var(--accent);color:#fff}
 .chk-i .bx{position:relative;flex:none;width:30px;height:30px;border-radius:50%;background:var(--surface);box-shadow:inset 0 0 0 2px var(--muted2)}
 .chk-i.on .bx{background:transparent}
@@ -904,7 +905,7 @@ function checksHTML(d){const M=MODS[mod];let h='';
     h+=`<div class="rate"><div class="faces">${RATE.map((x,i)=>`<button type="button" class="fc${r===i+1?' on':''}" data-rate="${i+1}" data-day="${d}" aria-label="${x.l}">${face(i)}<span>${x.l}</span></button>`).join('')}</div></div>`;}
   if(M.water){const W=M.water,n=waterN(d);
     h+=`<div class="water wrow"><svg class="wdrop" viewBox="0 0 24 24" aria-label="Water"><path d="M12 3.5c3 4 6.2 7.4 6.2 10.7a6.2 6.2 0 0 1-12.4 0C5.8 10.9 9 7.5 12 3.5z"/></svg>
-      <div class="bottles">${[...Array(W.max)].map((_,i)=>`<button type="button" class="bt${i<n?' on':''}" data-water="${i+1}" data-day="${d}" aria-label="${(i+1)*W.ml} ml">${bottle('bw'+d+i,i<n)}</button>`).join('')}</div></div>`;}
+      <div class="bottles">${[...Array(W.max)].map((_,i)=>`<button type="button" class="bt${i<n?' on':''}" data-water="${i+1}" data-day="${d}" aria-label="${(i+1)*W.ml} ml">${bottle('bw'+d+i,i<n)}</button>`).join('')}</div></div><div class="wamt">${L(n*W.ml)} <i>/ ${L(W.goal*W.ml)} L</i></div>`;}
   M.groups.forEach(g=>{
     if(g.bonus&&mod==='food'){h+=`<div class="cg-i c${g.cols} nolab">${g.items.map(a=>chk(d,a)).join('')}</div>`;return;}
     if(g.bonus){ // bonus folds away: the header shows what you earned, tap to open
@@ -1081,7 +1082,7 @@ function renderMods(){const U=userMods();if(!U.includes(mod))mod=U[0];
     const [a1,b1]=mod==='training'?[dc,pc]:[pc,dc];a1.querySelector('.step').textContent='2';b1.querySelector('.step').textContent='3';}
   const st=$('stack'),more=[...st.querySelectorAll('.scard')].filter(c=>!c.hidden&&c.id!=='actionCard');$('stackN').textContent='+'+more.length;
   // tell what else is in the pile: the other cards' titles
-  $('histMore').textContent=['Calendar'].concat(innerWidth<1000?more.map(c=>{const t=c.querySelector('.ttl');return t?t.textContent.replace(/^\d/,'').trim():'';}).filter(Boolean):[]).join(' · ');
+  $('histMore').textContent=st.getAttribute('aria-expanded')==='true'?'Calendar':'Open Stack';
   renderToday();}
 const OV_ICON='<path d="M12 20.2s-7.6-4.6-7.6-10.2A4.3 4.3 0 0 1 12 7.3a4.3 4.3 0 0 1 7.6 2.7c0 5.6-7.6 10.2-7.6 10.2z"/>';
 function setMod(m){if(m==='overview'){if(ov)return;ov=true;}else{if(!ov&&m===mod)return;ov=false;mod=m;try{localStorage.setItem('training.mod',m)}catch(e){}}
@@ -1339,7 +1340,7 @@ function fillPeriod(){
     opts.push(`<option value="${k}"${k===ws?' selected':''}>W${isoWeek(m)}</option>`);
   }
   if(actView==='month'){
-    $('selWeek').innerHTML=[...Array(12)].map((_,m)=>{const d=new Date(year,m,1);return `<option value="${m}"${monthStart.getFullYear()===year&&monthStart.getMonth()===m?' selected':''}>${d.toLocaleDateString(LOC,{month:'long'})}</option>`;}).join('');
+    $('selWeek').innerHTML=[...Array(12)].map((_,m)=>{const d=new Date(year,m,1);return `<option value="${m}"${monthStart.getFullYear()===year&&monthStart.getMonth()===m?' selected':''}>${d.toLocaleDateString(LOC,{month:innerWidth<400?'short':'long'}).replace('.','')}</option>`;}).join('');
     $('selWeek').setAttribute('aria-label','Month');
   }else{$('selWeek').innerHTML=opts.join('');$('selWeek').setAttribute('aria-label','Week');}
   $('selWeek').hidden=actView==='year';
@@ -1358,7 +1359,7 @@ $('zoom').oninput=e=>{zoomI=+e.target.value;$('zLbl').textContent=ZOOMS[zoomI][0
 $('wListToggle').onclick=()=>{const l=$('wList'),open=l.hidden;l.hidden=!open;$('wListToggle').textContent=open?'Hide measurements ▴':'Show measurements ▾';};
 // stack: collapsed like notifications, tap to expand
 // one tap opens everything: the stack unfolds and History (its top card) opens with it
-function setStack(open){$('stack').setAttribute('aria-expanded',open?'true':'false');UI.hist=open;saveUI();$('actionCard').classList.toggle('open',open);}
+function setStack(open){$('stack').setAttribute('aria-expanded',open?'true':'false');$('histMore').textContent=open?'Calendar':'Open Stack';UI.hist=open;saveUI();$('actionCard').classList.toggle('open',open);}
 $('stack').addEventListener('click',e=>{const st=$('stack'),isOpen=st.getAttribute('aria-expanded')==='true';
   if(e.target.closest('#stackLess')){setStack(false);return;}
   // taps on controls, or inside an open History/Progress card, never fold the stack
@@ -1379,7 +1380,10 @@ $('progToggle').onclick=()=>setProg($('pmore').hidden);
 setProg((()=>{try{return localStorage.getItem('training.prog')==='1'}catch(e){return false}})());
 function placeProgress(){
   // Progress always lives in the stack: collapsed pile on phones, a column of 4 on laptops
-  const pc=$('progCard'),st=$('stack');
+  const pc=$('progCard'),st=$('stack'),ac=$('actionCard');
+  // Calendar: on laptops a card of its own under Today (always open); on phones the top of the folded stack
+  if(innerWidth>=1000){if(ac.parentElement===st){$('todayCard').after(ac);ac.classList.remove('scard');}ac.classList.add('open');}
+  else if(ac.parentElement!==st){st.prepend(ac);ac.classList.add('scard');ac.classList.toggle('open',st.getAttribute('aria-expanded')==='true');}
   if(pc.parentElement!==st){st.insertBefore(pc,$('stackLess'));pc.classList.add('scard');}
   $('stackN').textContent='+'+(st.querySelectorAll('.scard').length-1);
   if(!$('pmore').hidden)renderWeight();
@@ -1389,7 +1393,7 @@ placeProgress();window.addEventListener('resize',()=>placeProgress());
 {const ch=document.createElement('div');ch.className='calhead';$('actSum').before(ch);ch.append(document.querySelector('.period'),$('viewSeg'));}
 $('actionCard').classList.toggle('open',UI.hist); // History starts folded
 if(innerWidth<1000)$('stack').setAttribute('aria-expanded',UI.hist?'true':'false');
-$('stack').prepend($('actionCard'));$('actionCard').classList.add('scard');$('stackN').hidden=true; // the content line says what is in the pile // History heads the stack
+$('stack').prepend($('actionCard'));$('actionCard').classList.add('scard');placeProgress();$('stackN').hidden=true; // the content line says what is in the pile // History heads the stack
 let actView=(()=>{try{return localStorage.getItem('training.view')||'week'}catch(e){return 'week'}})();
 function setView(v){actView=v;setTimeout(()=>{renderSum();if(typeof fillPeriod==='function')fillPeriod();},0);$('actionCard').dataset.view=v;document.querySelectorAll('#viewSeg button').forEach(b=>b.classList.toggle('on',b.dataset.view===v));try{localStorage.setItem('training.view',v)}catch(e){}}
 document.querySelectorAll('#viewSeg button').forEach(b=>b.onclick=()=>setView(b.dataset.view));
