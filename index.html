@@ -401,7 +401,7 @@ body.has-tabbar .wrap{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
 .fc.on{background:var(--text);color:var(--surface)}
 body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:none!important}
 .calhead{display:flex;gap:8px;align-items:center;margin:16px 0 4px}.calhead .seg{flex:none}.calhead .seg button{padding:7px 9px;font-size:12px}
-#actionCard:not([data-view="year"]) .period #selYear{display:none}#actionCard .period select{width:100%}
+#actionCard .period #selYear{display:none}#actionCard[data-view="year"] .period{display:none}#actionCard .period select{width:100%}
 #actionCard .period{display:flex;flex:1;min-width:0;margin:0;background:var(--surface2);box-shadow:none}#actionCard .period #selWeek{flex:1}
 #actionCard[data-view="year"] .period #selYear{flex:1}
 .ov-top{display:flex;align-items:center;gap:18px;margin-top:10px}
@@ -978,7 +978,7 @@ function renderOverview(){if(!ov)return;
   $('ovRows').classList.toggle('compact',!UI.details);
   $('ovRows').innerHTML=userMods().map(m=>{const v=sc[m],[a,b]=period(ovP,todayIso,m);
     return `<button class="ov-row" data-mod="${m}"><span class="ov-ic"><svg viewBox="0 0 24 24">${MODS[m].icon}</svg></span>
-      <span class="ov-mid"><span class="ov-n">${MODS[m].label}${dTxt(v,psc[m])}</span><span class="ov-bar"><i style="width:${planPct(m,v)||0}%"></i></span><span class="ov-w">${weakest(m,a,b)}${ovP==='day'&&m==='training'?' · this week so far':''}</span></span>
+      <span class="ov-mid"><span class="ov-n">${MODS[m].label}</span><span class="ov-bar"><i style="width:${planPct(m,v)||0}%"></i></span><span class="ov-w">${weakest(m,a,b)}${ovP==='day'&&m==='training'?' · this week so far':''}</span></span>
       <b class="ov-v">${m==='training'&&v!=null?(()=>{const c=trainCount(a,b);return `${c[0]}<i>/ ${c[1]}</i>`;})():v==null?'–':v}${m!=='training'&&v!=null&&targetOf(m)?`<i>/ ${targetOf(m)}</i>`:''}</b></button>`;}).join('')+`<button type="button" class="ov-more cg-tog" data-tog="details">${UI.details?'Hide details ▴':'Show details ▾'}</button>`;
   // trend: total per week, last 12 weeks
   const wk=[];for(let i=11;i>=0;i--){const k=addD(iso(mondayOf(new Date())),-7*i);wk.push(totalScore(scoresAt('week',k)));}
@@ -1265,7 +1265,7 @@ function renderSum(){
     const pb=actView==='week'?addD(pk,6):actView==='month'?iso(new Date(parse(pk).getFullYear(),parse(pk).getMonth()+1,0)):(+a.slice(0,4)-1)+'-12-31';
     const prv=modScore(mod,pk,pb),pl={week:'last week',month:'last month',year:'last year'}[actView];
     const dl=sc!=null&&prv!=null?`<span class="dl ${sc-prv>=0?'up':'dn'}" title="vs ${pl}">${sc-prv>=0?'+':''}${sc-prv}</span> · `:'';
-    const r=sc==null?'':`<span class="psc${sc>=tg?' ok':''}">${dl}${sc>=tg?'on target':(tg-sc)+' to go'}</span>`;
+    const r=sc==null?'':`<span class="psc${sc>=tg?' ok':''}">${sc>=tg?'on target':(tg-sc)+' to go'}</span>`;
     $('actSum').innerHTML=`<div class="calsum">${left}${r}</div><div class="track thin"><i style="width:${sc==null?0:Math.min(100,sc/tg*100)}%;background:var(--accent)"></i></div>`;return;}
   $('actSum').innerHTML=`<div class="calsum"><span><b>${cnt}</b>${goal?' / '+goal:''} days ${label}</span>${paceTxt?`<span>${paceTxt}</span>`:''}</div>
     ${goal?`<div class="track thin"><i style="width:${gp}%;background:var(--accent)"></i></div>`:''}`;
@@ -1310,10 +1310,10 @@ function fillPeriod(){
   for(let m=mondayOf(new Date(year,0,1));m.getFullYear()<=year;m.setDate(m.getDate()+7)){
     const e=new Date(m);e.setDate(e.getDate()+6);const k=iso(m);
     const sm=m.getMonth()===e.getMonth();
-    opts.push(`<option value="${k}"${k===ws?' selected':''}>W${isoWeek(m)} · ${sm?m.getDate():fmtDs(k)}–${fmtDs(iso(e))}</option>`);
+    opts.push(`<option value="${k}"${k===ws?' selected':''}>W${isoWeek(m)}</option>`);
   }
   if(actView==='month'){
-    $('selWeek').innerHTML=[...Array(12)].map((_,m)=>{const d=new Date(year,m,1);return `<option value="${m}"${monthStart.getFullYear()===year&&monthStart.getMonth()===m?' selected':''}>${d.toLocaleDateString(LOC,{month:'long'})}</option>`;}).join('');
+    $('selWeek').innerHTML=[...Array(12)].map((_,m)=>{const d=new Date(year,m,1);return `<option value="${m}"${monthStart.getFullYear()===year&&monthStart.getMonth()===m?' selected':''}>${d.toLocaleDateString(LOC,{month:'short'}).replace('.','')}</option>`;}).join('');
     $('selWeek').setAttribute('aria-label','Month');
   }else{$('selWeek').innerHTML=opts.join('');$('selWeek').setAttribute('aria-label','Week');}
   $('selWeek').hidden=actView==='year';
