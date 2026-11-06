@@ -825,7 +825,9 @@ function toggleItem(d,a){lastToggled=d;setTimeout(()=>{lastToggled=null;},600);
 }
 // tap on a calendar day: one-item modules toggle directly, Food opens that day's checklist
 function toggle(d){const M=MODS[mod];if(M.items.length===1&&!M.water)return toggleItem(d,M.items[0]);openDay(d);}
-const chk=(d,a)=>{const on=has(d,a);return `<button type="button" class="chk-i${on?' on':''}" data-item="${a}" data-day="${d}"><span>${ITEM_LBL[a]||a}${BONUS[a]&&mod==='food'?`<i class="bp">+${BONUS[a]}</i>`:''}${ITEM_HINT[a]?`<small class="hint">${ITEM_HINT[a]}</small>`:''}</span><span class="bx">${on?crossSVG(d+a,false):''}</span></button>`;};
+// every tick in the checklists uses the same hand-drawn cross (the one the user liked on Dinner)
+const CHK_X='2026-11-06Dinner';
+const chk=(d,a)=>{const on=has(d,a);return `<button type="button" class="chk-i${on?' on':''}" data-item="${a}" data-day="${d}"><span>${ITEM_LBL[a]||a}${BONUS[a]&&mod==='food'?`<i class="bp">+${BONUS[a]}</i>`:''}${ITEM_HINT[a]?`<small class="hint">${ITEM_HINT[a]}</small>`:''}</span><span class="bx">${on?crossSVG(CHK_X,false):''}</span></button>`;};
 // a 500 ml bottle; the cross is drawn on top once it's drunk
 const BOTTLE='<svg class="btl" viewBox="4.6 3.2 14.8 26.2" aria-hidden="true"><path d="M6.2 4.1h11.6v4H6.2z"/><path d="M6.2 8.1h11.6v17.6a2.6 2.6 0 0 1-2.6 2.6H8.8a2.6 2.6 0 0 1-2.6-2.6z"/></svg>';
 const L=ml=>(ml/1000).toLocaleString(LOC,{minimumFractionDigits:1,maximumFractionDigits:1});
@@ -834,7 +836,7 @@ function checksHTML(d){const M=MODS[mod];let h='';
     h+=`<div class="water"><div class="wtop"><span class="wlbl"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5c3 4 6.2 7.4 6.2 10.7a6.2 6.2 0 0 1-12.4 0C5.8 10.9 9 7.5 12 3.5z"/></svg>Water</span><b>${L(n*W.ml)} <i>/ ${L(W.goal*W.ml)} L</i></b></div>
       <div class="wline"><i style="width:${n/W.max*100}%"></i><s style="left:${W.goal/W.max*100}%"></s></div>
       <div class="wscale"><span>0</span><span style="left:${W.goal/W.max*100}%">${W.goal*W.ml} ml</span><span>${W.max*W.ml} ml</span></div>
-      <div class="bottles">${[...Array(W.max)].map((_,i)=>`<button type="button" class="bt${i<n?' on':''}" data-water="${i+1}" data-day="${d}" aria-label="${(i+1)*W.ml} ml">${BOTTLE}${i<n?crossSVG(d+'w'+i,false):''}</button>`).join('')}</div></div>`;}
+      <div class="bottles">${[...Array(W.max)].map((_,i)=>`<button type="button" class="bt${i<n?' on':''}" data-water="${i+1}" data-day="${d}" aria-label="${(i+1)*W.ml} ml">${BOTTLE}${i<n?crossSVG(CHK_X,false):''}</button>`).join('')}</div></div>`;}
   M.groups.forEach(g=>{h+=`<div class="cgroup">${g.label?`<div class="cg-l">${g.icon?`<svg viewBox="0 0 24 24" aria-hidden="true">${g.icon}</svg>`:''}${g.label}</div>`:''}<div class="cg-i${g.cols?' c'+g.cols:''}">${g.items.map(a=>chk(d,a)).join('')}</div></div>`;});
   return h;}
 // ---------- scores (0-100): what you did vs what your plan asks, per module and in total ----------
