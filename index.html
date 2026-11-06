@@ -721,7 +721,7 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:
     <div class="bars" id="bars"></div>
     <div class="wform">
       <input type="date" id="wDate" aria-label="Date">
-      <input type="number" id="wKg" step="0.1" min="20" max="300" placeholder="kg" inputmode="decimal" aria-label="Weight in kg">
+      <input type="text" id="wKg" placeholder="kg" inputmode="decimal" autocomplete="off" pattern="[0-9]+([.,][0-9])?" aria-label="Weight in kg">
       <button class="primary" id="wAdd">Save</button>
     </div>
     <button class="linkbtn" id="wListToggle">Show measurements ▾</button>
@@ -1318,7 +1318,7 @@ document.addEventListener('click',e=>{
   if(ed)openEdit(ed.dataset.edit);
 });
 $('wDate').value=todayIso;
-$('wAdd').onclick=()=>{const d=$('wDate').value,kg=parseFloat(String($('wKg').value).replace(',','.'));if(!d||!(kg>0))return;
+$('wAdd').onclick=()=>{const d=$('wDate').value,kg=Math.round(parseFloat(String($('wKg').value).replace(',','.'))*10)/10;if(!d||!(kg>=20&&kg<=300))return;
   S.weight=S.weight.filter(w=>w.date!==d);S.weight.push({date:d,kg});$('wKg').value='';save({type:'weight',date:d,kg});};
 $('wKg').addEventListener('keydown',e=>{if(e.key==='Enter')$('wAdd').click();});
 // ---------- period menu (year + week) ----------
@@ -1413,8 +1413,8 @@ function openEdit(k){
         f=>saveSettings({[mod+'Goal']:f.g.value.trim()||M.goal,[mod+'GoalNote']:f.n.value.trim()}));}
     return dialog(`<h3>${M.label} deadline</h3><p>Until when do you commit to this? Goal + deadline = your objective.</p><label>Date</label><input name="d" type="date" value="${esc(st[mod+'Deadline']||st.deadline||'')}">`,
       f=>saveSettings({[mod+'Deadline']:f.d.value}));}
-  if(k==='goal')dialog(`<h3>Goal</h3><p>Your target weight.</p><label>Target weight (kg)</label><input name="targetKg" type="number" step="0.1" min="20" max="300" value="${esc(st.targetKg)}"><label>Goal start (progress is measured from this date)</label><input name="goalStart" type="date" value="${esc(goalStart())}">`,
-    f=>saveSettings({targetKg:f.targetKg.value,goalStart:f.goalStart.value||todayIso}));
+  if(k==='goal')dialog(`<h3>Goal</h3><p>Your target weight.</p><label>Target weight (kg)</label><input name="targetKg" type="text" inputmode="decimal" autocomplete="off" value="${esc(st.targetKg)}"><label>Goal start (progress is measured from this date)</label><input name="goalStart" type="date" value="${esc(goalStart())}">`,
+    f=>saveSettings({targetKg:String(parseFloat(String(f.targetKg.value).replace(',','.'))||''),goalStart:f.goalStart.value||todayIso}));
   if(k==='deadline')dialog(`<h3>Deadline</h3><p>When should you reach your target weight? Goal + deadline = your objective.</p><label>Date</label><input name="deadline" type="date" value="${esc(st.deadline)}">`,
     f=>saveSettings({deadline:f.deadline.value}));
   if(k==='plan')dialog(`<h3>Plan</h3><p>How many days per week will you train?</p><label>Training days per week</label><input name="daysPerWeek" type="number" min="1" max="7" step="1" value="${esc(st.daysPerWeek)}">`,
