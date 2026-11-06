@@ -380,6 +380,7 @@ button.ghost{font-weight:700;border-radius:11px}
 .who{all:unset;cursor:pointer;font:inherit;font-weight:900;color:var(--text);padding:0 .08em;margin-left:-.08em;-webkit-tap-highlight-color:transparent;
   background:none}
 .who.out{color:var(--accent)}
+.hello{font-size:14px;font-weight:700;color:var(--muted);margin-bottom:2px;letter-spacing:-.1px}
 .tabbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom));z-index:40;display:flex;gap:4px;padding:6px;border-radius:999px;
   background:rgba(255,255,255,.58);-webkit-backdrop-filter:blur(22px) saturate(180%);backdrop-filter:blur(22px) saturate(180%);
   border:1px solid rgba(255,255,255,.75);box-shadow:0 12px 32px rgba(15,23,42,.16),inset 0 1px 0 rgba(255,255,255,.9)}
@@ -654,6 +655,7 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:
 <div class="wrap">
   <header>
     <div>
+      <div class="hello" id="hello" hidden></div>
       <h1><button class="who" id="who" title="Account">Health</button></h1>
       <div class="sync"><span class="dot" id="dot"></span><span id="syncText">Local</span></div>
     </div>
@@ -762,7 +764,10 @@ const LS_DATA=()=>'training.data.'+(auth?auth.name.toLowerCase():'');
 let S={settings:{},weight:[],actions:[],modules:['training']};
 const remote=()=>!!(auth&&auth.token);
 const setData=j=>{S={settings:j.settings||{},weight:j.weight||[],actions:j.actions||[],modules:j.modules||['training']};ls.set(LS_DATA(),S);};
-function showWho(){const w=$('who');w.textContent=auth?auth.name:'Log in';w.classList.toggle('out',!auth);}
+// a short greeting above the name, by time of day
+const greet=()=>{const h=new Date().getHours();return h>=5&&h<12?'Good morning,':h>=12&&h<18?'Good afternoon,':h>=18&&h<23?'Good evening,':'Good night,';};
+function showWho(){const w=$('who');w.textContent=auth?auth.name:'Log in';w.classList.toggle('out',!auth);const g=$('hello');g.hidden=!auth;g.textContent=auth?greet():'';}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&auth)$('hello').textContent=greet();});
 function logout(){auth=null;try{localStorage.removeItem(LS_AUTH)}catch(e){}S={settings:{},weight:[],actions:[]};showWho();render();}
 
 // the dot only draws attention when needed: red on errors, green for 5 s after loading; otherwise neutral
@@ -868,6 +873,12 @@ function dayCurve(W){
   const b=sxx?sxy/sxx:0,res=T.map(w=>w.kg-(my+b*((parse(w.date).getTime()-t0)/864e5-mx)));
   const mh=hs.reduce((a,c)=>a+c)/hs.length,mr=res.reduce((a,c)=>a+c)/res.length;let hh=0,hr=0;hs.forEach((h,i)=>{hh+=(h-mh)**2;hr+=(h-mh)*(res[i]-mr);});
   const sl=hh?hr/hh:0;return sl>0&&sl<kg*0.003?{slope:sl,own:true,n:T.length}:def;}
+// All measurements as 07:00 morning weight, so the time you weigh no longer matters.
+// kg = morning estimate, raw = what the scale said; untimed measurements are taken as your usual time.
+const byDT=(a,b)=>a.date.localeCompare(b.date)||(a.time||'').localeCompare(b.time||'');
+const medHour=W=>{const hs=W.map(w=>hourOf(w.time)).filter(v=>v!=null).sort((a,b)=>a-b);return hs.length?hs[Math.floor(hs.length/2)]:null;};
+function weights(){const R=[...S.weight].sort(byDT),dc=dayCurve(R),uh=medHour(R);
+  return R.map(w=>{const h=hourOf(w.time)??uh;return {...w,raw:w.kg,kg:h==null?w.kg:Math.round(atHour(w.kg,h,7,dc.slope)*10)/10};});}
 const atHour=(kg,from,to,sl)=>kg+sl*(Math.min(22,Math.max(7,to))-Math.min(22,Math.max(7,from)));
 function trend(W){
   if(W.length<2)return null;
@@ -1064,7 +1075,7 @@ function render(){
   const st=S.settings;
   if(!st.goalStart&&(Number(st.targetKg)||st.deadline)){saveSettings({goalStart:todayIso});return;}
   const tw=Number(st.targetKg);
-  const Wn=[...S.weight].sort((a,b)=>a.date.localeCompare(b.date));
+  const Wn=weights();
   if(tw){$('goalView').textContent=fmtKg(tw)+' kg';
     $('goalSub').textContent=Wn.length?('Target weight · '+fmtKg(Math.abs(Wn[Wn.length-1].kg-tw))+' kg to go'):'Target weight';}
   else{$('goalView').textContent='–';$('goalSub').innerHTML='<span class="empty">Set your target weight</span>';}
@@ -1127,7 +1138,7 @@ function renderProcess(){
   $('steps').innerHTML=`<div class="fill" style="width:${Math.max(0,(Math.max(0,(firstOpen<0?4:firstOpen))-1))/3*75}%"></div>`+steps.map((x,i)=>
     `<div class="st${x.ok?' ok':''}${i===firstOpen?' now':''}" data-go="${x.go}"><div class="n">${x.ok?'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>':i+1}</div><div class="t">${x.t}</div><div class="v" title="${esc(x.v)}">${esc(x.v)}</div></div>`).join('');
   // progress bars: time and weight
-  const W=[...S.weight].sort((a,b)=>a.date.localeCompare(b.date));
+  const W=weights();
   let bars='';
   if(st.deadline){
     const start=goalStart();
@@ -1178,7 +1189,7 @@ function renderWeek(){
 }
 
 function renderWeight(){
-  const W=[...S.weight].sort((a,b)=>a.date.localeCompare(b.date));
+  const W=weights(),R=[...S.weight].sort(byDT);
   const tw=Number(S.settings.targetKg)||null, dl=S.settings.deadline||null;
   let h='';
   if(W.length){
@@ -1186,31 +1197,30 @@ function renderWeight(){
     const toward=d=>tw?(Math.sign(tw-first)===Math.sign(d)||d===0):d<=0;
     // big current weight, with the date and the change since the previous measurement
     const prev=W.length>1?W[W.length-2].kg:null,ch=prev===null?null:last-prev;
-    h+=`<div class="cur"><div class="cur-v">${fmtKg(last)}<span>kg</span></div><div class="cur-l">Current weight · ${fmtDs(W[W.length-1].date)}${W[W.length-1].time?' · '+W[W.length-1].time:''}${ch===null||Math.abs(ch)<0.05?'':` · <b class="${toward(ch)?'up':'dn'}">${ch>0?'+':''}${fmtKg(ch)} kg</b>`}</div></div>`;
+    h+=`<div class="cur"><div class="cur-v">${fmtKg(last)}<span>kg</span></div><div class="cur-l">Morning weight · ${fmtDs(W[W.length-1].date)}${ch===null||Math.abs(ch)<0.05?'':` · <b class="${toward(ch)?'up':'dn'}">${ch>0?'+':''}${fmtKg(ch)} kg</b>`}</div></div>`;
     // forecast: where the trend lands at the deadline
     const tr=trend(W),tf=dl?parse(dl).getTime():null;
     if(tr&&tf&&tf>tr.lastT){const fk=tr.at(tf),ok=tw?Math.abs(fk-tw)<=0.5||(tw>=first?fk>=tw:fk<=tw):true;
       h+=`<div class="wfc"><span>Forecast · ${fmtDs(dl)}</span><b class="${ok?'up':'dn'}">${fmtKg(fk)} kg</b></div>`;}
   }else h='<div class="sub">No measurements yet. Add your first weight below.</div>';
-  if(W.length){const L=W[W.length-1],h0=hourOf(L.time),dc=dayCurve(W),f=v=>fmtKg(Math.round(v*10)/10);
+  if(W.length){const L=R[R.length-1],h0=hourOf(L.time),dc=dayCurve(R),f=v=>fmtKg(Math.round(v*10)/10);
     // your usual time = median of earlier timed measurements
-    const hs=W.slice(0,-1).map(w=>hourOf(w.time)).filter(v=>v!=null).sort((a,b)=>a-b),uh=hs.length>=2?hs[Math.floor(hs.length/2)]:null;
+    const hs=R.slice(0,-1).map(w=>hourOf(w.time)).filter(v=>v!=null).sort((a,b)=>a-b),uh=hs.length>=2?hs[Math.floor(hs.length/2)]:null;
     const hm=v=>String(Math.floor(v)).padStart(2,'0')+':'+String(Math.round((v%1)*60)).padStart(2,'0');
     // tap the latest measurement: where it sits in your day
     const ph=`<div class="wpers" id="wPers" ${UI.pers?'':'hidden'}>`+(h0==null
       ?`<p>Add the time to your next measurement to put it in perspective.</p>`
-      :`<div class="wp-r now"><span>Measured · ${L.time}</span><b>${f(L.kg)} kg</b></div>`
+      :`<div class="wp-r"><span>Morning · 07:00</span><b>≈ ${f(atHour(L.kg,h0,7,dc.slope))} kg</b></div>`
+       +`<div class="wp-r now"><span>Measured · ${L.time}</span><b>${f(L.kg)} kg</b></div>`
        +(uh!=null&&Math.abs(uh-h0)>=0.25?`<div class="wp-r"><span>Your usual time · ${hm(uh)}</span><b>≈ ${f(atHour(L.kg,h0,uh,dc.slope))} kg</b></div>`:'')
        +(h0<21&&!(uh!=null&&uh>=21)?`<div class="wp-r"><span>Evening · 22:00</span><b>≈ ${f(atHour(L.kg,h0,22,dc.slope))} kg</b></div>`:''))
-      +`<p class="wp-s">${dc.own?`Based on your ${dc.n} timed measurements`:'Typical day curve, ≈ '+f(dc.slope*14)+' kg from morning to evening. Becomes personal after 5 timed measurements.'}</p></div>`;
-    // always: the expected 07:00 morning weight (a fair, comparable number)
-    if(h0!=null)h+=`<div class="wfc wm"><span>Morning weight · 07:00</span><b>≈ ${f(atHour(L.kg,h0,7,dc.slope))} kg</b></div>`;
+      +`<p class="wp-s">${dc.own?`Based on your ${dc.n} timed measurements`:'Typical day curve, ≈ '+f(dc.slope*14)+' kg from morning to evening. Becomes personal after 5 timed measurements.'} Every weight here is shown as 07:00 morning weight.</p></div>`;
     h+=ph;}
   $('wStats').innerHTML=h;
   {const up=tw?tw>=(W.length?startWeight(W).kg:0):false;
    $('wList').innerHTML=W.length?`<table><thead><tr><th>kg</th><th>Date</th><th></th></tr></thead><tbody>${[...W].map((w,i)=>{const d=i?w.kg-W[i-1].kg:null;
      const cls=d===null||Math.abs(d)<0.05?'nc':((d>0)===up?'up':'dn');
-     return `<tr><td class="kg">${fmtKg(w.kg)}${d===null?'':`<i class="chg ${cls}">${(d>0?'+':'')+fmtKg(d)}</i>`}</td><td class="dt">${parse(w.date).toLocaleDateString(LOC,{day:'numeric',month:innerWidth<340?'short':'long'})}${w.date.slice(0,4)!==String(new Date().getFullYear())?' '+w.date.slice(2,4):''}${w.time?` <i class="tm">${w.time}</i>`:''}</td><td><button title="Delete" aria-label="Delete measurement" data-del="${w.date}"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg></button></td></tr>`;}).reverse().join('')}</tbody></table>`:'';}
+     return `<tr><td class="kg">${fmtKg(w.kg)}${d===null||Math.abs(d)<0.05?'':`<i class="chg ${cls}">${(d>0?'+':'')+fmtKg(d)}</i>`}</td><td class="dt">${parse(w.date).toLocaleDateString(LOC,{day:'numeric',month:innerWidth<340?'short':'long'})}${w.date.slice(0,4)!==String(new Date().getFullYear())?' '+w.date.slice(2,4):''}${w.time?` <i class="tm">${w.time}${Math.abs(w.raw-w.kg)>=0.05?' · '+fmtKg(w.raw)+' kg':''}</i>`:''}</td><td><button title="Delete" aria-label="Delete measurement" data-del="${w.date}|${w.time||''}"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg></button></td></tr>`;}).reverse().join('')}</tbody></table>`:'';}
 }
 
 // Chart zoom: how far back the chart shows (0 = everything)
@@ -1355,8 +1365,8 @@ document.addEventListener('click',e=>{
   const c=e.target.closest('rect.c');
   if(c){toggle(c.dataset.d);return;}
   const del=e.target.closest('[data-del]');
-  if(del){const d=del.dataset.del,w=S.weight.find(x=>x.date===d);
-    dialog(`<h3>Delete measurement?</h3><p>${fmtD(d)} · ${w?fmtKg(w.kg)+' kg':''}</p>`,()=>{S.weight=S.weight.filter(x=>x.date!==d);save({type:'weight',date:d,delete:true});},'Delete');return;}
+  if(del){const [d,t='']=del.dataset.del.split('|'),same=x=>x.date===d&&(x.time||'')===t,w=S.weight.find(same);
+    dialog(`<h3>Delete measurement?</h3><p>${fmtD(d)}${t?' · '+t:''} · ${w?fmtKg(w.kg)+' kg':''}</p>`,()=>{S.weight=S.weight.filter(x=>!same(x));save({type:'weight',date:d,time:t,delete:true});},'Delete');return;}
   const go=e.target.closest('[data-go]');
   if(go){const g=go.dataset.go;if(g==='week')$('actionCard').scrollIntoView({behavior:'smooth',block:'center'});else openEdit(g);return;}
   const ed=e.target.closest('[data-edit]');
@@ -1365,7 +1375,7 @@ document.addEventListener('click',e=>{
 const nowHM=()=>{const n=new Date();return String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');};
 $('wDate').value=todayIso;$('wTime').value=nowHM();
 $('wAdd').onclick=()=>{const d=$('wDate').value,kg=Math.round(parseFloat(String($('wKg').value).replace(',','.'))*10)/10;if(!d||!(kg>=20&&kg<=300))return;
-  const time=$('wTime').value||'';S.weight=S.weight.filter(w=>w.date!==d);S.weight.push({date:d,kg,time});$('wKg').value='';$('wTime').value=nowHM();save({type:'weight',date:d,kg,time});};
+  const time=$('wTime').value||'';S.weight=S.weight.filter(w=>!(w.date===d&&(w.time||'')===time));S.weight.push({date:d,kg,time});$('wKg').value='';$('wTime').value=nowHM();save({type:'weight',date:d,kg,time});};
 $('wKg').addEventListener('keydown',e=>{if(e.key==='Enter')$('wAdd').click();});
 // ---------- period menu (year + week) ----------
 function fillPeriod(){
