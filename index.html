@@ -1431,11 +1431,17 @@ $('stack').addEventListener('click',e=>{const st=$('stack'),isOpen=st.getAttribu
 // light by default; dark only when chosen (remembered per device)
 const MOON='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
 const SUN='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
-function setTheme(t){document.documentElement.dataset.theme=t;$('themeBtn').innerHTML=t==='dark'?SUN:MOON;try{localStorage.setItem('training.theme',t)}catch(e){}
+// Theme follows the clock: dark from 19:00 to 07:00, light during the day.
+// The button overrides it until the next switch (morning or evening), then the clock takes over again.
+const themeSlot=()=>{const n=new Date(),h=n.getHours();if(h>=7&&h<19)return 'D'+iso(n);if(h>=19)return 'N'+iso(n);const y=new Date(n);y.setDate(y.getDate()-1);return 'N'+iso(y);};
+const autoTheme=()=>themeSlot()[0]==='N'?'dark':'light';
+function wantedTheme(){try{const o=JSON.parse(localStorage.getItem('training.themeOverride')||'null');if(o&&o.slot===themeSlot())return o.t;}catch(e){}return autoTheme();}
+function setTheme(t){if(document.documentElement.dataset.theme===t&&$('themeBtn').innerHTML)return;document.documentElement.dataset.theme=t;$('themeBtn').innerHTML=t==='dark'?SUN:MOON;
   document.querySelector('meta[name=theme-color]')?.setAttribute('content',t==='dark'?'#0b0f17':'#ffffff');if(S.weight)renderWeight();}
-setTheme((()=>{try{return localStorage.getItem('training.theme')||'light'}catch(e){return 'light'}})());
+setTheme(wantedTheme());
+setInterval(()=>setTheme(wantedTheme()),60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)setTheme(wantedTheme());});
 $('playBtn').onclick=()=>playIntro(true);
-$('themeBtn').onclick=()=>setTheme(document.documentElement.dataset.theme==='dark'?'light':'dark');
+$('themeBtn').onclick=()=>{const t=document.documentElement.dataset.theme==='dark'?'light':'dark';try{localStorage.setItem('training.themeOverride',JSON.stringify({t,slot:themeSlot()}))}catch(e){}setTheme(t);};
 // Progress card: collapsed shows current weight, bars and the entry; expanded adds chart + measurements
 function setProg(open){$('pmore').hidden=!open;$('progToggle').textContent=open?'Show less ▴':'Show more ▾';$('progToggle').setAttribute('aria-expanded',open);
   try{localStorage.setItem('training.prog',open?'1':'0')}catch(e){}if(open)renderWeight();}
