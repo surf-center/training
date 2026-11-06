@@ -656,6 +656,16 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:
 }
 @media (prefers-reduced-motion:reduce){.process .st.now .n{animation:none}}
 @media (max-width:380px){.pill span{font-size:11px;letter-spacing:-.1px}}
+.quotes{padding:0;overflow:hidden}
+.q-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+.q-track::-webkit-scrollbar{display:none}
+.q-slide{flex:0 0 100%;scroll-snap-align:start;box-sizing:border-box;padding:30px 26px 14px;min-height:150px;display:flex;align-items:center}
+.q-slide p{margin:0;font-size:24px;font-weight:900;letter-spacing:-.5px;line-height:1.15;color:var(--text)}
+.q-slide p::before{content:'“';display:block;font-size:44px;line-height:.6;height:22px;color:var(--accent)}
+.q-dots{display:flex;justify-content:center;gap:6px;padding:4px 0 18px}
+.q-dots button{all:unset;cursor:pointer;width:7px;height:7px;border-radius:50%;background:var(--border)}.q-dots button.on{background:var(--accent);width:18px;border-radius:4px}
+body:not(.ov) #quoteCard{display:none}
+@media (min-width:1000px){.wrap>#quoteCard{grid-column:1/-1;grid-row:3;max-width:720px;width:100%;justify-self:center}}
 </style>
 </head>
 <body>
@@ -683,6 +693,12 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:
     <div class="ov-top"><div id="ovRing"></div><div class="ov-side"><div class="ov-delta" id="ovDelta"></div><div class="ov-note" id="ovNote"></div></div></div>
     <div class="ov-rows" id="ovRows"></div>
     <div class="ov-trend"><button type="button" class="ov-th cg-tog" data-tog="trend"><span>Last 12 weeks</span><b id="ovTrendTxt"></b></button><div id="ovSpark"></div></div>
+  </div>
+
+  <!-- Score: personal motivating slides (Quotes tab in the sheet), swipe left/right -->
+  <div class="card quotes" id="quoteCard" hidden>
+    <div class="q-track" id="qTrack"></div>
+    <div class="q-dots" id="qDots"></div>
   </div>
 
   <!-- Food / Sleep: today's checklist -->
@@ -770,7 +786,7 @@ let auth=ls.get(LS_AUTH,null);
 const LS_DATA=()=>'training.data.'+(auth?auth.name.toLowerCase():'');
 let S={settings:{},weight:[],actions:[],modules:['training']};
 const remote=()=>!!(auth&&auth.token);
-const setData=j=>{S={settings:j.settings||{},weight:j.weight||[],actions:j.actions||[],modules:j.modules||['training']};ls.set(LS_DATA(),S);};
+const setData=j=>{S={settings:j.settings||{},weight:j.weight||[],actions:j.actions||[],modules:j.modules||['training'],quotes:j.quotes||[]};ls.set(LS_DATA(),S);};
 // a short greeting above the name, by time of day
 const greet=()=>{const h=new Date().getHours();return h>=5&&h<12?'Good morning,':h>=12&&h<18?'Good afternoon,':h>=18&&h<23?'Good evening,':'Good night,';};
 function showWho(){const w=$('who');w.textContent=auth?auth.name:'Log in';w.classList.toggle('out',!auth);const g=$('hello');g.hidden=!auth;g.textContent=auth?greet():'';}
@@ -1023,6 +1039,14 @@ let ov=(()=>{try{return localStorage.getItem('training.ov')==='1'}catch(e){retur
 function ring(v){const r=54,c=2*Math.PI*r,p=v==null?0:v/100;
   return `<svg viewBox="0 0 140 140" class="ring"><circle cx="70" cy="70" r="${r}" class="rbg"/><circle cx="70" cy="70" r="${r}" class="rfg" stroke-dasharray="${c}" stroke-dashoffset="${c*(1-p)}" transform="rotate(-90 70 70)"/>
     <text x="70" y="78" text-anchor="middle" class="rnum">${v==null?'–':v}</text><text x="70" y="100" text-anchor="middle" class="rlab">score</text></svg>`;}
+// personal slides: native horizontal swipe with snap; the dots follow and can be tapped
+function renderQuotes(){const Q=(S.quotes||[]).filter(Boolean),c=$('quoteCard');c.hidden=!ov||!Q.length;if(c.hidden)return;
+  const key=Q.join('\n');if(c.dataset.k===key)return;c.dataset.k=key;
+  $('qTrack').innerHTML=Q.map(q=>`<div class="q-slide"><p>${esc(q)}</p></div>`).join('');
+  $('qDots').innerHTML=Q.length>1?Q.map((_,i)=>`<button type="button" aria-label="Slide ${i+1}" data-q="${i}"${i?'':' class="on"'}></button>`).join(''):'';
+  $('qTrack').scrollLeft=0;}
+$('qTrack').addEventListener('scroll',()=>{const t=$('qTrack'),i=Math.round(t.scrollLeft/t.clientWidth);$('qDots').querySelectorAll('button').forEach((b,k)=>b.classList.toggle('on',k===i));},{passive:true});
+$('qDots').addEventListener('click',e=>{const b=e.target.closest('[data-q]');if(!b)return;const t=$('qTrack');t.scrollTo({left:+b.dataset.q*t.clientWidth,behavior:'smooth'});});
 function renderOverview(){if(!ov)return;
   const sc=scoresAt(ovP,todayIso),tot=totalScore(sc),prev=totalScore(scoresAt(ovP,prevKey(ovP,todayIso)));
   const lbl={day:'yesterday',week:'last week',month:'last month',year:'last year'}[ovP];
@@ -1102,7 +1126,7 @@ function renderMods(){const U=userMods();if(!U.includes(mod))mod=U[0];
   const tb=$('tabbar');tb.hidden=U.length<2;document.body.classList.toggle('has-tabbar',U.length>1);if(U.length<2)ov=false;
   tb.innerHTML=`<button data-mod="overview" class="${ov?'on':''}" aria-label="Overview"><svg viewBox="0 0 24 24" aria-hidden="true">${OV_ICON}</svg><span>Score</span></button>`
     +U.map(k=>`<button data-mod="${k}" class="${!ov&&k===mod?'on':''}" aria-label="${MODS[k].label}"><svg viewBox="0 0 24 24" aria-hidden="true">${MODS[k].icon}</svg><span>${MODS[k].label}</span></button>`).join('');
-  document.body.classList.toggle('ov',ov);$('overCard').hidden=!ov;renderOverview();
+  document.body.classList.toggle('ov',ov);$('overCard').hidden=!ov;renderOverview();renderQuotes();
   $('actTtl').textContent=MODS[mod].title;$('actIcon').innerHTML=MODS[mod].icon;document.body.dataset.mod=mod;
   $('progCard').hidden=mod!=='training';
   if(mod==='training'){$('dlTtl').textContent='Deadline';$('dlEdit').hidden=false;}
