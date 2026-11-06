@@ -780,7 +780,7 @@ const MODS={
     icon:'<rect x="4.4" y="5" width="4" height="14" rx="1.5"/><rect x="15.6" y="5" width="4" height="14" rx="1.5"/><path d="M8.4 12h7.2M2 9.3v5.4M22 9.3v5.4"/>'},
   food:{label:'Food',title:'Food',plan:'foodPerWeek',def:6,target:'foodTarget',tdef:85,
     water:{max:8,goal:5,ml:500},
-    groups:[{label:'Meals',items:['Breakfast','Lunch','Dinner'],cols:3},{label:'Bonus · up to +20',items:['Creatine','Protein','Evening','Snack'],cols:2,bonus:true}],
+    groups:[{label:'Meals',items:['Breakfast','Lunch','Dinner'],cols:3},{label:'Bonus · up to +25',items:['Creatine','Protein','Evening','Snack'],cols:2,bonus:true}],
     goal:'Fuel the gains: 2.5 L water, breakfast, lunch and dinner every day',
     icon:'<path d="M7 3v18M4.5 3v5.5a2.5 2.5 0 0 0 5 0V3M17.5 21V3c-2.2 1.2-3.5 4-3.5 7.5V13h3.5"/>'},
   sleep:{label:'Sleep',title:'Sleep',plan:'sleepPerWeek',def:5,target:'sleepTarget',tdef:75,
@@ -882,8 +882,8 @@ function frac(m,d){const M=MODS[m];
   let n=M.base.filter(a=>has(d,a)).length,t=M.base.length;
   if(M.water){n+=Math.min(waterN(d),M.water.goal)/M.water.goal;t+=1;}
   return n/t;}
-// bonus on top of the basics: creatine +5, protein +5, evening meal +15; at most +20 so a day tops out at 120
-const BONUS={Creatine:5,Protein:5,Evening:15,Snack:5},BONUS_MAX=20;
+// bonus on top of the basics: creatine +5, protein +5, evening meal +10, snack +5; at most +25 so a day tops out at 125
+const BONUS={Creatine:5,Protein:5,Evening:10,Snack:5},BONUS_MAX=25;
 const bonusPts=(m,d)=>Math.min(BONUS_MAX,MODS[m].bonus.filter(a=>has(d,a)).reduce((t,a)=>t+(BONUS[a]||5),0));
 // average bonus per day over the period (only days since the start, up to today)
 function modBonus(m,a,b){const st=startOf(m);if(!st||!MODS[m].bonus.length)return 0;const from=a>st?a:st,to=b<todayIso?b:todayIso;if(from>to)return 0;
@@ -1005,7 +1005,7 @@ function renderMods(){const U=userMods();if(!U.includes(mod))mod=U[0];
     $('goalView').innerHTML=`<span class="gtext">${esc(g)}</span>`;$('goalSub').textContent='Specific & measurable';
     if(dl){const days=Math.round((parse(dl)-parse(todayIso))/864e5);$('dlCount').textContent=days>=0?days+(days===1?' day':' days'):'Passed';$('dlDate').textContent=fmtD(dl)+(days>=0?' · '+Math.ceil(days/7)+' weeks':'');}
     else{$('dlCount').textContent='–';$('dlDate').innerHTML='<span class="empty">When?</span>';}
-    $('planView').textContent='≥ '+targetOf(mod)+' / week';$('planSub').textContent=mod==='food'?'Week score · basics 100, bonus up to +20':'Week score · average of your nights (Good = 80)';}
+    $('planView').textContent='≥ '+targetOf(mod)+' / week';$('planSub').textContent=mod==='food'?'Week score · basics 100, bonus up to +25':'Week score · average of your nights (Good = 80)';}
   const st=$('stack');$('stackN').textContent='+'+([...st.querySelectorAll('.scard')].filter(c=>!c.hidden).length-1);
   renderToday();}
 const OV_ICON='<path d="M12 20.2s-7.6-4.6-7.6-10.2A4.3 4.3 0 0 1 12 7.3a4.3 4.3 0 0 1 7.6 2.7c0 5.6-7.6 10.2-7.6 10.2z"/>';
@@ -1318,7 +1318,7 @@ function dialog(html,onSave,okLabel){
 }
 function openEdit(k){
   if(k==='modplan'){const M=MODS[mod];
-    return dialog(`<h3>${M.label} plan</h3><p>Your week score target. A perfect day = 100${mod==='food'?' (+ up to 20 bonus)':''}. Below 100 leaves room for a night out or a bad night.</p><label>Target week score</label><input name="n" type="number" min="30" max="120" step="5" value="${targetOf(mod)}">`,
+    return dialog(`<h3>${M.label} plan</h3><p>Your week score target. A perfect day = 100${mod==='food'?' (+ up to 25 bonus)':''}. Below 100 leaves room for a night out or a bad night.</p><label>Target week score</label><input name="n" type="number" min="30" max="120" step="5" value="${targetOf(mod)}">`,
       f=>{const n=Math.min(120,Math.max(30,parseInt(f.n.value,10)||0));if(n)saveSettings({[M.target]:String(n)});});}
   const st=S.settings;
   if(mod!=='training'&&(k==='goal'||k==='deadline'||k==='plan')){const M=MODS[mod];
