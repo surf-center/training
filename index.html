@@ -1115,7 +1115,7 @@ function renderMods(){const U=userMods();if(!U.includes(mod))mod=U[0];
     const w=daysOnTarget(mod);
     $('dlCount').textContent=w.total?w.streak+(w.streak===1?' day':' days'):'–';
     $('dlDate').innerHTML=w.total?`In a row · best ${w.best} · ${w.on} of ${w.total} days ≥ ${targetOf(mod)}`:'<span class="empty">Counts from your first day</span>';
-    $('planView').textContent='≥ '+targetOf(mod)+' / week';$('planSub').textContent=mod==='food'?'Week score · a day is max 100, bonus fills gaps':'Week score · average of your nights (Good = 80)';}
+    $('planView').textContent='≥ '+targetOf(mod)+' / week';$('planSub').textContent=mod==='food'?'Week score · a day is max 100':'Week score · average of your nights';}
   { // Food/Sleep: Plan comes before Days on target; Training keeps Goal, Deadline, Plan
     const dc=$('dlCount').closest('.scard'),pc=$('planView').closest('.scard');
     if(mod!=='training'&&pc.nextElementSibling!==dc)dc.before(pc);
