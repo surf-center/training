@@ -405,7 +405,7 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:
 .dgrid.wk.tw{display:flex;justify-content:space-between;max-width:none;margin:16px 0 2px;gap:0}.dgrid.wk.tw .dc{flex:none;width:36px}
 #todayCard>.label{align-items:center}
 @media (max-width:430px){.hist-h span.hist-s{display:none}}
-@media (max-width:999px){.stack[aria-expanded="false"] #actionCard{padding-top:33px;padding-bottom:27px}.stack[aria-expanded="false"] #actionCard .hist-h span.hist-m{line-height:1;margin-top:0}}
+@media (max-width:999px){.stack[aria-expanded="false"] #actionCard{padding-top:33px;padding-bottom:27px}.stack[aria-expanded="false"] #actionCard .hist-h span.hist-m{line-height:1;margin-top:0;text-align:center}.stack[aria-expanded="false"] #actionCard .hist-h{justify-content:center}}
 .calhead{display:flex;gap:8px;align-items:center;margin:16px 0 4px}#actionCard .period select{border-radius:9px!important}.calhead .seg{flex:none}.calhead .seg button{padding:7px 9px;font-size:12px}
 #actionCard:not([data-view="year"]) .period #selYear{display:none}#actionCard .period select{width:100%}
 #actionCard .period{display:flex;flex:1;min-width:0;margin:0;background:var(--surface2);box-shadow:none}#actionCard .period #selWeek{flex:1}
@@ -763,7 +763,9 @@ const setData=j=>{S={settings:j.settings||{},weight:j.weight||[],actions:j.actio
 function showWho(){const w=$('who');w.textContent=auth?auth.name:'Log in';w.classList.toggle('out',!auth);}
 function logout(){auth=null;try{localStorage.removeItem(LS_AUTH)}catch(e){}S={settings:{},weight:[],actions:[]};showWho();render();}
 
-function setSync(state,text){document.getElementById('dot').className='dot '+(state||'');document.getElementById('syncText').textContent=text;}
+// the dot only draws attention when needed: red on errors, green for 5 s after loading; otherwise neutral
+let syncT=0;function setSync(state,text){const d=document.getElementById('dot');clearTimeout(syncT);d.className='dot '+(state==='busy'?'':state||'');document.getElementById('syncText').textContent=text;
+  if(state==='ok')syncT=setTimeout(()=>{if(d.classList.contains('ok'))d.className='dot';},5000);}
 
 async function load(){
   showWho();
@@ -787,7 +789,7 @@ async function save(payload){
     const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({...payload,name:auth.name,token:auth.token})});
     const j=await r.json();
     if(!j.ok)throw new Error(j.error||'Error');
-    setData(j);setSync('ok','Saved to Google');render();
+    setData(j);setSync('','Saved to Google');render();
   }catch(e){setSync('err','Not saved: '+e.message);}
 }
 function saveSettings(obj){Object.assign(S.settings,obj);save({type:'settings',settings:obj});}
@@ -1189,13 +1191,17 @@ function renderWeight(){
       h+=`<div class="wfc"><span>Forecast · ${fmtDs(dl)}</span><b class="${ok?'up':'dn'}">${fmtKg(fk)} kg</b></div>`;}
   }else h='<div class="sub">No measurements yet. Add your first weight below.</div>';
   if(W.length){const L=W[W.length-1],h0=hourOf(L.time),dc=dayCurve(W),f=v=>fmtKg(Math.round(v*10)/10);
+    // your usual time = median of earlier timed measurements
+    const hs=W.slice(0,-1).map(w=>hourOf(w.time)).filter(v=>v!=null).sort((a,b)=>a-b),uh=hs.length>=2?hs[Math.floor(hs.length/2)]:null;
+    const hm=v=>String(Math.floor(v)).padStart(2,'0')+':'+String(Math.round((v%1)*60)).padStart(2,'0');
     // tap the latest measurement: where it sits in your day
     const ph=`<div class="wpers" id="wPers" ${UI.pers?'':'hidden'}>`+(h0==null
       ?`<p>Add the time to your next measurement to put it in perspective.</p>`
       :`<div class="wp-r"><span>Morning · 07:00</span><b>≈ ${f(atHour(L.kg,h0,7,dc.slope))} kg</b></div>`
        +`<div class="wp-r now"><span>Measured · ${L.time}</span><b>${f(L.kg)} kg</b></div>`
-       +`<div class="wp-r"><span>Evening · 21:00</span><b>≈ ${f(atHour(L.kg,h0,21,dc.slope))} kg</b></div>`)
-      +`<p>Highest reading: in the evening, after dinner. Lowest: right after waking. Same time each day gives the fairest trend.</p>`
+       +(uh!=null&&Math.abs(uh-h0)>=0.25?`<div class="wp-r"><span>Your usual time · ${hm(uh)}</span><b>≈ ${f(atHour(L.kg,h0,uh,dc.slope))} kg</b></div>`:'')
+       +(h0<21&&!(uh!=null&&uh>=21)?`<div class="wp-r"><span>Evening · 22:00</span><b>≈ ${f(atHour(L.kg,h0,22,dc.slope))} kg</b></div>`:''))
+      +`<p>Highest reading: late evening, after dinner. Lowest: right after waking. Every 0.5 L you drink before weighing adds ≈ 0.5 kg, so weigh at the same moment (before or after drinking) for a fair trend.</p>`
       +`<p class="wp-s">${dc.own?`Based on your ${dc.n} timed measurements`:'Typical day curve, ≈ '+f(dc.slope*14)+' kg from morning to evening. Becomes personal after 5 timed measurements.'}</p></div>`;
     h=h.includes('<div class="wfc"')?h.replace('<div class="wfc"',ph+'<div class="wfc"'):h+ph;}
   $('wStats').innerHTML=h;
@@ -1475,7 +1481,7 @@ function playIntro(force){
   // Calm build-up: one stable board, one line at a time; each outcome lands after its term.
   // [term, outcome sentence, negative, formula pieces this line adds at the top]
   const rows=[
-    ['Goal without deadline','It\'s only a dream.',true,[]],
+    ['Goal without deadline','Only a dream.',true,[]],
     ['Goal <i>+</i> deadline','You have an objective.',false,['Goal','Deadline']],
     ['Goal <i>+</i> deadline <i>+</i> plan','You have a strategy.',false,['Plan']],
     ['Goal <i>+</i> deadline <i>+</i> plan <i>+</i> <span class="k6-u">consistency in action</span>','You get results.',false,['Consistency in action']]];
