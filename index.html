@@ -45,7 +45,8 @@ h1{font-size:22px;font-weight:800;margin:0;letter-spacing:-.3px}
 .sync{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--muted2)}
 .dot.ok{background:var(--good)}.dot.busy{background:var(--warn)}.dot.err{background:var(--bad)}
-.hdr-right{display:flex;align-items:center;gap:8px}
+.hdr-right{display:flex;align-items:center;gap:8px;margin-left:auto}
+.stack .step{display:none}
 .period{display:flex;gap:6px}
 .period select{width:auto;font-size:12px;font-weight:600;padding:7px 8px;border-radius:10px;background:var(--surface);cursor:pointer}
 .iconbtn{border:1px solid var(--border);background:var(--surface);color:var(--text2);border-radius:10px;width:36px;height:36px;cursor:pointer;font-size:16px}
@@ -195,7 +196,7 @@ dialog h3{margin:0 0 6px;font-size:16px}
 dialog p{font-size:12px;color:var(--muted);margin:0 0 14px}
 dialog label{display:block;font-size:11px;font-weight:600;color:var(--muted);margin:10px 0 4px}
 @media (max-width:820px){.grid3{grid-template-columns:1fr}}
-@media (max-width:600px){.period select{font-size:16px}header{flex-wrap:wrap}.hdr-right{width:100%}.period{flex:1;min-width:0}.period select{min-width:0}.period #selWeek{flex:1}}
+@media (max-width:600px){.period select{font-size:16px}.period{flex:1;min-width:0}.period select{min-width:0}.period #selWeek{flex:1}}
 @media (max-width:560px){
   .week{grid-template-columns:repeat(7,1fr) 40px;gap:4px}
   .chk{height:36px}
@@ -394,7 +395,9 @@ body.has-tabbar .wrap{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
 .fc svg{width:34px;height:34px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round}.fc svg .eye{fill:currentColor;stroke:none}
 .fc span{font-size:12px;font-weight:800}.fc i{font-style:normal;font-size:10px;font-weight:700;opacity:.7}
 .fc.on{background:var(--text);color:var(--surface)}
-body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard,body.ov .period{display:none!important}
+body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:none!important}
+#actionCard .period{display:flex;width:100%;margin:16px 0 4px;background:var(--surface2);box-shadow:none}#actionCard .period #selWeek{flex:1}
+#actionCard[data-view="year"] .period #selYear{flex:1}
 .ov-top{display:flex;align-items:center;gap:18px;margin-top:10px}
 .ring{width:150px;height:150px;flex:none}
 .ring .rbg{fill:none;stroke:var(--cell);stroke-width:12}
@@ -459,6 +462,8 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard,body.ov 
 .wlbl{display:inline-flex;align-items:center;gap:6px}.wlbl svg{width:18px;height:18px;fill:none;stroke:var(--accent);stroke-width:2.2;stroke-linejoin:round}
 .bt .xm{left:2%;top:12%;width:96%;height:auto;aspect-ratio:1/1}.bt .xm path{stroke-width:15}
 .cgroup{display:grid;gap:8px}
+.cg-tog{all:unset;box-sizing:border-box;width:100%;cursor:pointer;display:flex;justify-content:space-between;align-items:center;-webkit-tap-highlight-color:transparent}.cg-tog span{color:var(--accent);text-transform:none;letter-spacing:0;font-weight:700}.cg-tog b{color:var(--accent);margin:0 2px}
+.ov-th.cg-tog{font-size:12px;font-weight:700;white-space:nowrap;gap:8px}.ov-th.cg-tog span{color:var(--muted);text-transform:uppercase;letter-spacing:.06em}.ov-th.cg-tog b{color:var(--text);margin:0}.ov-th.cg-tog b::after{content:' ▾';color:var(--accent)}.ov-th.cg-tog.open b::after{content:' ▴'}
 .cg-l{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
 .cg-l svg{width:17px;height:17px;fill:none;stroke:var(--accent);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .cg-i{display:grid;gap:8px}.cg-i.c2{grid-template-columns:1fr 1fr}.cg-i.c3{grid-template-columns:repeat(3,minmax(0,1fr))}
@@ -637,7 +642,7 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard,body.ov 
       <div class="seg" id="ovSeg"><button data-p="day">Day</button><button data-p="week">Week</button><button data-p="month">Month</button><button data-p="year">Year</button></div></div>
     <div class="ov-top"><div id="ovRing"></div><div class="ov-side"><div class="ov-delta" id="ovDelta"></div><div class="ov-note" id="ovNote"></div></div></div>
     <div class="ov-rows" id="ovRows"></div>
-    <div class="ov-trend"><div class="ov-th"><span>Last 12 weeks</span><b id="ovTrendTxt"></b></div><div id="ovSpark"></div></div>
+    <div class="ov-trend"><button type="button" class="ov-th cg-tog" data-tog="trend"><span>Last 12 weeks</span><b id="ovTrendTxt"></b></button><div id="ovSpark"></div></div>
   </div>
 
   <!-- Food / Sleep: today's checklist -->
@@ -646,7 +651,7 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard,body.ov 
   <!-- This week -->
   <div class="card" id="actionCard">
     <div class="label">
-      <span class="ttl"><svg class="calicon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3.5"/><path d="M8 3v4M16 3v4"/><path d="M9.5 10.25l5 5M14.5 10.25l-5 5"/></svg><span id="actTtl">Action</span></span>
+      <span class="ttl"><svg class="calicon" id="actIcon" viewBox="0 0 24 24" aria-hidden="true"></svg><span id="actTtl">Training</span></span>
       <div class="seg" role="tablist" id="viewSeg">
         <button data-view="week" role="tab">Week</button><button data-view="month" role="tab">Month</button><button data-view="year" role="tab">Year</button>
       </div>
@@ -779,11 +784,11 @@ const fmtDs=s=>parse(s).toLocaleDateString(LOC,{day:'numeric',month:'short'});
 const fmtKg=v=>(Math.round(v*10)/10).toLocaleString(LOC,{minimumFractionDigits:1,maximumFractionDigits:1});
 // Modules (switched on per person in the sheet's Users tab). A day counts as done when all its items are ticked.
 const MODS={
-  training:{label:'Training',title:'Action',groups:[{items:['Training']}],plan:'daysPerWeek',def:0,
+  training:{label:'Training',title:'Training',groups:[{items:['Training']}],plan:'daysPerWeek',def:0,
     icon:'<rect x="4.4" y="5" width="4" height="14" rx="1.5"/><rect x="15.6" y="5" width="4" height="14" rx="1.5"/><path d="M8.4 12h7.2M2 9.3v5.4M22 9.3v5.4"/>'},
   food:{label:'Food',title:'Food',plan:'foodPerWeek',def:6,target:'foodTarget',tdef:85,
     water:{max:8,goal:5,ml:500},
-    groups:[{label:'Meals',items:['Breakfast','Lunch','Dinner'],cols:3},{label:'Bonus · up to +25',items:['Creatine','Protein','Evening','Snack'],cols:4,bonus:true}],
+    groups:[{label:'Meals',items:['Breakfast','Lunch','Dinner'],cols:3},{label:'Bonus',items:['Creatine','Protein','Evening','Snack'],cols:4,bonus:true}],
     goal:'Fuel the gains',note:'2.5 L water, breakfast, lunch and dinner every day.\nBonus: creatine, protein, an evening meal or a snack.',
     icon:'<path d="M7 3v18M4.5 3v5.5a2.5 2.5 0 0 0 5 0V3M17.5 21V3c-2.2 1.2-3.5 4-3.5 7.5V13h3.5"/>'},
   sleep:{label:'Sleep',title:'Sleep',plan:'sleepPerWeek',def:5,target:'sleepTarget',tdef:75,
@@ -792,7 +797,7 @@ const MODS={
     icon:'<path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.8 6.8 0 0 0 10.5 10.5z"/>'},
 };
 Object.values(MODS).forEach(M=>{M.items=M.groups.flatMap(g=>g.items);M.base=M.groups.filter(g=>!g.bonus).flatMap(g=>g.items);M.bonus=M.groups.filter(g=>g.bonus).flatMap(g=>g.items);});
-const ITEM_LBL={};
+const ITEM_LBL={Training:'Trained today'};
 const ITEM_HINT={};
 const userMods=()=>{const m=(S.modules||['training']).filter(x=>MODS[x]);return m.length?m:['training'];};
 let mod=(()=>{try{return localStorage.getItem('training.mod')||'training'}catch(e){return 'training'}})();
@@ -812,7 +817,8 @@ const waterN=d=>S.actions.filter(a=>a.date===d&&/^Water:\d$/.test(a.action)).len
 const trained=()=>{const M=MODS[mod],by={};
   if(M.rating)return new Set(S.actions.filter(a=>/^Sleep:[45]$/.test(a.action)).map(a=>a.date));
   S.actions.forEach(a=>{if(M.base.includes(a.action))(by[a.date]=by[a.date]||new Set()).add(a.action);});
-  return new Set(Object.keys(by).filter(d=>by[d].size===M.base.length&&(!M.water||waterN(d)>=M.water.goal)));};
+  if(M.water){const ds=new Set(S.actions.filter(a=>a.action.startsWith('Water:')||M.items.includes(a.action)).map(a=>a.date));return new Set([...ds].filter(d=>dayVal(mod,d)>=100));}
+  return new Set(Object.keys(by).filter(d=>by[d].size===M.base.length));};
 const mondayOf=d=>{const m=new Date(d.getFullYear(),d.getMonth(),d.getDate());m.setDate(m.getDate()-((m.getDay()+6)%7));return m;};
 const isoWeek=d=>{const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));const n=t.getUTCDay()||7;t.setUTCDate(t.getUTCDate()+4-n);const y0=new Date(Date.UTC(t.getUTCFullYear(),0,1));return Math.ceil(((t-y0)/864e5+1)/7);};
 // Goal start: progress (time, weight, plan line) is measured from the day the goal was set.
@@ -861,6 +867,9 @@ function toggleItem(d,a){lastToggled=d;setTimeout(()=>{lastToggled=null;},600);
 function toggle(d){const M=MODS[mod];if(M.items.length===1&&!M.water)return toggleItem(d,M.items[0]);openDay(d);}
 // every tick in the checklists uses the same hand-drawn cross (the one the user liked on Dinner)
 const CHK_X='2026-11-06Dinner';
+// remembered open/closed sections (per device)
+const UI=(()=>{try{return Object.assign({bonus:false,trend:false},JSON.parse(localStorage.getItem('training.ui')||'{}'))}catch(e){return {bonus:false,trend:false}}})();
+const saveUI=()=>{try{localStorage.setItem('training.ui',JSON.stringify(UI))}catch(e){}};
 const chk=(d,a)=>{const on=has(d,a);return `<button type="button" class="chk-i${on?' on':''}" data-item="${a}" data-day="${d}"><span>${ITEM_LBL[a]||a}${BONUS[a]&&mod==='food'?`<i class="bp">+${BONUS[a]}</i>`:''}${ITEM_HINT[a]?`<small class="hint">${ITEM_HINT[a]}</small>`:''}</span><span class="bx">${on?crossSVG(CHK_X,false):''}</span></button>`;};
 // a 500 ml bottle; the cross is drawn on top once it's drunk
 const BOTTLE='<svg class="btl" viewBox="4.6 3.2 14.8 26.2" aria-hidden="true"><path d="M6.2 4.1h11.6v4H6.2z"/><path d="M6.2 8.1h11.6v17.6a2.6 2.6 0 0 1-2.6 2.6H8.8a2.6 2.6 0 0 1-2.6-2.6z"/></svg>';
@@ -872,7 +881,11 @@ function checksHTML(d){const M=MODS[mod];let h='';
     h+=`<div class="water"><div class="wtop"><span class="wlbl"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5c3 4 6.2 7.4 6.2 10.7a6.2 6.2 0 0 1-12.4 0C5.8 10.9 9 7.5 12 3.5z"/></svg>Water</span><b>${L(n*W.ml)} <i>/ ${L(W.goal*W.ml)} L</i></b></div>
       <div class="wline"><i style="width:${n/W.max*100}%"></i><s style="left:${W.goal/W.max*100}%"></s></div>
       <div class="bottles">${[...Array(W.max)].map((_,i)=>`<button type="button" class="bt${i<n?' on':''}" data-water="${i+1}" data-day="${d}" aria-label="${(i+1)*W.ml} ml">${BOTTLE}${i<n?crossSVG(CHK_X,false):''}</button>`).join('')}</div></div>`;}
-  M.groups.forEach(g=>{h+=`<div class="cgroup">${g.label?`<div class="cg-l">${g.icon?`<svg viewBox="0 0 24 24" aria-hidden="true">${g.icon}</svg>`:''}${g.label}</div>`:''}<div class="cg-i${g.cols?' c'+g.cols:''}">${g.items.map(a=>chk(d,a)).join('')}</div></div>`;});
+  M.groups.forEach(g=>{
+    if(g.bonus){ // bonus folds away: the header shows what you earned, tap to open
+      const open=UI.bonus,pts=bonusPts(mod,d);
+      h+=`<div class="cgroup"><button type="button" class="cg-l cg-tog" data-tog="bonus">Bonus${pts?` · <b>+${pts}</b> today`:''}<span>${open?'Hide ▴':'Show ▾'}</span></button>${open?`<div class="cg-i c${g.cols}">${g.items.map(a=>chk(d,a)).join('')}</div>`:''}</div>`;return;}
+    h+=`<div class="cgroup">${g.label?`<div class="cg-l">${g.label}</div>`:''}<div class="cg-i${g.cols?' c'+g.cols:''}">${g.items.map(a=>chk(d,a)).join('')}</div></div>`;});
   return h;}
 // ---------- scores (0-100): what you did vs what your plan asks, per module and in total ----------
 // A day's value: Training 1 if trained; Food = share of ticks done (water counts as one, up to the goal); Sleep = share of ticks.
@@ -886,6 +899,8 @@ function frac(m,d){const M=MODS[m];
   return n/t;}
 // bonus on top of the basics: creatine +5, protein +5, evening meal +10, snack +5; at most +25 so a day tops out at 125
 const BONUS={Creatine:5,Protein:5,Evening:10,Snack:5},BONUS_MAX=25;
+// a day's points: basics plus bonus, never above 100
+const dayVal=(m,d)=>Math.min(100,Math.round(frac(m,d)*100+bonusPts(m,d)));
 const bonusPts=(m,d)=>Math.min(BONUS_MAX,MODS[m].bonus.filter(a=>has(d,a)).reduce((t,a)=>t+(BONUS[a]||5),0));
 // average bonus per day over the period (only days since the start, up to today)
 function modBonus(m,a,b){const st=startOf(m);if(!st||!MODS[m].bonus.length)return 0;const from=a>st?a:st,to=b<todayIso?b:todayIso;if(from>to)return 0;
@@ -899,10 +914,10 @@ const addD=(k,n)=>{const d=parse(k);d.setDate(d.getDate()+n);return iso(d);};
 function modScore(m,a,b){const st=startOf(m),pw=m==='training'?pwOf(m):7;if(!st||!pw)return null;
   const from=a>st?a:st,to=b<todayIso?b:todayIso;if(from>to)return null;
   const fr=[];for(let d=from;d<=to;d=addD(d,1))fr.push(frac(m,d));
-  const n=fr.length,exp=pw*n/7;
-  if(m==='training')return Math.min(100,Math.round(100*fr.reduce((x,y)=>x+y,0)/Math.max(exp,1)));
-  // Food/Sleep: average day points over every day (basics 0-100, plus bonus); the plan is a target score, e.g. 85
-  let sum=0,k=0;for(let d=from;d<=to;d=addD(d,1),k++)sum+=fr[k]*100+bonusPts(m,d);
+  const n=fr.length;
+  if(m==='training'){const [c,g]=trainCount(a,b);return Math.round(100*c/g);} // e.g. 4 of 4 planned days = 100
+  // Food/Sleep: average day points; a day is basics (0-100) plus bonus, but never above 100
+  let sum=0,k=0;for(let d=from;d<=to;d=addD(d,1),k++)sum+=Math.min(100,fr[k]*100+bonusPts(m,d));
   return Math.round(sum/n);}
 // total = how much of each plan you reach: Training days vs plan, Food/Sleep score vs their target (each max 100)
 const planPct=(m,v)=>v==null?null:m==='training'?v:Math.min(100,Math.round(v/targetOf(m)*100));
@@ -912,6 +927,11 @@ function weeksOnTarget(m){const st=startOf(m),tg=targetOf(m);if(!st)return {stre
   for(let mon=iso(mondayOf(parse(st)));mon<=last;mon=addD(mon,7)){const v=modScore(m,mon,addD(mon,6));if(v==null)continue;total++;const ok=v>=tg;res.push(ok);if(ok){on++;run++;best=Math.max(best,run);}else run=0;}
   for(let i=res.length-1;i>=0&&res[i];i--)streak++;
   return {streak,best,on,total};}
+// Training days done vs planned within [a..b] (from the goal start up to today)
+function trainCount(a,b){const st=startOf('training');if(!st)return [0,0];const from=a>st?a:st,to=b<todayIso?b:todayIso;if(from>to)return [0,0];
+  let c=0;for(let d=from;d<=to;d=addD(d,1))if(has(d,'Training'))c++;
+  const span=(parse(b)-parse(from))/864e5+1,pw=pwOf('training'),g=Math.max(1,span<=7?pw:Math.round(pw*span/7));
+  return [Math.min(c,g),g];}
 function totalScore(sc){let w=0,t=0;Object.entries(sc).forEach(([m,v])=>{const p=planPct(m,v);if(p!=null){w+=WEIGHT[m];t+=WEIGHT[m]*p;}});return w?Math.round(t/w):null;}
 // period [a,b] for day/week/month/year containing date k (training's 'day' uses the week so far: rest days aren't failures)
 function period(p,k,m){const d=parse(k);
@@ -926,7 +946,7 @@ function weakest(m,a,b){const M=MODS[m],st=startOf(m);if(!st)return 'Not started
   const from=a>st?a:st,to=b<todayIso?b:todayIso;if(from>to)return '';
   const days=[];for(let d=from;d<=to;d=addD(d,1))days.push(d);
   if(M.rating){const r=days.map(rateOf).filter(Boolean);if(!r.length)return 'No nights rated yet';const av=r.reduce((x,y)=>x+y,0)/r.length;return `Average: ${RATE[Math.round(av)-1].l} · ${r.length} ${r.length===1?'night':'nights'} rated`;}
-  if(m==='training'){const n=days.filter(d=>has(d,'Training')).length,exp=Math.max(1,Math.round(pwOf(m)*days.length/7));return `${n} of ${exp} training days`;}
+  if(m==='training'){const [c,g]=trainCount(a,b);return `${c} of ${g} training days`;}
   const rows=M.base.map(it=>[it,days.filter(d=>has(d,it)).length]);
   if(M.water)rows.unshift(['Water',days.filter(d=>waterN(d)>=M.water.goal).length]);
   rows.sort((x,y)=>x[1]-y[1]);const [it,n]=rows[0];
@@ -948,12 +968,13 @@ function renderOverview(){if(!ov)return;
   const dTxt=(v,pv)=>v==null||pv==null?'':`<span class="dl ${v-pv>=0?'up':'dn'}">${v-pv>=0?'+':''}${v-pv}</span>`;
   $('ovRows').innerHTML=userMods().map(m=>{const v=sc[m],[a,b]=period(ovP,todayIso,m);
     return `<button class="ov-row" data-mod="${m}"><span class="ov-ic"><svg viewBox="0 0 24 24">${MODS[m].icon}</svg></span>
-      <span class="ov-mid"><span class="ov-n">${MODS[m].label}${dTxt(v,psc[m])}</span><span class="ov-bar"><i style="width:${planPct(m,v)||0}%"></i></span><span class="ov-w">${weakest(m,a,b)}</span></span>
-      <b class="ov-v">${v==null?'–':v}${v!=null&&targetOf(m)?`<i>/ ${targetOf(m)}</i>`:''}</b></button>`;}).join('');
+      <span class="ov-mid"><span class="ov-n">${MODS[m].label}${dTxt(v,psc[m])}</span><span class="ov-bar"><i style="width:${planPct(m,v)||0}%"></i></span><span class="ov-w">${weakest(m,a,b)}${ovP==='day'&&m==='training'?' · this week so far':''}</span></span>
+      <b class="ov-v">${m==='training'&&v!=null?(()=>{const c=trainCount(a,b);return `${c[0]}<i>/ ${c[1]}</i>`;})():v==null?'–':v}${m!=='training'&&v!=null&&targetOf(m)?`<i>/ ${targetOf(m)}</i>`:''}</b></button>`;}).join('');
   // trend: total per week, last 12 weeks
   const wk=[];for(let i=11;i>=0;i--){const k=addD(iso(mondayOf(new Date())),-7*i);wk.push(totalScore(scoresAt('week',k)));}
   const pts=wk.map((v,i)=>v==null?null:[8+i*(284/11),70-v*0.6]);
   const path=pts.filter(Boolean).map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+  $('ovSpark').hidden=!UI.trend;document.querySelector('.ov-th').classList.toggle('open',UI.trend);
   $('ovSpark').innerHTML=`<svg viewBox="0 0 300 80" class="spark"><line x1="8" x2="292" y1="${70-60}" y2="${70-60}" class="sgrid"/><line x1="8" x2="292" y1="70" y2="70" class="sgrid"/>
     ${path?`<path d="${path}" class="sline"/>`:''}${pts.map((p,i)=>p?`<circle cx="${p[0]}" cy="${p[1]}" r="${i===11?4.5:3}" class="${i===11?'snow':'sdot'}"/>`:'').join('')}</svg>`;
   // this week vs the average of the 4 weeks before (1% better every day = a slowly rising line)
@@ -969,16 +990,16 @@ function setWater(d,n){const cur=waterN(d),t=n===cur?n-1:n,set={};lastToggled=d;
   for(let k=1;k<=t;k++)S.actions.push({date:d,action:'Water:'+k});
   save({type:'batch',date:d,set});}
 function openDay(d){const dlg=$('dlg'),f=$('dlgForm');if(dlg.open)return;
-  f.innerHTML=`<h3>${d===todayIso?'Today':fmtD(d)}</h3><div class="checks" id="dayChecks">${checksHTML(d)}</div>
+  f.innerHTML=`<h3>${d===todayIso?'Today':fmtD(d)}</h3><div class="checks" id="dayChecks" data-day="${d}">${checksHTML(d)}</div>
     <div class="row" style="justify-content:flex-end;margin-top:16px"><button class="primary" type="button" onclick="this.closest('dialog').close()">Done</button></div>`;
   f.onsubmit=e=>e.preventDefault();dlg.onclose=()=>{f.onsubmit=null;};dlg.showModal();}
 // Today card (Food / Sleep): tick the items straight away
-function renderToday(){const tc=$('todayCard'),ti=$('todayIn');tc.hidden=true;if(mod==='training'){ti.hidden=true;return;}
+function renderToday(){const tc=$('todayCard'),ti=$('todayIn');tc.hidden=true;
   ti.hidden=false;const M=MODS[mod],pw=perWeek();
   // Today lives inside the module card now: today's ticks on top, the period score and calendar below
   ti.innerHTML=`<div class="tin-h"><span class="tin-t">Today</span><span class="dsc" id="dayScore"></span></div><div class="checks" id="checks"></div><div class="tin-sep"></div>`;
   // today's score: basics 0-100, Food bonus on top
-  const base=Math.round(frac(mod,todayIso)*100),bon=bonusPts(mod,todayIso);
+  const base=Math.min(100,Math.round(frac(mod,todayIso)*100+bonusPts(mod,todayIso))),bon=0; // bonus can make up for a missed item, never above 100
   const [ma,mb]=period('month',todayIso,mod),msc=modScore(mod,ma,mb);
   $('dayScore').innerHTML=`<b>${base}</b>${bon?`<i>+${bon}</i>`:''}<small>day</small>${msc!=null?`<span class="dsep"></span><b>${msc}</b><small>month</small>`:''}`;
   $('checks').innerHTML=checksHTML(todayIso);}
@@ -1001,7 +1022,7 @@ function render(){
   const pw=perWeek();
   $('planView').textContent=pw?pw+'× / week':'–';
   $('planSub').innerHTML=pw?'Training days per week':'<span class="empty">How many days per week?</span>';
-  fillPeriod();renderProcess();renderWeek();renderWeight();renderActions();renderMonth();renderMods();
+  fillPeriod();renderProcess();renderWeek();renderWeight();renderActions();renderMonth();renderSum();renderMods();
 }
 // module switch: glassy tab bar (only when a person has more than one module)
 function renderMods(){const U=userMods();if(!U.includes(mod))mod=U[0];
@@ -1009,7 +1030,7 @@ function renderMods(){const U=userMods();if(!U.includes(mod))mod=U[0];
   tb.innerHTML=`<button data-mod="overview" class="${ov?'on':''}" aria-label="Overview"><svg viewBox="0 0 24 24" aria-hidden="true">${OV_ICON}</svg><span>Score</span></button>`
     +U.map(k=>`<button data-mod="${k}" class="${!ov&&k===mod?'on':''}" aria-label="${MODS[k].label}"><svg viewBox="0 0 24 24" aria-hidden="true">${MODS[k].icon}</svg><span>${MODS[k].label}</span></button>`).join('');
   document.body.classList.toggle('ov',ov);$('overCard').hidden=!ov;renderOverview();
-  $('actTtl').textContent=MODS[mod].title;document.body.dataset.mod=mod;
+  $('actTtl').textContent=MODS[mod].title;$('actIcon').innerHTML=MODS[mod].icon;document.body.dataset.mod=mod;
   $('progCard').hidden=mod!=='training';
   if(mod==='training'){$('dlTtl').textContent='Deadline';$('dlEdit').hidden=false;}
   if(mod!=='training'){const M=MODS[mod],st=S.settings,g=st[mod+'Goal']||M.goal,dl=st[mod+'Deadline']||st.deadline,pw=perWeek();
@@ -1021,7 +1042,7 @@ function renderMods(){const U=userMods();if(!U.includes(mod))mod=U[0];
     const w=weeksOnTarget(mod);
     $('dlCount').textContent=w.total?w.streak+(w.streak===1?' week':' weeks'):'–';
     $('dlDate').innerHTML=w.total?`In a row · best ${w.best} · ${w.on} of ${w.total} weeks ≥ ${targetOf(mod)}`:'<span class="empty">Counts from your first full week</span>';
-    $('planView').textContent='≥ '+targetOf(mod)+' / week';$('planSub').textContent=mod==='food'?'Week score · basics 100, bonus up to +25':'Week score · average of your nights (Good = 80)';}
+    $('planView').textContent='≥ '+targetOf(mod)+' / week';$('planSub').textContent=mod==='food'?'Week score · a day is max 100, bonus fills gaps':'Week score · average of your nights (Good = 80)';}
   const st=$('stack');$('stackN').textContent='+'+([...st.querySelectorAll('.scard')].filter(c=>!c.hidden).length-1);
   renderToday();}
 const OV_ICON='<path d="M12 20.2s-7.6-4.6-7.6-10.2A4.3 4.3 0 0 1 12 7.3a4.3 4.3 0 0 1 7.6 2.7c0 5.6-7.6 10.2-7.6 10.2z"/>';
@@ -1067,9 +1088,9 @@ function dayBtn(k,T,cls=''){const d=parse(k).getDate();
   // Sleep: the night's smiley sits in the circle, its score underneath (blue today, black before)
   if(MODS[mod].rating){const r=rateOf(k);if(r)return `<div class="dc"><button class="cday rated${k===todayIso?' today':''}${cls}" data-wd="${k}" title="${fmtD(k)} · ${RATE[r-1].l}" aria-label="${fmtD(k)}: ${RATE[r-1].l}">${face(r-1)}</button><i class="dpc${k===todayIso?' td':''}">${r*20}</i></div>`;}
   const on=T.has(k);
-  const f=!on&&mod!=='training'&&k<=todayIso?frac(mod,k):0,pc=Math.round(f*100),full=on&&mod!=='training';
+  const f=!on&&mod!=='training'&&k<=todayIso?dayVal(mod,k)/100:0,pc=Math.round(f*100),full=on&&mod!=='training';
   const ringSvg=f>0?`<svg class="pring" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18" pathLength="100" stroke-dasharray="${pc} 100" transform="rotate(-90 20 20)"/></svg>`:'';
-  return `<div class="dc"><button class="cday${on?' on':''}${f>0?' part':''}${k===todayIso?' today':''}${k>todayIso?' fut':''}${cls}" data-wd="${k}" title="${fmtD(k)}${f>0?' · '+pc+'%':''}" aria-pressed="${on}"><span>${d}</span>${ringSvg}${on?crossSVG(k,k===todayIso):''}</button>${f>0?`<i class="dpc${k===todayIso?' td':''}">${pc}%</i>`:full?`<i class="dpc${k===todayIso?' td':''}">${Math.round(frac(mod,k)*100)}%</i>`:''}</div>`;}
+  return `<div class="dc"><button class="cday${on?' on':''}${f>0?' part':''}${k===todayIso?' today':''}${k>todayIso?' fut':''}${cls}" data-wd="${k}" title="${fmtD(k)}${f>0?' · '+pc+'%':''}" aria-pressed="${on}"><span>${d}</span>${ringSvg}${on?crossSVG(k,k===todayIso):''}</button>${f>0?`<i class="dpc${k===todayIso?' td':''}">${pc}%</i>`:full?`<i class="dpc${k===todayIso?' td':''}">${dayVal(mod,k)}%</i>`:''}</div>`;}
 const countTxt=(n,period)=>`<div class="msum"><b>${n}</b> training ${n===1?'day':'days'} ${period}</div>`;
 // Sleep: a period is shown as one smiley (the face closest to its score) with the score below
 const nearFace=v=>Math.min(4,Math.max(0,Math.round(v/20)-1));
@@ -1240,6 +1261,8 @@ function renderSum(){
 document.addEventListener('click',e=>{
   const it=e.target.closest('[data-item]');
   if(it){const d=it.dataset.day;toggleItem(d,it.dataset.item);const dc=$('dayChecks');if(dc)dc.innerHTML=checksHTML(d);return;}
+  const tg=e.target.closest('[data-tog]');
+  if(tg){UI[tg.dataset.tog]=!UI[tg.dataset.tog];saveUI();if(tg.dataset.tog==='trend')renderOverview();else{renderToday();const dc=$('dayChecks');if(dc)dc.innerHTML=checksHTML(dc.dataset.day||todayIso);}return;}
   const rb=e.target.closest('[data-rate]');
   if(rb){const d=rb.dataset.day;setRating(d,+rb.dataset.rate);const dc=$('dayChecks');if(dc)dc.innerHTML=checksHTML(d);return;}
   const wb=e.target.closest('[data-water]');
@@ -1320,6 +1343,7 @@ function placeProgress(){
   if(!$('pmore').hidden)renderWeight();
 }
 placeProgress();window.addEventListener('resize',()=>placeProgress());
+$('actSum').before(document.querySelector('.period')); // year/week picker lives with the calendar it controls
 let actView=(()=>{try{return localStorage.getItem('training.view')||'week'}catch(e){return 'week'}})();
 function setView(v){actView=v;setTimeout(()=>{renderSum();if(typeof fillPeriod==='function')fillPeriod();},0);$('actionCard').dataset.view=v;document.querySelectorAll('#viewSeg button').forEach(b=>b.classList.toggle('on',b.dataset.view===v));try{localStorage.setItem('training.view',v)}catch(e){}}
 document.querySelectorAll('#viewSeg button').forEach(b=>b.onclick=()=>setView(b.dataset.view));
@@ -1334,7 +1358,7 @@ function dialog(html,onSave,okLabel){
 }
 function openEdit(k){
   if(k==='modplan'){const M=MODS[mod];
-    return dialog(`<h3>${M.label} plan</h3><p>Your week score target. A perfect day = 100${mod==='food'?' (+ up to 25 bonus)':''}. Below 100 leaves room for a night out or a bad night.</p><label>Target week score</label><input name="n" type="number" min="30" max="120" step="5" value="${targetOf(mod)}">`,
+    return dialog(`<h3>${M.label} plan</h3><p>Your week score target. A perfect day = 100${mod==='food'?' (bonus can make up for a missed item)':''}. Below 100 leaves room for a night out or a bad night.</p><label>Target week score</label><input name="n" type="number" min="30" max="120" step="5" value="${targetOf(mod)}">`,
       f=>{const n=Math.min(120,Math.max(30,parseInt(f.n.value,10)||0));if(n)saveSettings({[M.target]:String(n)});});}
   const st=S.settings;
   if(mod!=='training'&&(k==='goal'||k==='deadline'||k==='plan')){const M=MODS[mod];
@@ -1358,7 +1382,7 @@ function playIntro(force){
   if(!force){try{if(localStorage.getItem('training.intro')===todayIso)return;}catch(e){}
   if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;}
   // The method, built up line by line: Goal + Deadline = Objective, + Plan = Strategy, + Consistent action = Results
-  const T=trained(),today=T.has(todayIso);
+  const today=(totalScore(scoresAt('day',todayIso))||0)>=80; // 'Done today' once the whole day scores 80+
   const X='<span class="in-x"><svg viewBox="0 0 100 100"><path d="M22 23 Q50 48 78 77"/><path d="M78 22 Q52 51 22 78"/></svg></span>';
   const run=++introRun;
   const stage=$('inStage'),el=$('intro');$('inDots').innerHTML='';
