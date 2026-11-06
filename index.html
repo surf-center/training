@@ -462,7 +462,9 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard,body.ov 
 .cg-l{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
 .cg-l svg{width:17px;height:17px;fill:none;stroke:var(--accent);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .cg-i{display:grid;gap:8px}.cg-i.c2{grid-template-columns:1fr 1fr}.cg-i.c3{grid-template-columns:repeat(3,minmax(0,1fr))}
-.cg-i.c3 .chk-i{flex-direction:column;align-items:flex-start;gap:10px;padding:12px 12px 14px;font-size:14px}
+.cg-i.c3,.cg-i.c4{grid-auto-rows:auto}.cg-i.c4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.cg-i.c3 .chk-i,.cg-i.c4 .chk-i{flex-direction:column;justify-content:flex-start;align-items:center;text-align:center;gap:8px;padding:12px 4px;font-size:14px;height:96px;justify-content:space-between}
+.cg-i.c4 .chk-i{font-size:13px}.cg-i.c4 .chk-i .bp{display:block;margin:2px 0 0}
 .chk-i .hint{display:block;white-space:nowrap;font-size:11px;font-weight:600;color:var(--muted);margin-top:2px}
 .chk-i .bp{font-style:normal;font-size:12px;font-weight:800;color:var(--accent);margin-left:5px}
 .calsum .psc em,.ov-v i{font-style:normal;font-size:13px;font-weight:800;color:var(--accent);margin-left:3px}
@@ -781,7 +783,7 @@ const MODS={
     icon:'<rect x="4.4" y="5" width="4" height="14" rx="1.5"/><rect x="15.6" y="5" width="4" height="14" rx="1.5"/><path d="M8.4 12h7.2M2 9.3v5.4M22 9.3v5.4"/>'},
   food:{label:'Food',title:'Food',plan:'foodPerWeek',def:6,target:'foodTarget',tdef:85,
     water:{max:8,goal:5,ml:500},
-    groups:[{label:'Meals',items:['Breakfast','Lunch','Dinner'],cols:3},{label:'Bonus · up to +25',items:['Creatine','Protein','Evening','Snack'],cols:2,bonus:true}],
+    groups:[{label:'Meals',items:['Breakfast','Lunch','Dinner'],cols:3},{label:'Bonus · up to +25',items:['Creatine','Protein','Evening','Snack'],cols:4,bonus:true}],
     goal:'Fuel the gains',note:'2.5 L water, breakfast, lunch and dinner every day.\nBonus: creatine, protein, an evening meal or a snack.',
     icon:'<path d="M7 3v18M4.5 3v5.5a2.5 2.5 0 0 0 5 0V3M17.5 21V3c-2.2 1.2-3.5 4-3.5 7.5V13h3.5"/>'},
   sleep:{label:'Sleep',title:'Sleep',plan:'sleepPerWeek',def:5,target:'sleepTarget',tdef:75,
@@ -865,11 +867,10 @@ const BOTTLE='<svg class="btl" viewBox="4.6 3.2 14.8 26.2" aria-hidden="true"><p
 const L=ml=>(ml/1000).toLocaleString(LOC,{minimumFractionDigits:1,maximumFractionDigits:1});
 function checksHTML(d){const M=MODS[mod];let h='';
   if(M.rating){const r=rateOf(d);
-    h+=`<div class="rate"><div class="rq">How did you sleep?</div><div class="faces">${RATE.map((x,i)=>`<button type="button" class="fc${r===i+1?' on':''}" data-rate="${i+1}" data-day="${d}" aria-label="${x.l}">${face(i)}<span>${x.l}</span><i>${(i+1)*20}</i></button>`).join('')}</div></div>`;}
+    h+=`<div class="rate"><div class="faces">${RATE.map((x,i)=>`<button type="button" class="fc${r===i+1?' on':''}" data-rate="${i+1}" data-day="${d}" aria-label="${x.l}">${face(i)}<span>${x.l}</span></button>`).join('')}</div></div>`;}
   if(M.water){const W=M.water,n=waterN(d);
     h+=`<div class="water"><div class="wtop"><span class="wlbl"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5c3 4 6.2 7.4 6.2 10.7a6.2 6.2 0 0 1-12.4 0C5.8 10.9 9 7.5 12 3.5z"/></svg>Water</span><b>${L(n*W.ml)} <i>/ ${L(W.goal*W.ml)} L</i></b></div>
       <div class="wline"><i style="width:${n/W.max*100}%"></i><s style="left:${W.goal/W.max*100}%"></s></div>
-      <div class="wscale"><span>0</span><span style="left:${W.goal/W.max*100}%">${W.goal*W.ml} ml</span><span>${W.max*W.ml} ml</span></div>
       <div class="bottles">${[...Array(W.max)].map((_,i)=>`<button type="button" class="bt${i<n?' on':''}" data-water="${i+1}" data-day="${d}" aria-label="${(i+1)*W.ml} ml">${BOTTLE}${i<n?crossSVG(CHK_X,false):''}</button>`).join('')}</div></div>`;}
   M.groups.forEach(g=>{h+=`<div class="cgroup">${g.label?`<div class="cg-l">${g.icon?`<svg viewBox="0 0 24 24" aria-hidden="true">${g.icon}</svg>`:''}${g.label}</div>`:''}<div class="cg-i${g.cols?' c'+g.cols:''}">${g.items.map(a=>chk(d,a)).join('')}</div></div>`;});
   return h;}
@@ -947,7 +948,7 @@ function renderOverview(){if(!ov)return;
   const dTxt=(v,pv)=>v==null||pv==null?'':`<span class="dl ${v-pv>=0?'up':'dn'}">${v-pv>=0?'+':''}${v-pv}</span>`;
   $('ovRows').innerHTML=userMods().map(m=>{const v=sc[m],[a,b]=period(ovP,todayIso,m);
     return `<button class="ov-row" data-mod="${m}"><span class="ov-ic"><svg viewBox="0 0 24 24">${MODS[m].icon}</svg></span>
-      <span class="ov-mid"><span class="ov-n">${MODS[m].label}<i>${WEIGHT[m]}%</i>${dTxt(v,psc[m])}</span><span class="ov-bar"><i style="width:${planPct(m,v)||0}%"></i></span><span class="ov-w">${weakest(m,a,b)}</span></span>
+      <span class="ov-mid"><span class="ov-n">${MODS[m].label}${dTxt(v,psc[m])}</span><span class="ov-bar"><i style="width:${planPct(m,v)||0}%"></i></span><span class="ov-w">${weakest(m,a,b)}</span></span>
       <b class="ov-v">${v==null?'–':v}${v!=null&&targetOf(m)?`<i>/ ${targetOf(m)}</i>`:''}</b></button>`;}).join('');
   // trend: total per week, last 12 weeks
   const wk=[];for(let i=11;i>=0;i--){const k=addD(iso(mondayOf(new Date())),-7*i);wk.push(totalScore(scoresAt('week',k)));}
@@ -984,6 +985,7 @@ function renderToday(){const tc=$('todayCard'),ti=$('todayIn');tc.hidden=true;if
 
 // ---------- render ----------
 function render(){
+  {const U=userMods();if(!U.includes(mod))mod=U[0];} // settle the module before anything is drawn
   const st=S.settings;
   if(!st.goalStart&&(Number(st.targetKg)||st.deadline)){saveSettings({goalStart:todayIso});return;}
   const tw=Number(st.targetKg);
@@ -1227,7 +1229,7 @@ function renderSum(){
     const pk=actView==='week'?addD(a,-7):actView==='month'?iso(new Date(parse(a).getFullYear(),parse(a).getMonth()-1,1)):(+a.slice(0,4)-1)+'-01-01';
     const pb=actView==='week'?addD(pk,6):actView==='month'?iso(new Date(parse(pk).getFullYear(),parse(pk).getMonth()+1,0)):(+a.slice(0,4)-1)+'-12-31';
     const prv=modScore(mod,pk,pb),pl={week:'last week',month:'last month',year:'last year'}[actView];
-    const dl=sc!=null&&prv!=null?`<span class="dl ${sc-prv>=0?'up':'dn'}">${sc-prv>=0?'+':''}${sc-prv}</span> vs ${pl} · `:'';
+    const dl=sc!=null&&prv!=null?`<span class="dl ${sc-prv>=0?'up':'dn'}" title="vs ${pl}">${sc-prv>=0?'+':''}${sc-prv}</span> · `:'';
     const r=sc==null?'':`<span class="psc${sc>=tg?' ok':''}">${dl}${sc>=tg?'on target':(tg-sc)+' to go'}</span>`;
     $('actSum').innerHTML=`<div class="calsum">${left}${r}</div><div class="track thin"><i style="width:${sc==null?0:Math.min(100,sc/tg*100)}%;background:var(--accent)"></i></div>`;return;}
   $('actSum').innerHTML=`<div class="calsum"><span><b>${cnt}</b>${goal?' / '+goal:''} days ${label}</span>${paceTxt?`<span>${paceTxt}</span>`:''}</div>
