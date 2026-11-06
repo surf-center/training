@@ -399,7 +399,7 @@ body.has-tabbar .wrap{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
 .fc span{font-size:12px;font-weight:800}.fc i{font-style:normal;font-size:10px;font-weight:700;opacity:.7}
 .fc.on{background:var(--text);color:var(--surface)}
 body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:none!important}
-.hist-h{gap:10px}.hist-h span.ttl{font-size:18px;color:var(--text);text-transform:none;letter-spacing:-.2px;font-weight:800}.hist-h span.hist-s{margin-left:auto;font-size:13px;font-weight:700;color:var(--muted);text-transform:none;letter-spacing:0}.hist-h::after{content:'▾';color:var(--accent);font-size:12px}#actionCard.open .hist-h::after{content:'▴'}
+.hist-h{gap:10px}.hist-t{display:flex;flex-direction:column;min-width:0}.hist-h span.hist-m{font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-transform:none;letter-spacing:0;margin-top:2px}#actionCard.open .hist-m,.stack[aria-expanded="true"] .hist-m{display:none}.hist-h span.ttl{font-size:18px;color:var(--text);text-transform:none;letter-spacing:-.2px;font-weight:800}.hist-h span.hist-s{margin-left:auto;font-size:13px;font-weight:700;color:var(--muted);text-transform:none;letter-spacing:0}.hist-h::after{content:'▾';color:var(--accent);font-size:12px}#actionCard.open .hist-h::after{content:'▴'}
 #actionCard:not(.open)>*:not(.label){display:none!important}#actionCard:not(.open){padding-top:18px;padding-bottom:18px}#actionCard>.label{margin:0}
 .dgrid.wk.tw{max-width:none;margin:16px 0 2px;gap:6px}
 #todayCard>.label{align-items:center}
@@ -672,7 +672,7 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:
   <!-- This week -->
   <div class="card" id="actionCard">
     <div class="label">
-      <button type="button" class="hist-h cg-tog" data-tog="hist"><span class="ttl">History &amp; objective</span><span class="hist-s" id="histSum"></span></button>
+      <button type="button" class="hist-h cg-tog" data-tog="hist"><span class="hist-t"><span class="ttl">History</span><span class="hist-m" id="histMore"></span></span><span class="hist-s" id="histSum"></span></button>
       <div class="seg" role="tablist" id="viewSeg">
         <button data-view="week" role="tab">Week</button><button data-view="month" role="tab">Month</button><button data-view="year" role="tab">Year</button>
       </div>
@@ -1071,7 +1071,9 @@ function renderMods(){const U=userMods();if(!U.includes(mod))mod=U[0];
     $('dlCount').textContent=w.total?w.streak+(w.streak===1?' week':' weeks'):'–';
     $('dlDate').innerHTML=w.total?`In a row · best ${w.best} · ${w.on} of ${w.total} weeks ≥ ${targetOf(mod)}`:'<span class="empty">Counts from your first full week</span>';
     $('planView').textContent='≥ '+targetOf(mod)+' / week';$('planSub').textContent=mod==='food'?'Week score · a day is max 100, bonus fills gaps':'Week score · average of your nights (Good = 80)';}
-  const st=$('stack');$('stackN').textContent='+'+([...st.querySelectorAll('.scard')].filter(c=>!c.hidden).length-1);
+  const st=$('stack'),more=[...st.querySelectorAll('.scard')].filter(c=>!c.hidden&&c.id!=='actionCard');$('stackN').textContent='+'+more.length;
+  // tell what else is in the pile: the other cards' titles
+  $('histMore').textContent=more.map(c=>{const t=c.querySelector('.ttl');return t?t.textContent.replace(/^\d/,'').trim():'';}).filter(Boolean).join(' · ');
   renderToday();}
 const OV_ICON='<path d="M12 20.2s-7.6-4.6-7.6-10.2A4.3 4.3 0 0 1 12 7.3a4.3 4.3 0 0 1 7.6 2.7c0 5.6-7.6 10.2-7.6 10.2z"/>';
 function setMod(m){if(m==='overview'){if(ov)return;ov=true;}else{if(!ov&&m===mod)return;ov=false;mod=m;try{localStorage.setItem('training.mod',m)}catch(e){}}
@@ -1379,7 +1381,7 @@ placeProgress();window.addEventListener('resize',()=>placeProgress());
 {const ch=document.createElement('div');ch.className='calhead';$('actSum').before(ch);ch.append(document.querySelector('.period'),$('viewSeg'));}
 $('actionCard').classList.toggle('open',UI.hist); // History starts folded
 if(innerWidth<1000)$('stack').setAttribute('aria-expanded',UI.hist?'true':'false');
-$('stack').prepend($('actionCard'));$('actionCard').classList.add('scard');$('actionCard').querySelector('.hist-h .ttl').after($('stackN')); // History heads the stack
+$('stack').prepend($('actionCard'));$('actionCard').classList.add('scard');$('actionCard').querySelector('.hist-h .hist-t').after($('stackN')); // History heads the stack
 let actView=(()=>{try{return localStorage.getItem('training.view')||'week'}catch(e){return 'week'}})();
 function setView(v){actView=v;setTimeout(()=>{renderSum();if(typeof fillPeriod==='function')fillPeriod();},0);$('actionCard').dataset.view=v;document.querySelectorAll('#viewSeg button').forEach(b=>b.classList.toggle('on',b.dataset.view===v));try{localStorage.setItem('training.view',v)}catch(e){}}
 document.querySelectorAll('#viewSeg button').forEach(b=>b.onclick=()=>setView(b.dataset.view));
