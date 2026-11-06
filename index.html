@@ -238,6 +238,8 @@ button.big{font-size:13px;padding:9px 18px;margin-left:auto;line-height:inherit}
 .yd.today{box-shadow:0 0 0 1.5px var(--text)}
 .yd.fut{opacity:.45}
 .yd .xm path{stroke-width:18}
+/* year view: trained days are just a loose blue hand-drawn cross, no filled dot behind it */
+.yd.on{background:transparent}
 @media (max-width:700px){.ygrid{grid-template-columns:repeat(3,1fr);gap:14px 12px}}
 /* ===== bold & clean ===== */
 .ttl .step{font-size:11px;vertical-align:2px;margin-right:7px}
@@ -367,6 +369,8 @@ button.ghost{font-weight:700;border-radius:11px}
 .k6-t{font-size:min(30px,6.6vw);font-weight:900;letter-spacing:-.03em;line-height:1.05;color:#fff;text-transform:uppercase}
 .k6-t i,.k6-o i{font-style:normal;color:#fff}
 /* blue marker line that sweeps in under 'consistency in action' (works across wrapped lines) */
+.who{all:unset;cursor:pointer;font:inherit;font-weight:900;color:var(--text);background:linear-gradient(90deg,#3b82f6,#60a5fa) no-repeat 0 100%/100% .14em;padding-bottom:.08em;-webkit-tap-highlight-color:transparent}
+.who.out{color:var(--accent)}
 .k6-u{background:linear-gradient(90deg,#3b82f6,#60a5fa) no-repeat 0 100%/0% .18em;-webkit-box-decoration-break:clone;box-decoration-break:clone;padding-bottom:.16em;border-radius:2px;transition:background-size 1.1s cubic-bezier(.65,0,.25,1) .55s}
 .k6-row.in .k6-u{background-size:100% .18em}
 .k6-o{margin-top:8px;font-size:min(22px,5.6vw);font-weight:500;letter-spacing:0;line-height:1.2;color:rgba(255,255,255,.78);opacity:0;transform:translateX(-10px);transition:opacity .35s ease,transform .5s cubic-bezier(.2,1.3,.4,1)}
@@ -509,7 +513,7 @@ button.ghost{font-weight:700;border-radius:11px}
 <div class="wrap">
   <header>
     <div>
-      <h1>Training</h1>
+      <h1><button class="who" id="who" title="Account">Training</button></h1>
       <div class="sync"><span class="dot" id="dot"></span><span id="syncText">Local</span></div>
     </div>
     <div class="hdr-right">
@@ -598,46 +602,46 @@ button.ghost{font-weight:700;border-radius:11px}
 </div>
 <dialog id="dlg"><form method="dialog" id="dlgForm"></form></dialog>
 
-<script src="config.js"></script>
 <script>
 // ---------- Storage: Google Sheet (Apps Script) or local ----------
-const LS_CFG='training.cfg', LS_DATA='training.data';
+const LS_AUTH='training.auth';
 const ls={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
-// Web app URL and PIN are built in on purpose (owner's choice: the data is not private),
-// so the page opens straight onto the data on every device. The PIN dialog only appears if the PIN is changed.
-const DEFAULT_URL='https://script.google.com/macros/s/AKfycbzZZcqDX0pMBG9Lu0TsbTM_HTidZblEwPNMPAlrH_S0ekKSBVOZ8qQoqcRpSbC2CfRn/exec';
-const DEFAULT_PIN='3209';
-let cfg={url:DEFAULT_URL,key:DEFAULT_PIN};
-if(!cfg.url)cfg.url=DEFAULT_URL;
+// Multi-user: names + passwords live in the sheet's Users tab. A device logs in once and keeps
+// only {name, token}; each user sees just their own rows.
+const API_URL='https://script.google.com/macros/s/AKfycbzZZcqDX0pMBG9Lu0TsbTM_HTidZblEwPNMPAlrH_S0ekKSBVOZ8qQoqcRpSbC2CfRn/exec';
+let auth=ls.get(LS_AUTH,null);
+const LS_DATA=()=>'training.data.'+(auth?auth.name.toLowerCase():'');
 let S={settings:{},weight:[],actions:[]};
-const remote=()=>!!(cfg.url&&cfg.key);
+const remote=()=>!!(auth&&auth.token);
+const setData=j=>{S={settings:j.settings||{},weight:j.weight||[],actions:j.actions||[]};ls.set(LS_DATA(),S);};
+function showWho(){const w=$('who');w.textContent=auth?auth.name:'Log in';w.classList.toggle('out',!auth);}
+function logout(){auth=null;try{localStorage.removeItem(LS_AUTH)}catch(e){}S={settings:{},weight:[],actions:[]};showWho();render();}
 
 function setSync(state,text){document.getElementById('dot').className='dot '+(state||'');document.getElementById('syncText').textContent=text;}
 
 async function load(){
-  if(!remote()){S=ls.get(LS_DATA,S);setSync('', 'Local (not connected yet)');render();return;}
-  setSync('busy','Loading…');
+  showWho();
+  if(!remote()){setSync('','Not logged in');render();setTimeout(askLogin,300);return;}
+  S=ls.get(LS_DATA(),S);render();setSync('busy','Loading…');
   try{
-    const r=await fetch(cfg.url+'?key='+encodeURIComponent(cfg.key));
+    const r=await fetch(API_URL+'?name='+encodeURIComponent(auth.name)+'&token='+encodeURIComponent(auth.token));
     const j=await r.json();
     if(!j.ok)throw new Error(j.error||'Error');
-    S={settings:j.settings||{},weight:j.weight||[],actions:j.actions||[]};
-    ls.set(LS_DATA,S);setSync('ok','Connected to Google');
-  }catch(e){S=ls.get(LS_DATA,S);setSync('err','Sheet unreachable: '+e.message);if(/invalid key/i.test(e.message))setTimeout(askKey,300);}
+    setData(j);setSync('ok','Connected to Google');
+  }catch(e){setSync('err','Sheet unreachable: '+e.message);if(/log in/i.test(e.message)){logout();setTimeout(askLogin,300);}}
   render();
 }
 
 // Optimistic: update locally first, then write to the sheet.
 async function save(payload){
-  ls.set(LS_DATA,S);render();
-  if(!remote())return;
+  if(!remote()){render();askLogin();return;}
+  ls.set(LS_DATA(),S);render();
   setSync('busy','Saving…');
   try{
-    const r=await fetch(cfg.url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({...payload,key:cfg.key})});
+    const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({...payload,name:auth.name,token:auth.token})});
     const j=await r.json();
     if(!j.ok)throw new Error(j.error||'Error');
-    S={settings:j.settings||{},weight:j.weight||[],actions:j.actions||[]};
-    ls.set(LS_DATA,S);setSync('ok','Saved to Google');render();
+    setData(j);setSync('ok','Saved to Google');render();
   }catch(e){setSync('err','Not saved: '+e.message);}
 }
 function saveSettings(obj){Object.assign(S.settings,obj);save({type:'settings',settings:obj});}
@@ -857,7 +861,7 @@ function renderActions(){
     const f=new Date(year,mo,1),n=new Date(year,mo+1,0).getDate(),lead=(f.getDay()+6)%7;let c=0,g='';
     for(let i=0;i<lead;i++)g+='<i></i>';
     for(let d=1;d<=n;d++){const k=iso(new Date(year,mo,d)),on=T.has(k);if(on){c++;cnt++;}
-      g+=`<button class="yd${on?' on':''}${k===todayIso?' today':''}${k>todayIso?' fut':''}" data-wd="${k}" title="${fmtD(k)}" aria-pressed="${on}">${on?crossSVG(k):''}</button>`;}
+      g+=`<button class="yd${on?' on':''}${k===todayIso?' today':''}${k>todayIso?' fut':''}" data-wd="${k}" title="${fmtD(k)}" aria-pressed="${on}">${on?crossSVG(k,true):''}</button>`;}
     months+=`<div class="ym"><div class="ymh"><b>${f.toLocaleDateString(LOC,{month:'short'})}</b>${c?`<span>${c}</span>`:''}</div><div class="ymg">${g}</div></div>`;
   }
   // weeks on plan: finished weeks of this year since the first training day, plus this week once it already hits the plan
@@ -1064,10 +1068,21 @@ function playIntro(force){
   // safety: never block the dashboard (only counts time while not paused)
   const guard=setInterval(()=>{if(run!==introRun||done){clearInterval(guard);return;}if(!paused&&performance.now()>due+3000)end();},1000);
 }
-// first visit on a device (or a wrong key): ask only for the key
-function askKey(){if($('dlg').open)return;dialog(`<h3>Enter PIN</h3><p>Enter your PIN once on this device. It is remembered after that.</p><label>PIN</label><input name="key" type="password" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" maxlength="8" style="font-size:22px;letter-spacing:6px;text-align:center">`,
-  async f=>{const k=f.key.value.trim();if(!k)return;cfg={url:DEFAULT_URL,key:k};ls.set(LS_CFG,cfg);await load();},'Unlock');}
-if(!cfg.key)setTimeout(askKey,300);
+// log in once per device: name + password from the sheet's Users tab -> token kept on this device
+function askLogin(msg){if($('dlg').open)return;
+  dialog(`<h3>Log in</h3><p>${msg?`<b style="color:var(--warn)">${msg}</b><br>`:''}Once per device. You stay logged in after that.</p>
+    <label>Name</label><input name="name" autocomplete="username" autocapitalize="words" value="${auth?auth.name:''}">
+    <label>Password</label><input name="pw" type="password" autocomplete="current-password">`,
+  async f=>{const name=f.name.value.trim(),pw=f.pw.value;if(!name||!pw)return askLogin('Fill in both fields');
+    setSync('busy','Logging in…');
+    try{const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({type:'login',name,password:pw})});
+      const j=await r.json();if(!j.ok)throw new Error(j.error||'Error');
+      auth={name:j.user,token:j.token};ls.set(LS_AUTH,auth);setData(j);showWho();setSync('ok','Connected to Google');render();
+    }catch(e){setSync('err','Not logged in');askLogin(e.message);}},'Log in');}
+$('who').onclick=()=>{if(!auth)return askLogin();
+  dialog(`<h3>${auth.name}</h3><p>Logged in on this device. Log out to switch to another person.</p>`,()=>{logout();askLogin();},'Log out');};
+// old single-PIN setup: clean up
+try{localStorage.removeItem('training.cfg');localStorage.removeItem('training.data')}catch(e){}
 </script>
 </body>
 </html>
