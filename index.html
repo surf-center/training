@@ -666,7 +666,7 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard,body.ov 
       <div class="sub" id="goalSub"></div>
     </div>
     <div class="card scard">
-      <div class="label"><span class="ttl"><span class="step">2</span>Deadline</span><button class="edit" data-edit="deadline">Edit</button></div>
+      <div class="label"><span class="ttl"><span class="step">2</span><span id="dlTtl">Deadline</span></span><button class="edit" data-edit="deadline" id="dlEdit">Edit</button></div>
       <div class="countdown" id="dlCount">–</div>
       <div class="sub" id="dlDate"></div>
     </div>
@@ -904,6 +904,12 @@ function modScore(m,a,b){const st=startOf(m),pw=m==='training'?pwOf(m):7;if(!st|
   return Math.round(sum/n);}
 // total = how much of each plan you reach: Training days vs plan, Food/Sleep score vs their target (each max 100)
 const planPct=(m,v)=>v==null?null:m==='training'?v:Math.min(100,Math.round(v/targetOf(m)*100));
+// streak of finished weeks (Mon-Sun) whose score reached the target, plus best streak and totals
+function weeksOnTarget(m){const st=startOf(m),tg=targetOf(m);if(!st)return {streak:0,best:0,on:0,total:0};
+  const last=addD(iso(mondayOf(new Date())),-7);let streak=0,best=0,run=0,on=0,total=0,broken=false;const res=[];
+  for(let mon=iso(mondayOf(parse(st)));mon<=last;mon=addD(mon,7)){const v=modScore(m,mon,addD(mon,6));if(v==null)continue;total++;const ok=v>=tg;res.push(ok);if(ok){on++;run++;best=Math.max(best,run);}else run=0;}
+  for(let i=res.length-1;i>=0&&res[i];i--)streak++;
+  return {streak,best,on,total};}
 function totalScore(sc){let w=0,t=0;Object.entries(sc).forEach(([m,v])=>{const p=planPct(m,v);if(p!=null){w+=WEIGHT[m];t+=WEIGHT[m]*p;}});return w?Math.round(t/w):null;}
 // period [a,b] for day/week/month/year containing date k (training's 'day' uses the week so far: rest days aren't failures)
 function period(p,k,m){const d=parse(k);
@@ -1001,10 +1007,14 @@ function renderMods(){const U=userMods();if(!U.includes(mod))mod=U[0];
   document.body.classList.toggle('ov',ov);$('overCard').hidden=!ov;renderOverview();
   $('actTtl').textContent=MODS[mod].title;document.body.dataset.mod=mod;
   $('progCard').hidden=mod!=='training';
+  if(mod==='training'){$('dlTtl').textContent='Deadline';$('dlEdit').hidden=false;}
   if(mod!=='training'){const M=MODS[mod],st=S.settings,g=st[mod+'Goal']||M.goal,dl=st[mod+'Deadline']||st.deadline,pw=perWeek();
     $('goalView').innerHTML=`<span class="gtext">${esc(g)}</span>`;$('goalSub').textContent='Specific & measurable';
-    if(dl){const days=Math.round((parse(dl)-parse(todayIso))/864e5);$('dlCount').textContent=days>=0?days+(days===1?' day':' days'):'Passed';$('dlDate').textContent=fmtD(dl)+(days>=0?' · '+Math.ceil(days/7)+' weeks':'');}
-    else{$('dlCount').textContent='–';$('dlDate').innerHTML='<span class="empty">When?</span>';}
+    // habits never end: instead of a deadline, count weeks in a row on target (finished weeks only)
+    $('dlTtl').textContent='Weeks on target';$('dlEdit').hidden=true;
+    const w=weeksOnTarget(mod);
+    $('dlCount').textContent=w.total?w.streak+(w.streak===1?' week':' weeks'):'–';
+    $('dlDate').innerHTML=w.total?`In a row · best ${w.best} · ${w.on} of ${w.total} weeks ≥ ${targetOf(mod)}`:'<span class="empty">Counts from your first full week</span>';
     $('planView').textContent='≥ '+targetOf(mod)+' / week';$('planSub').textContent=mod==='food'?'Week score · basics 100, bonus up to +25':'Week score · average of your nights (Good = 80)';}
   const st=$('stack');$('stackN').textContent='+'+([...st.querySelectorAll('.scard')].filter(c=>!c.hidden).length-1);
   renderToday();}
