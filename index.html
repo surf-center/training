@@ -439,10 +439,11 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard,body.ov 
 .cg-l svg{width:17px;height:17px;fill:none;stroke:var(--accent);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .cg-i{display:grid;gap:8px}.cg-i.c2{grid-template-columns:1fr 1fr}.cg-i.c3{grid-template-columns:repeat(3,minmax(0,1fr))}
 .cg-i.c3 .chk-i{flex-direction:column;align-items:flex-start;gap:10px;padding:12px 12px 14px;font-size:14px}
-.chk-i .hint{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-top:2px}
+.chk-i .hint{display:block;white-space:nowrap;font-size:11px;font-weight:600;color:var(--muted);margin-top:2px}
 .chk-i .bp{font-style:normal;font-size:12px;font-weight:800;color:var(--accent);margin-left:5px}
 .calsum .psc em,.ov-v i{font-style:normal;font-size:13px;font-weight:800;color:var(--accent);margin-left:3px}
-.cg-i.c2 .chk-i{font-size:15px;padding:13px 14px}
+.cg-i.c2 .chk-i{font-size:15px;padding:0 14px;height:64px}
+.cg-i{grid-auto-rows:1fr}
 .gtext{display:block;font-size:20px;line-height:1.25;font-weight:800;letter-spacing:-.3px}
 .chk-i{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-radius:16px;background:var(--surface2);font-weight:700;font-size:16px;color:var(--text);-webkit-tap-highlight-color:transparent}
 .chk-i .bx{position:relative;flex:none;width:30px;height:30px;border-radius:50%;background:var(--cell)}
@@ -767,7 +768,7 @@ const MODS={
 };
 Object.values(MODS).forEach(M=>{M.items=M.groups.flatMap(g=>g.items);M.base=M.groups.filter(g=>!g.bonus).flatMap(g=>g.items);M.bonus=M.groups.filter(g=>g.bonus).flatMap(g=>g.items);});
 const ITEM_LBL={};
-const ITEM_HINT={Snack:'protein or carbs'};
+const ITEM_HINT={Snack:'protein / carbs'};
 const userMods=()=>{const m=(S.modules||['training']).filter(x=>MODS[x]);return m.length?m:['training'];};
 let mod=(()=>{try{return localStorage.getItem('training.mod')||'training'}catch(e){return 'training'}})();
 const perWeek=()=>{const M=MODS[mod],n=parseInt(S.settings[M.plan],10);return n>=1&&n<=7?n:M.def;};
