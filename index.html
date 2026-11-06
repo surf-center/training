@@ -274,6 +274,7 @@ h1{font-size:30px;font-weight:900;letter-spacing:-.6px}
 .calsum{font-size:14px;font-weight:600}
 .calsum b{font-size:34px;font-weight:900;letter-spacing:-1px}
 #actSum .track{margin-bottom:22px}
+.track.tgt{position:relative;overflow:visible}.track.tgt i{border-radius:8px}.track .tgm{position:absolute;top:-4px;bottom:-4px;width:3px;margin-left:-1.5px;border-radius:2px;background:var(--text)}
 .dgrid.wk{margin-top:30px;margin-bottom:8px;gap:10px}
 .track.thin{height:8px}
 .stat .v{font-size:32px;font-weight:900;letter-spacing:-.8px}
@@ -473,6 +474,7 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:
 .smgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px 8px;margin-top:6px}
 .smt{display:flex;flex-direction:column;align-items:center;gap:2px}
 .smt svg{width:42px;height:42px;fill:none;stroke:var(--text);stroke-width:1.7;stroke-linecap:round}.smt svg .eye{fill:var(--text);stroke:none}
+.smt.rt svg{stroke-width:4}.smt.rt .rt-bg{stroke:var(--cell)}.smt.rt .rt-fg{stroke:var(--text);stroke-linecap:round}.smt.rt.cur .rt-fg{stroke:var(--accent)}.smt.rt.cur b{color:var(--accent)}
 .smt .smt-e{width:42px;height:42px;border-radius:50%;background:var(--cell)}
 .smt b{font-size:16px;font-weight:900;margin-top:4px}.smt span{font-size:11px;font-weight:700;color:var(--muted);text-transform:capitalize}
 .smt.big svg,.smt.big .smt-e{width:110px;height:110px}.smt.big svg{stroke:var(--accent);stroke-width:1.4}.smt.big svg .eye{fill:var(--accent)}.smt.big b{font-size:34px;letter-spacing:-1px}.smt.big span{font-size:13px}
@@ -1171,6 +1173,8 @@ function dayBtn(k,T,cls=''){const d=parse(k).getDate();
   return `<div class="dc"><button class="cday${on?' on':''}${f>0?' part':''}${k===todayIso?' today':''}${k>todayIso?' fut':''}${cls}" data-wd="${k}" title="${fmtD(k)}${f>0?' · '+pc+'%':''}" aria-pressed="${on}"><span>${d}</span>${ringSvg}${on?crossSVG(k,k===todayIso):''}</button>${f>0?`<i class="dpc${k===todayIso?' td':''}">${pc}%</i>`:full?`<i class="dpc${k===todayIso?' td':''}">${dayVal(mod,k)}%</i>`:''}</div>`;}
 const countTxt=(n,period)=>mod!=='training'?'':`<div class="msum"><b>${n}</b> training ${n===1?'day':'days'} ${period}</div>`;
 // Sleep: a period is shown as one smiley (the face closest to its score) with the score below
+// Nutrition year view: a month as a progress ring with its score (black, blue for the current month)
+const ringTile=(v,lab,cur)=>`<div class="smt rt${cur?' cur':''}">${v==null?'<div class="smt-e"></div>':`<svg viewBox="0 0 44 44"><circle cx="22" cy="22" r="19" class="rt-bg"/><circle cx="22" cy="22" r="19" class="rt-fg" pathLength="100" stroke-dasharray="${v} 100" transform="rotate(-90 22 22)"/></svg>`}<b>${v==null?'–':v}</b><span>${lab}</span></div>`;
 const nearFace=v=>Math.min(4,Math.max(0,Math.round(v/20)-1));
 const smTile=(v,lab,big)=>`<div class="smt${big?' big':''}">${v==null?'<div class="smt-e"></div>':face(nearFace(v))}<b>${v==null?'–':v}</b><span>${lab}</span></div>`;
 function renderMonth(){
@@ -1287,6 +1291,9 @@ function renderActions(){
   if(MODS[mod].rating){let h='';for(let m=0;m<12;m++){const a=iso(new Date(year,m,1)),b=iso(new Date(year,m+1,0));
       h+=smTile(a>todayIso?null:modScore(mod,a,b),new Date(year,m,1).toLocaleDateString(LOC,{month:'short'}));}
     $('actions').innerHTML=`<div class="smgrid">${h}</div>`;return;}
+  if(mod!=='training'){let h='';for(let m=0;m<12;m++){const a=iso(new Date(year,m,1)),b=iso(new Date(year,m+1,0));
+      h+=ringTile(a>todayIso?null:modScore(mod,a,b),new Date(year,m,1).toLocaleDateString(LOC,{month:'short'}),a<=todayIso&&b>=todayIso);}
+    $('actions').innerHTML=`<div class="smgrid">${h}</div>`;return;}
   const T=trained(),pw=perWeek();
   const jan1=new Date(year,0,1),dec31=new Date(year,11,31);
   let cnt=0,months='';
@@ -1341,14 +1348,14 @@ function renderSum(){
   const paceTxt=fresh?'':goal&&todayIso>=from&&todayIso<=b?(pace>=0&&cnt>=goal?'goal reached':pace===0?'on pace':Math.abs(pace)+' '+(Math.abs(pace)===1?'day':'days')+' '+(pace>0?'ahead':'behind')):'';
   if(mod!=='training'){ // Food/Sleep: score vs target (partial days and bonus count)
     const sc=modScore(mod,a,b),tg=targetOf(mod),nd=sc==null?0:days(a,b<todayIso?b:todayIso),
-      left=sc==null?'<span class="muted">Tick your first actions</span>':`<span><b>${sc}</b> / ${tg} score ${label}${actView!=='week'||nd<7?` <i class="nd">· ${nd} ${nd===1?'day':'days'}</i>`:''}</span>`;
+      left=sc==null?'<span class="muted">Tick your first actions</span>':`<span><b>${sc}</b> / 100 score ${label}</span>`;
     const pk=actView==='week'?addD(a,-7):actView==='month'?iso(new Date(parse(a).getFullYear(),parse(a).getMonth()-1,1)):(+a.slice(0,4)-1)+'-01-01';
     const pb=actView==='week'?addD(pk,6):actView==='month'?iso(new Date(parse(pk).getFullYear(),parse(pk).getMonth()+1,0)):(+a.slice(0,4)-1)+'-12-31';
     const prv=modScore(mod,pk,pb),pl={week:'last week',month:'last month',year:'last year'}[actView];
     const dl=sc!=null&&prv!=null?`<span class="dl ${sc-prv>=0?'up':'dn'}" title="vs ${pl}">${sc-prv>=0?'+':''}${sc-prv}</span> · `:'';
-    const r=sc==null?'':`<span class="psc${sc>=tg?' ok':''}">${sc>=tg?'on target':(tg-sc)+' to go'}</span>`;
-    $('actSum').innerHTML=`<div class="calsum">${left}${r}</div><div class="track thin"><i style="width:${sc==null?0:Math.min(100,sc/tg*100)}%;background:var(--accent)"></i></div>`;
-    $('histSum').textContent=sc==null?'':`${label.replace(/^in /,'')} · ${sc} / ${tg}`;return;}
+    const r=sc==null?'':`<span class="psc${sc>=tg?' ok':''}">${sc>=tg?'on target':'target '+tg}</span>`;
+    $('actSum').innerHTML=`<div class="calsum">${left}${r}</div><div class="track thin tgt"><i style="width:${sc==null?0:Math.min(100,sc)}%;background:var(--accent)"></i><b class="tgm" style="left:${tg}%" title="Target ${tg}"></b></div>`;
+    $('histSum').textContent=sc==null?'':`${label.replace(/^in /,'')} · ${sc} / 100`;return;}
   $('histSum').textContent=`${label.replace(/^in /,'')} · ${cnt}${goal?' / '+goal:''}`;
   $('actSum').innerHTML=`<div class="calsum"><span><b>${cnt}</b>${goal?' / '+goal:''} days ${label}</span>${paceTxt?`<span>${paceTxt}</span>`:''}</div>
     ${goal?`<div class="track thin"><i style="width:${gp}%;background:var(--accent)"></i></div>`:''}`;
