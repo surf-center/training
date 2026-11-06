@@ -439,6 +439,9 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard,body.ov 
 .dgrid.wk .dc .dpc{display:block;position:absolute;left:0;right:0;top:calc(100% + 4px);text-align:center;font-style:normal;font-size:11px;font-weight:700;color:var(--text)}
 .dgrid.wk .dc .dpc.td{color:var(--accent)}
 .dgrid.wk{margin-bottom:22px}
+.cday.rated{border-color:transparent;background:transparent;display:grid;place-items:center}
+.cday.rated svg{width:100%;height:100%;fill:none;stroke:var(--text);stroke-width:1.8;stroke-linecap:round}.cday.rated svg .eye{fill:var(--text);stroke:none}
+.cday.rated.today svg{stroke:var(--accent)}.cday.rated.today svg .eye{fill:var(--accent)}
 .dl{font-style:normal;font-weight:900;margin-left:6px}.dl.up{color:var(--accent)}.dl.dn{color:var(--text)}.calsum .dl{margin-left:0}
 .dsc{display:flex;align-items:baseline;gap:3px}.dsc b{font-size:26px;font-weight:900;letter-spacing:-.8px;color:var(--text)}.dsc i{font-style:normal;font-size:14px;font-weight:800;color:var(--accent)}.dsc .dsep{width:1px;height:20px;background:var(--border);margin:0 8px;align-self:center}
 .dsc small{font-size:11px;font-weight:700;color:var(--muted);margin-left:5px;text-transform:uppercase;letter-spacing:.05em}
@@ -1036,7 +1039,10 @@ function renderProcess(){
 }
 // One round, cross-able day; identical in week and month view.
 // Food/Sleep: a partly done day shows a blue progress ring (and % in the week view); the cross only comes at 100%
-function dayBtn(k,T,cls=''){const on=T.has(k),d=parse(k).getDate();
+function dayBtn(k,T,cls=''){const d=parse(k).getDate();
+  // Sleep: the night's smiley sits in the circle, its score underneath (blue today, black before)
+  if(MODS[mod].rating){const r=rateOf(k);if(r)return `<div class="dc"><button class="cday rated${k===todayIso?' today':''}${cls}" data-wd="${k}" title="${fmtD(k)} · ${RATE[r-1].l}" aria-label="${fmtD(k)}: ${RATE[r-1].l}">${face(r-1)}</button><i class="dpc${k===todayIso?' td':''}">${r*20}</i></div>`;}
+  const on=T.has(k);
   const f=!on&&mod!=='training'&&k<=todayIso?frac(mod,k):0,pc=Math.round(f*100),full=on&&mod!=='training';
   const ringSvg=f>0?`<svg class="pring" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18" pathLength="100" stroke-dasharray="${pc} 100" transform="rotate(-90 20 20)"/></svg>`:'';
   return `<div class="dc"><button class="cday${on?' on':''}${f>0?' part':''}${k===todayIso?' today':''}${k>todayIso?' fut':''}${cls}" data-wd="${k}" title="${fmtD(k)}${f>0?' · '+pc+'%':''}" aria-pressed="${on}"><span>${d}</span>${ringSvg}${on?crossSVG(k,k===todayIso):''}</button>${f>0?`<i class="dpc${k===todayIso?' td':''}">${pc}%</i>`:full?`<i class="dpc${k===todayIso?' td':''}">${Math.round(frac(mod,k)*100)}%</i>`:''}</div>`;}
