@@ -421,10 +421,19 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard,body.ov 
 .wline s{position:absolute;top:-4px;bottom:-4px;width:2px;margin-left:-1px;background:var(--text);border-radius:2px}
 .wscale{position:relative;display:flex;justify-content:space-between;font-size:11px;font-weight:600;color:var(--muted);height:14px}
 .wscale span:nth-child(2){position:absolute;transform:translateX(-50%);color:var(--text);font-weight:700}
-.bottles{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px;margin-top:4px}
-.bt{all:unset;position:relative;cursor:pointer;aspect-ratio:1/1;border-radius:50%;background:var(--cell);-webkit-tap-highlight-color:transparent}
-.bt.on{background:transparent}
-.bt .xm{left:-2%;top:-2%;width:104%;height:104%}.bt .xm path{stroke-width:15}
+.bottles{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:4px;margin-top:6px}
+.bt{all:unset;position:relative;cursor:pointer;aspect-ratio:3/4;display:grid;place-items:center;-webkit-tap-highlight-color:transparent}
+.bt .btl{display:block;width:58%;height:auto;fill:var(--cell);stroke:none;transition:fill .2s}
+.bt.on .btl{fill:rgba(37,99,235,.16)}
+.cday .pring{position:absolute;inset:-4px;width:calc(100% + 8px);height:calc(100% + 8px);pointer-events:none;overflow:visible}
+.cday .pring circle{fill:none;stroke:var(--accent);stroke-width:3.2;stroke-linecap:round}
+.cday.part{border-color:transparent}
+.dc{position:relative}.dc .dpc{display:none}
+.dgrid.wk .dc .dpc{display:block;position:absolute;left:0;right:0;top:calc(100% + 4px);text-align:center;font-style:normal;font-size:11px;font-weight:700;color:var(--accent)}
+.dgrid.wk{margin-bottom:22px}
+.calsum .psc{color:var(--muted)}.calsum .psc b{font-size:22px;font-weight:900;color:var(--accent);margin-left:4px;letter-spacing:-.5px}
+.wlbl{display:inline-flex;align-items:center;gap:6px}.wlbl svg{width:18px;height:18px;fill:none;stroke:var(--accent);stroke-width:2.2;stroke-linejoin:round}
+.bt .xm{left:2%;top:12%;width:96%;height:auto;aspect-ratio:1/1}.bt .xm path{stroke-width:15}
 .cgroup{display:grid;gap:8px}
 .cg-l{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
 .cg-i{display:grid;gap:8px}.cg-i.c2{grid-template-columns:1fr 1fr}
@@ -809,13 +818,15 @@ function toggleItem(d,a){lastToggled=d;setTimeout(()=>{lastToggled=null;},600);
 // tap on a calendar day: one-item modules toggle directly, Food opens that day's checklist
 function toggle(d){const M=MODS[mod];if(M.items.length===1&&!M.water)return toggleItem(d,M.items[0]);openDay(d);}
 const chk=(d,a)=>{const on=has(d,a);return `<button type="button" class="chk-i${on?' on':''}" data-item="${a}" data-day="${d}"><span>${ITEM_LBL[a]||a}</span><span class="bx">${on?crossSVG(d+a,d===todayIso):''}</span></button>`;};
+// a 500 ml bottle; the cross is drawn on top once it's drunk
+const BOTTLE='<svg class="btl" viewBox="5.8 2 12.4 30.4" aria-hidden="true"><path d="M9.6 2.5h4.8v3.2l2 2.6c.8 1.1 1.3 2.4 1.3 3.8v16.4a2.8 2.8 0 0 1-2.8 2.8H9.1a2.8 2.8 0 0 1-2.8-2.8V12.1c0-1.4.5-2.7 1.3-3.8l2-2.6z"/></svg>';
 const L=ml=>(ml/1000).toLocaleString(LOC,{minimumFractionDigits:1,maximumFractionDigits:1});
 function checksHTML(d){const M=MODS[mod];let h='';
   if(M.water){const W=M.water,n=waterN(d);
-    h+=`<div class="water"><div class="wtop"><span>Water</span><b>${L(n*W.ml)} <i>/ ${L(W.goal*W.ml)} L</i></b></div>
+    h+=`<div class="water"><div class="wtop"><span class="wlbl"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5c3 4 6.2 7.4 6.2 10.7a6.2 6.2 0 0 1-12.4 0C5.8 10.9 9 7.5 12 3.5z"/></svg>Water</span><b>${L(n*W.ml)} <i>/ ${L(W.goal*W.ml)} L</i></b></div>
       <div class="wline"><i style="width:${n/W.max*100}%"></i><s style="left:${W.goal/W.max*100}%"></s></div>
       <div class="wscale"><span>0</span><span style="left:${W.goal/W.max*100}%">${W.goal*W.ml} ml</span><span>${W.max*W.ml} ml</span></div>
-      <div class="bottles">${[...Array(W.max)].map((_,i)=>`<button type="button" class="bt${i<n?' on':''}" data-water="${i+1}" data-day="${d}" aria-label="${(i+1)*W.ml} ml">${i<n?crossSVG(d+'w'+i,d===todayIso):''}</button>`).join('')}</div></div>`;}
+      <div class="bottles">${[...Array(W.max)].map((_,i)=>`<button type="button" class="bt${i<n?' on':''}" data-water="${i+1}" data-day="${d}" aria-label="${(i+1)*W.ml} ml">${BOTTLE}${i<n?crossSVG(d+'w'+i,d===todayIso):''}</button>`).join('')}</div></div>`;}
   M.groups.forEach(g=>{h+=`<div class="cgroup">${g.label?`<div class="cg-l">${g.label}</div>`:''}<div class="cg-i${g.cols?' c'+g.cols:''}">${g.items.map(a=>chk(d,a)).join('')}</div></div>`;});
   return h;}
 // ---------- scores (0-100): what you did vs what your plan asks, per module and in total ----------
@@ -971,8 +982,11 @@ function renderProcess(){
   $('bars').innerHTML=bars;$('bars').style.display=bars?'':'none';
 }
 // One round, cross-able day; identical in week and month view.
+// Food/Sleep: a partly done day shows a blue progress ring (and % in the week view); the cross only comes at 100%
 function dayBtn(k,T,cls=''){const on=T.has(k),d=parse(k).getDate();
-  return `<div class="dc"><button class="cday${on?' on':''}${k===todayIso?' today':''}${k>todayIso?' fut':''}${cls}" data-wd="${k}" title="${fmtD(k)}" aria-pressed="${on}"><span>${d}</span>${on?crossSVG(k,k===todayIso):''}</button></div>`;}
+  const f=!on&&mod!=='training'&&k<=todayIso?frac(mod,k):0,pc=Math.round(f*100);
+  const ringSvg=f>0?`<svg class="pring" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18" pathLength="100" stroke-dasharray="${pc} 100" transform="rotate(-90 20 20)"/></svg>`:'';
+  return `<div class="dc"><button class="cday${on?' on':''}${f>0?' part':''}${k===todayIso?' today':''}${k>todayIso?' fut':''}${cls}" data-wd="${k}" title="${fmtD(k)}${f>0?' · '+pc+'%':''}" aria-pressed="${on}"><span>${d}</span>${ringSvg}${on?crossSVG(k,k===todayIso):''}</button>${f>0?`<i class="dpc">${pc}%</i>`:''}</div>`;}
 const countTxt=(n,period)=>`<div class="msum"><b>${n}</b> training ${n===1?'day':'days'} ${period}</div>`;
 function renderMonth(){
   const monthCur=monthStart;
@@ -1119,7 +1133,9 @@ function renderSum(){
   const pace=cnt-exp,gp=goal?Math.min(100,Math.round(cnt/goal*100)):0;
   const fresh=mod!=='training'&&!cnt&&actStart()===todayIso; // nothing ticked yet: no 'behind' on day one
   const paceTxt=fresh?'':goal&&todayIso>=from&&todayIso<=b?(pace>=0&&cnt>=goal?'goal reached':pace===0?'on pace':Math.abs(pace)+' '+(Math.abs(pace)===1?'day':'days')+' '+(pace>0?'ahead':'behind')):'';
-  $('actSum').innerHTML=`<div class="calsum"><span><b>${cnt}</b>${goal?' / '+goal:''} days ${label}</span>${paceTxt?`<span>${paceTxt}</span>`:''}</div>
+  // Food/Sleep: show the period score (partial days count) instead of the pace
+  const psc=mod!=='training'?modScore(mod,a,b):null,right=psc!=null?`<span class="psc">Score <b>${psc}</b></span>`:paceTxt?`<span>${paceTxt}</span>`:'';
+  $('actSum').innerHTML=`<div class="calsum"><span><b>${cnt}</b>${goal?' / '+goal:''} days ${label}</span>${right}</div>
     ${goal?`<div class="track thin"><i style="width:${gp}%;background:var(--accent)"></i></div>`:''}`;
 }
 
