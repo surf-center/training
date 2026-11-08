@@ -29,6 +29,8 @@
   --cell:#1f2a3b;--cell-done:#60a5fa;--cell-today:#e8edf5;
 }
 :root[data-theme="dark"] .card{box-shadow:none;border:1px solid var(--border)}
+/* dark: ticked Nutrition boxes white (calm, high contrast), open ones outlined */
+:root[data-theme="dark"] .pill{background:transparent;box-shadow:inset 0 0 0 1.5px var(--border);color:var(--muted)}:root[data-theme="dark"] .pill.on{background:#fff;color:#0d1420;box-shadow:none}
 :root[data-theme="dark"]{color-scheme:dark}
 .themebtn{border:none;background:var(--surface);color:var(--text2);width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 2px rgba(15,23,42,.06),0 4px 12px rgba(15,23,42,.06);flex:none}
 *{box-sizing:border-box}
@@ -348,7 +350,6 @@ button.ghost{font-weight:700;border-radius:11px}
 @media (min-width:1000px){
   /* laptop: Today + Calendar centre stage in one column; Goal, Deadline, Plan, Consistency and Progress fold into the stack below */
   .wrap{max-width:780px;padding-top:40px}
-  #actionCard>.label{pointer-events:none;margin-bottom:6px}#actionCard .hist-h span.hist-m{font-size:18px;font-weight:800;color:var(--text)}
   .stack .scard+.scard{margin-top:16px}
   h1{font-size:34px}
   .card{padding:26px 28px}
@@ -456,7 +457,7 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:
 .dgrid.wk.tw{display:flex;justify-content:space-between;max-width:none;margin:16px 0 2px;gap:0}.dgrid.wk.tw .dc{flex:none;width:36px}
 #todayCard>.label{align-items:center}
 @media (max-width:430px){.hist-h span.hist-s{display:none}}
-@media (max-width:999px){.stack[aria-expanded="false"] #actionCard{padding-top:33px;padding-bottom:27px}.stack[aria-expanded="false"] #actionCard .hist-h span.hist-m{line-height:1;margin-top:0;text-align:center}.stack[aria-expanded="false"] #actionCard .hist-h{justify-content:center}}
+.stack[aria-expanded="false"] #actionCard{padding-top:33px;padding-bottom:27px}.stack[aria-expanded="false"] #actionCard .hist-h span.hist-m{line-height:1;margin-top:0;text-align:center}.stack[aria-expanded="false"] #actionCard .hist-h{justify-content:center}
 .calhead{display:flex;gap:8px;align-items:center;margin:16px 0 4px}
 .sh-pick{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
 .sh-opt{all:unset;box-sizing:border-box;cursor:pointer;display:grid;gap:8px;justify-items:center;padding:12px;border-radius:14px;font-weight:800;font-size:13px;color:var(--text);background:var(--surface2)}
@@ -977,7 +978,8 @@ const mondayOf=d=>{const m=new Date(d.getFullYear(),d.getMonth(),d.getDate());m.
 const isoWeek=d=>{const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));const n=t.getUTCDay()||7;t.setUTCDate(t.getUTCDate()+4-n);const y0=new Date(Date.UTC(t.getUTCFullYear(),0,1));return Math.ceil(((t-y0)/864e5+1)/7);};
 // Goal start: progress (time, weight, plan line) is measured from the day the goal was set.
 const goalStart=()=>S.settings.goalStart||todayIso;
-const actStart=()=>{if(mod==='training')return goalStart();const ds=S.actions.filter(a=>MODS[mod].items.includes(a.action)||(MODS[mod].water&&/^Water:/.test(a.action))||(MODS[mod].rating&&/^Sleep:[1-5]$/.test(a.action))).map(a=>a.date).sort();return ds[0]&&ds[0]<todayIso?ds[0]:todayIso;};
+const actStart=()=>{if(mod==='training')return iso(mondayOf(parse(goalStart()))); // training counts from the Monday of your start week (same as Score and Friends)
+const ds=S.actions.filter(a=>MODS[mod].items.includes(a.action)||(MODS[mod].water&&/^Water:/.test(a.action))||(MODS[mod].rating&&/^Sleep:[1-5]$/.test(a.action))).map(a=>a.date).sort();return ds[0]&&ds[0]<todayIso?ds[0]:todayIso;};
 function startWeight(W){ // last measurement before the goal start day, else the first one on/after it
   if(!W.length)return null;
   const before=W.filter(w=>w.date<goalStart());
@@ -1275,7 +1277,7 @@ function renderMods(){const U=userMods();if(!U.includes(mod))mod=U[0];
     if(mod!=='training'&&pc.nextElementSibling!==dc)dc.before(pc);
     if(mod==='training'&&dc.nextElementSibling!==pc)pc.before(dc);
     const [a1,b1]=mod==='training'?[dc,pc]:[pc,dc];a1.querySelector('.step').textContent='2';b1.querySelector('.step').textContent='3';}
-  const st=$('stack'),more=[...st.querySelectorAll('.scard')].filter(c=>!c.hidden&&c.id!=='actionCard'),lap=innerWidth>=1000;
+  const st=$('stack'),more=[...st.querySelectorAll('.scard')].filter(c=>!c.hidden&&c.id!=='actionCard'),lap=false; // Calendar folds into the stack on every screen
   $('stackN').textContent='+'+(more.length-(lap?1:0));$('stackN').hidden=!lap; // laptop: the pile starts with Goal, so show what is behind it
   // tell what else is in the pile: the other cards' titles
   $('histMore').textContent=histLbl(st.getAttribute('aria-expanded')==='true');
@@ -1603,7 +1605,7 @@ document.addEventListener('click',e=>{
   const it=e.target.closest('[data-item]');
   if(it){const d=it.dataset.day;toggleItem(d,it.dataset.item);const dc=$('dayChecks');if(dc)dc.innerHTML=checksHTML(d);return;}
   const tg=e.target.closest('[data-tog]');
-  if(tg){UI[tg.dataset.tog]=!UI[tg.dataset.tog];saveUI();if(tg.dataset.tog==='hist'){if(innerWidth<1000){UI.hist=!UI.hist;setStack(!($('stack').getAttribute('aria-expanded')==='true'&&$('actionCard').classList.contains('open')));}else $('actionCard').classList.toggle('open',UI.hist);return;}if(tg.dataset.tog==='friends'){renderFriends();return;}if(tg.dataset.tog==='trend'||tg.dataset.tog==='details')renderOverview();else{renderToday();const dc=$('dayChecks');if(dc)dc.innerHTML=checksHTML(dc.dataset.day||todayIso);}return;}
+  if(tg){UI[tg.dataset.tog]=!UI[tg.dataset.tog];saveUI();if(tg.dataset.tog==='hist'){UI.hist=!UI.hist;setStack(!($('stack').getAttribute('aria-expanded')==='true'&&$('actionCard').classList.contains('open')));return;}if(tg.dataset.tog==='friends'){renderFriends();return;}if(tg.dataset.tog==='trend'||tg.dataset.tog==='details')renderOverview();else{renderToday();const dc=$('dayChecks');if(dc)dc.innerHTML=checksHTML(dc.dataset.day||todayIso);}return;}
   const rb=e.target.closest('[data-rate]');
   if(rb){const d=rb.dataset.day;setRating(d,+rb.dataset.rate);const dc=$('dayChecks');if(dc)dc.innerHTML=checksHTML(d);return;}
   const wb=e.target.closest('[data-water]');
@@ -1658,8 +1660,8 @@ $('selWeek').onchange=e=>{
 $('wListToggle').onclick=()=>{const l=$('wList'),open=l.hidden;l.hidden=!open;$('wListToggle').textContent=open?'Hide measurements ▴':'Show measurements ▾';};
 // stack: collapsed like notifications, tap to expand
 // one tap opens everything: the stack unfolds and History (its top card) opens with it
-function histLbl(open){return open||innerWidth>=1000?'Calendar':'Open Stack';} // laptops: always the open Calendar card
-function setStack(open){$('stack').setAttribute('aria-expanded',open?'true':'false');$('histMore').textContent=histLbl(open);UI.hist=open;saveUI();$('actionCard').classList.toggle('open',open||innerWidth>=1000);}
+function histLbl(open){return open?'Calendar':'Open Stack';}
+function setStack(open){$('stack').setAttribute('aria-expanded',open?'true':'false');$('histMore').textContent=histLbl(open);UI.hist=open;saveUI();$('actionCard').classList.toggle('open',open);}
 $('stack').addEventListener('click',e=>{const st=$('stack'),isOpen=st.getAttribute('aria-expanded')==='true';
   if(e.target.closest('#stackLess')){setStack(false);return;}
   // taps on controls, or inside an open History/Progress card, never fold the stack
@@ -1725,8 +1727,7 @@ function placeProgress(){
   // Progress always lives in the stack: collapsed pile on phones, a column of 4 on laptops
   const pc=$('progCard'),st=$('stack'),ac=$('actionCard');
   // Calendar: on laptops a card of its own under Today (always open); on phones the top of the folded stack
-  if(innerWidth>=1000){if(ac.parentElement===st){$('todayCard').after(ac);ac.classList.remove('scard');}ac.classList.add('open');}
-  else if(ac.parentElement!==st){st.prepend(ac);ac.classList.add('scard');ac.classList.toggle('open',st.getAttribute('aria-expanded')==='true');}
+  if(ac.parentElement!==st){st.prepend(ac);ac.classList.add('scard');ac.classList.toggle('open',st.getAttribute('aria-expanded')==='true');}
   $('histMore').textContent=histLbl(st.getAttribute('aria-expanded')==='true');
   if(pc.parentElement!==st){st.insertBefore(pc,$('stackLess'));pc.classList.add('scard');}
   $('stackN').textContent='+'+(st.querySelectorAll('.scard').length-1);
@@ -1789,7 +1790,7 @@ async function shareCal(){
         if(done(d))shX(x,cx,cy,26);else if(d<=todayIso){x.lineWidth=5;x.beginPath();x.arc(cx,cy,26,0,7);x.stroke();}else{x.beginPath();x.arc(cx,cy,6,0,7);x.fill();}});}};
   shSend(H,draw,`${title}: ${line}`,$('calShare'));}
 $('actionCard').classList.toggle('open',UI.hist); // History starts folded
-if(innerWidth<1000)$('stack').setAttribute('aria-expanded',UI.hist?'true':'false');
+$('stack').setAttribute('aria-expanded',UI.hist?'true':'false');
 $('stack').prepend($('actionCard'));$('actionCard').classList.add('scard');placeProgress();$('stackN').hidden=true; // the content line says what is in the pile // History heads the stack
 let actView=(()=>{try{return localStorage.getItem('training.view')||'week'}catch(e){return 'week'}})();
 function setView(v){actView=v;setTimeout(()=>{renderSum();if(typeof fillPeriod==='function')fillPeriod();},0);$('actionCard').dataset.view=v;document.querySelectorAll('#viewSeg button').forEach(b=>b.classList.toggle('on',b.dataset.view===v));try{localStorage.setItem('training.view',v)}catch(e){}}
