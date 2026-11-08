@@ -1446,10 +1446,10 @@ function renderWeight(){
     const prev=W.length>1?W[W.length-2].kg:null,ch=prev===null?null:last-prev;
     h+=`<div class="cur"><div class="cur-v">${fmtKg(last)}<span>kg</span></div><div class="cur-l">Morning weight · ${fmtDs(W[W.length-1].date)}${ch===null||Math.abs(ch)<0.05?'':` · <b class="${toward(ch)?'up':'dn'}">${ch>0?'+':''}${fmtKg(ch)} kg</b>`}</div></div>`;
     // forecast: where the trend lands at the deadline
-    const tr=trend(W),tf=dl?parse(dl).getTime():null;
+    const tr=trend(W),tf=dl&&tw?parse(dl).getTime():null; // expected weight: only with a target weight and a deadline
     if(tr&&tf&&tf>tr.lastT){const fk=tr.at(tf),ok=tw?Math.abs(fk-tw)<=0.5||(tw>=first?fk>=tw:fk<=tw):true;
-      h+=`<div class="wfc"><span>Forecast · ${fmtDs(dl)}</span><b class="${ok?'up':'dn'}">${fmtKg(fk)} kg</b></div>`;
-      h=h.replace('</div></div><div class="wfc">',` <span class="fc-in">· Forecast <b class="${ok?'up':'dn'}">${fmtKg(fk)} kg</b></span></div></div><div class="wfc">`);}
+      h+=`<div class="wfc"><span>Expected weight · ${fmtDs(dl)}</span><b class="${ok?'up':'dn'}">${fmtKg(fk)} kg</b></div>`;
+      h=h.replace('</div></div><div class="wfc">',` <span class="fc-in">· Expected <b class="${ok?'up':'dn'}">${fmtKg(fk)} kg</b></span></div></div><div class="wfc">`);}
   }else h='<div class="sub">No measurements yet. Add your first weight below.</div>';
   if(W.length){const L=R[R.length-1],h0=hourOf(L.time),dc=dayCurve(R),f=v=>fmtKg(Math.round(v*10)/10);
     // your usual time = median of earlier timed measurements
@@ -1486,7 +1486,7 @@ function drawChart(W,tw,dl){
   let t1=Math.max(parse(W[W.length-1].date).getTime(),parse(todayIso).getTime());
   if(dl)t1=Math.max(t1,parse(dl).getTime());
   if(t1-t0<7*864e5)t1=t0+7*864e5;
-  const tf=dl?parse(dl).getTime():null; // forecast runs to the deadline
+  const tf=dl&&tw?parse(dl).getTime():null; // expected weight at the deadline (only with a target)
   const vals=Wv.map(w=>w.kg);if(tw)vals.push(tw);if(tr&&tf)vals.push(tr.at(tf));
   let lo=Math.min(...vals),hi=Math.max(...vals);const padv=Math.max(1,(hi-lo)*.15);lo=Math.floor(lo-padv);hi=Math.ceil(hi+padv);
   const x=t=>m.l+(t-t0)/(t1-t0)*(width-m.l-m.r), y=v=>m.t+(hi-v)/(hi-lo)*(height-m.t-m.b);
@@ -1504,7 +1504,7 @@ function drawChart(W,tw,dl){
   if(tr&&tf&&tf>tr.lastT){const fx=x(tf),fy=y(tr.at(tf));
     s+=`<line x1="${x(tr.lastT)}" y1="${y(tr.at(tr.lastT))}" x2="${fx}" y2="${fy}" stroke="var(--accent)" stroke-width="2" stroke-dasharray="6 5" opacity=".55"/>`
      +`<circle cx="${fx}" cy="${fy}" r="4" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" stroke-dasharray="2 2"/>`
-     +`<text x="${fx-8}" y="${fy+16}" text-anchor="end" font-size="10" font-weight="700" fill="var(--text)">${fmtKg(tr.at(tf))} kg forecast</text>`;}
+     +`<text x="${fx-8}" y="${fy+16}" text-anchor="end" font-size="10" font-weight="700" fill="var(--text)">${fmtKg(tr.at(tf))} kg expected</text>`;}
   const tt=parse(todayIso).getTime();
   s+=`<line x1="${x(tt)}" x2="${x(tt)}" y1="${m.t}" y2="${height-m.b}" stroke="var(--muted2)" stroke-width="1"/><text x="${x(tt)+4}" y="${height-m.b-6}" font-size="10" font-weight="600" fill="var(--muted)">today</text>`;
   if(dl)s+=`<line x1="${x(parse(dl).getTime())}" x2="${x(parse(dl).getTime())}" y1="${m.t}" y2="${height-m.b}" stroke="var(--bad)" stroke-width="1" stroke-dasharray="3 3"/><text x="${x(parse(dl).getTime())-4}" y="${m.t+10}" text-anchor="end" font-size="10" font-weight="600" fill="var(--bad)">deadline</text>`;
