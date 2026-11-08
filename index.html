@@ -455,7 +455,8 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:
 #todayCard>.label{align-items:center}
 @media (max-width:430px){.hist-h span.hist-s{display:none}}
 @media (max-width:999px){.stack[aria-expanded="false"] #actionCard{padding-top:33px;padding-bottom:27px}.stack[aria-expanded="false"] #actionCard .hist-h span.hist-m{line-height:1;margin-top:0;text-align:center}.stack[aria-expanded="false"] #actionCard .hist-h{justify-content:center}}
-.calhead{display:flex;gap:8px;align-items:center;margin:16px 0 4px}#actionCard .period select{border-radius:9px!important}.calhead .seg{flex:none}.calhead .seg button{padding:7px 9px;font-size:12px}
+.calhead{display:flex;gap:8px;align-items:center;margin:16px 0 4px}
+.cal-share{flex:none;margin-left:auto;width:34px;height:34px;border:none;border-radius:50%;background:var(--surface2);color:var(--accent);display:grid;place-items:center;cursor:pointer;padding:0}.cal-share svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.cal-share.done{background:var(--accent);color:#fff}#actionCard .period select{border-radius:9px!important}.calhead .seg{flex:none}.calhead .seg button{padding:7px 9px;font-size:12px}
 #actionCard:not([data-view="year"]) .period #selYear{display:none}#actionCard .period select{width:100%}
 #actionCard .period{display:flex;flex:1;min-width:0;margin:0;background:var(--surface2);box-shadow:none}#actionCard .period #selWeek{flex:1}
 #actionCard[data-view="year"] .period #selYear{flex:1}
@@ -535,7 +536,7 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:
 .cday.rated svg{width:100%;height:100%;fill:none;stroke:var(--text);stroke-width:1.8;stroke-linecap:round}.cday.rated svg .eye{fill:var(--text);stroke:none}
 .cday.rated.today svg{stroke:var(--accent)}.cday.rated.today svg .eye{fill:var(--accent)}
 .dl{font-style:normal;font-weight:900;margin-left:6px}.dl.up{color:var(--accent)}.dl.dn{color:var(--text)}.calsum .dl{margin-left:0}
-.dsc{display:flex;align-items:center;gap:7px;white-space:nowrap}.dsc:has(b.big){align-items:baseline;gap:5px}.dsc b.big{line-height:1}.dsc b.big+small{line-height:1;margin:0;align-self:baseline;display:inline-block}.dsc b.big{font-size:30px!important;font-weight:900;letter-spacing:-1px!important}.dsc b.big+small{text-transform:none;font-size:13px;margin-left:0}
+.dsc{display:flex;align-items:center;gap:7px;white-space:nowrap;margin-left:auto}.dsc:has(b.big){align-items:baseline;gap:5px}.dsc b.big{line-height:1}.dsc b.big+small{line-height:1;margin:0;align-self:baseline;display:inline-block}.dsc b.big{font-size:30px!important;font-weight:900;letter-spacing:-1px!important}.dsc b.big+small{text-transform:none;font-size:13px;margin-left:0}
 .calsum{white-space:nowrap}.calsum>span:first-child{overflow:hidden;text-overflow:ellipsis}.hist-s{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 @media (max-width:430px){.calsum{font-size:12px}.calsum b{font-size:28px!important}}.dsc .dring{width:22px;height:22px;fill:none;stroke-width:3;stroke-linecap:round}.dsc .dring circle{stroke:var(--accent)}.dsc .dring .bg{stroke:var(--cell)}.dsc b{font-size:18px!important;letter-spacing:-.3px!important}.dsc b{font-size:26px;font-weight:900;letter-spacing:-.8px;color:var(--text)}.dsc i{font-style:normal;font-size:14px;font-weight:800;color:var(--accent)}.dsc .dsep{width:1px;height:20px;background:var(--border);margin:0 8px;align-self:center}
 .dsc small{font-size:11px;font-weight:700;color:var(--muted);margin-left:5px;text-transform:uppercase;letter-spacing:.05em}
@@ -1271,7 +1272,7 @@ function renderFriends(){const F=(S.friends||[]).length>0;$('friendCard').hidden
   document.querySelectorAll('#frSeg button').forEach(b=>b.classList.toggle('on',b.dataset.p===frP));
   document.querySelectorAll('#frBy button').forEach(b=>b.classList.toggle('on',b.dataset.by===frBy));
   const rows=[Object.assign({name:'You',me:true},trainStats(frP))].concat((S.friends||[]).map(f=>Object.assign({name:f.name,today:(f.trained||[]).includes(todayIso)},asFriend(f,()=>trainStats(frP)))));
-  const wkP=frP==='week',cons=frBy==='cons'&&!wkP,byT=(x,y)=>y.pct-x.pct||y.c-x.c||y.streak-x.streak,byC=(x,y)=>y.streak-x.streak||y.best-x.best||y.pct-x.pct;
+  const wkP=frP==='week',cons=frBy==='cons'&&!wkP,byT=(x,y)=>y.pct-x.pct||(wkP?y.c-x.c:0)||y.streak-x.streak,byC=(x,y)=>y.streak-x.streak||y.best-x.best||y.pct-x.pct;
   rows.sort(cons?byC:byT);
   { // folded: your place and new boosts, nothing else
     const pos=rows.findIndex(r=>r.me)+1;
@@ -1281,18 +1282,22 @@ function renderFriends(){const F=(S.friends||[]).length>0;$('friendCard').hidden
   const sent=new Set(((S.boosts||{}).sent||[]).map(n=>n.toLowerCase()));
   // Boost: once a day, and only for a friend who trained today ('nice session')
   const boostBtn=(r,small)=>{if(!r.today)return small?'<span class="fr-bsp"></span>':`<span class="fr-wait">Boost opens when ${esc(r.name)} trains today</span>`;
-    const on=sent.has(r.name.toLowerCase());
+    const on=sent.has(r.name.toLowerCase());if(on&&!(justBoosted[r.name]>Date.now()))return small?'<span class="fr-bsp"></span>':''; // sent: after a short 'Boosted' the button goes away
     return `<button type="button" class="fr-boost${small?' sm':''}${on?' on':''}" data-boost="${esc(r.name)}" aria-label="${on?'Boosted':'Boost '+esc(r.name)}"${on?' disabled':''}><svg viewBox="0 0 24 24" aria-hidden="true">${BOLT}</svg>${on?'Boosted':'Boost'}</button>`;};
   const ago=d=>{const n=Math.round((parse(todayIso)-parse(d))/864e5);return n===0?'today':n===1?'yesterday':n+' days ago';};
   const got=[];((S.boosts||{}).received||[]).forEach(b=>{if(!got.some(g=>g.from===b.from))got.push(b);});
   const gotHTML=got.length?`<button type="button" class="fr-got" data-frinfo><svg viewBox="0 0 24 24" aria-hidden="true">${BOLT}</svg><span>${got.slice(0,3).map(b=>`<b>${esc(b.from)}</b> boosted you ${ago(b.date)}`).join(' · ')}</span></button>`:'';
   const wk=n=>n+(n===1?' week':' weeks'),ses=r=>`${r.c} of ${r.g||'–'} ${r.g===1?'session':'sessions'}`;
   if(rows.length===2){ // 1v1: only the chosen measure
+    const xs=n=>n+' extra session'+(n===1?'':'s');
     const me=rows.find(r=>r.me),o=rows.find(r=>!r.me),d=cons?me.streak-o.streak:me.pct-o.pct;
-    const head=cons?(d>0?`You lead by <i>${wk(d)}</i> in a row`:d<0?`${esc(o.name)} leads by <i>${wk(-d)}</i>. Hit your plan this week`:`Level at <i>${wk(me.streak)}</i>. Who keeps it going?`)
-      :(d>0?`You lead ${per} by <i>${d}%</i>`:d<0?`${esc(o.name)} leads ${per}. One more session to close in`:`Level ${per}. One session takes the lead`);
+    const head=cons?(d>0?`You lead by <i>${wk(d)}</i> in a row`:d<0?`${esc(o.name)} leads by <i>${wk(-d)}</i>. Hit your plan this week`:me.streak?`Streak is <i>${wk(me.streak)}</i>. Who keeps it going?`:`No streak yet. Who starts one?`)
+      :(d>0?`You lead ${per} by <i>${d}%</i>`:d<0?`${esc(o.name)} leads ${per}. One more session to close in`
+        // week only: at the same % an extra session takes the lead
+        :wkP&&me.c!==o.c?(me.c>o.c?`You lead with <i>${xs(me.c-o.c)}</i>`:`${esc(o.name)} leads with <i>${xs(o.c-me.c)}</i>`)
+        :`Level ${per}. One session takes the lead`);
     // animate only when something changed (not on every re-render)
-    const val=r=>cons?r.streak:r.pct,key=[frP,frBy,me.pct,me.streak,o.pct,o.streak].join('|'),go=key!==vsKey?' go':'';vsKey=key;
+    const val=r=>cons?r.streak:wkP?r.pct*10+r.c:r.pct,key=[frP,frBy,me.pct,me.c,me.streak,o.pct,o.c,o.streak].join('|'),go=key!==vsKey?' go':'';vsKey=key;
     const top=cons?Math.max(1,me.best,o.best,me.streak,o.streak):100;
     const card=r=>{const x=r===me?o:me,lead=val(r)>val(x),h=Math.min(100,Math.round(100*val(r)/top));
       return `<div class="vs-p${r.me?' me':''}${lead?' lead':''}"><span class="vs-fill${go}" style="--h:${h}%"></span>${lead?`<svg class="vs-crown${go}" viewBox="0 0 24 24" aria-label="Leading"><path fill="currentColor" d="M3 8l4.5 3.5L12 5l4.5 6.5L21 8l-2 10H5z"/></svg>`:''}<span class="vs-n">${esc(r.name)}</span>`
@@ -1309,7 +1314,7 @@ function renderFriends(){const F=(S.friends||[]).length>0;$('friendCard').hidden
 $('frSeg').onclick=e=>{const b=e.target.closest('[data-p]');if(!b)return;frP=b.dataset.p;try{localStorage.setItem('training.frp',frP)}catch(_){};renderFriends();};
 $('frBy').onclick=e=>{const b=e.target.closest('[data-by]');if(!b)return;frBy=b.dataset.by;try{localStorage.setItem('training.frby',frBy)}catch(_){};renderFriends();};
 const BOLT='<path d="M13.2 2.6 4.8 13.4h6.1l-1.1 8 8.4-10.9h-6.1z"/>';
-let vsKey='';
+let vsKey='';const justBoosted={};
 function countUp(root){const els=[...root.querySelectorAll('[data-to]')];
   if(matchMedia('(prefers-reduced-motion: reduce)').matches){els.forEach(e=>e.textContent=e.dataset.to);return;}
   const t0=performance.now(),D=1300,ease=t=>1-Math.pow(1-t,3);
@@ -1324,7 +1329,9 @@ function friendsInfo(){dialog(`<h3>Friends</h3>
   const g=$('dlgForm').querySelector('.ghost');if(g)g.remove();}
 // Boost a friend: once per friend per day
 $('friendCard').addEventListener('click',e=>{if(e.target.closest('[data-frinfo]'))return friendsInfo();const b=e.target.closest('[data-boost]');if(!b||b.disabled)return;const n=b.dataset.boost;
-  S.boosts=S.boosts||{received:[],sent:[]};if(!S.boosts.sent.includes(n))S.boosts.sent.push(n);save({type:'boost',to:n});});
+  S.boosts=S.boosts||{received:[],sent:[]};if(!S.boosts.sent.includes(n))S.boosts.sent.push(n);save({type:'boost',to:n});
+  // short 'Boosted' flash, then the button goes away
+  justBoosted[n]=Date.now()+1500;renderFriends();setTimeout(renderFriends,1600);});
 const OV_ICON='<path d="M12 20.2s-7.6-4.6-7.6-10.2A4.3 4.3 0 0 1 12 7.3a4.3 4.3 0 0 1 7.6 2.7c0 5.6-7.6 10.2-7.6 10.2z"/>';
 function setMod(m){if(m==='overview'){if(ov||!hasScore())return;ov=true;}else{if(!ov&&m===mod)return;ov=false;mod=m;try{localStorage.setItem('training.mod',m)}catch(e){}}
   try{localStorage.setItem('training.ov',ov?'1':'0')}catch(e){}
@@ -1696,7 +1703,16 @@ function placeProgress(){
 }
 placeProgress();window.addEventListener('resize',()=>placeProgress());
 // period picker + Week/Month/Year sit together right above the calendar they control
-{const ch=document.createElement('div');ch.className='calhead';$('actSum').before(ch);ch.append(document.querySelector('.period'),$('viewSeg'));}
+{const ch=document.createElement('div');ch.className='calhead';$('actSum').before(ch);ch.append(document.querySelector('.period'),$('viewSeg'));
+  const sb=document.createElement('button');sb.type='button';sb.className='cal-share';sb.id='calShare';sb.setAttribute('aria-label','Share');
+  sb.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>';sb.onclick=shareCal;ch.append(sb);}
+// share what the calendar shows: title, the summary line and (week, Training) a row per day
+async function shareCal(){
+  const sum=$('actSum').innerText.replace(/\s+/g,' ').trim();let row='';
+  if(actView==='week'&&mod==='training'){const a=iso(weekStart);row='\n'+[0,1,2,3,4,5,6].map(i=>{const d=addD(a,i);return has(d,'Training')?'💪':d>todayIso?'·':'▫️';}).join(' ');}
+  const text=`${$('actTtl').textContent}: ${sum}${row}`,url=location.origin+location.pathname,b=$('calShare');
+  try{if(navigator.share){await navigator.share({title:'Health',text,url});return;}
+    await navigator.clipboard.writeText(text+'\n'+url);b.classList.add('done');setTimeout(()=>b.classList.remove('done'),1500);}catch(e){}}
 $('actionCard').classList.toggle('open',UI.hist); // History starts folded
 if(innerWidth<1000)$('stack').setAttribute('aria-expanded',UI.hist?'true':'false');
 $('stack').prepend($('actionCard'));$('actionCard').classList.add('scard');placeProgress();$('stackN').hidden=true; // the content line says what is in the pile // History heads the stack
