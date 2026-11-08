@@ -925,7 +925,9 @@ const MODS={
 Object.values(MODS).forEach(M=>{M.items=M.groups.flatMap(g=>g.items);M.base=M.groups.filter(g=>!g.bonus).flatMap(g=>g.items);M.bonus=M.groups.filter(g=>g.bonus).flatMap(g=>g.items);});
 const ITEM_LBL={Training:'Trained today',Evening:'Quark'}; // stored key stays 'Evening' so old ticks keep counting
 const EXTRAS=['Protein','Creatine','Evening','Snack'],X_MAX=14; // the four Nutrition extras: name them yourself in Settings
-const xLbl=a=>{const v=S.settings['x_'+a];return v==null?(ITEM_LBL[a]||a):String(v).slice(0,X_MAX);};
+// not named yet: Creatine is on for everyone; the others only if you ticked them before (so existing users keep theirs)
+const xDef=a=>a==='Creatine'||(S.actions||[]).some(x=>x.action===a)?(ITEM_LBL[a]||a):'';
+const xLbl=a=>{const v=S.settings['x_'+a];return v==null?xDef(a):String(v).slice(0,X_MAX);};
 const xOn=()=>EXTRAS.filter(a=>xLbl(a).trim()!=='');
 const itemLbl=a=>EXTRAS.includes(a)?xLbl(a):(ITEM_LBL[a]||a);
 const ITEM_HINT={};
