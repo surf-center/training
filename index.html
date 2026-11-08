@@ -446,7 +446,8 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:
 .fr-bsp{flex:none;width:34px}
 .fr-dl{display:grid;grid-template-columns:auto 1fr;gap:12px 14px;margin:14px 0 0}.fr-dl dt{font-weight:800}.fr-dl dd{margin:0;color:var(--muted);line-height:1.45}
 .fr-goal{margin:16px 0 0;padding-top:14px;border-top:1px solid var(--border);font-weight:700}
-.fr-share{width:32px;height:32px;margin-left:8px;align-self:center}
+.fr-share{width:32px;height:32px;margin-left:10px}
+#actionCard:not(.open) .cal-share{display:none}#actionCard>.label{flex-wrap:nowrap}#actionCard>.label .hist-h{flex:1;min-width:0}#actionCard>.label .cal-share{margin-left:10px;pointer-events:auto}
 .fr-info{flex:none;width:32px;height:32px;margin-left:6px;align-self:center;border:none;border-radius:50%;background:var(--surface2);color:var(--muted);font:italic 800 14px Georgia,serif;cursor:pointer}
 .fr-got{all:unset;box-sizing:border-box;width:100%;cursor:pointer;display:flex;align-items:center;gap:8px;margin-top:12px;padding:10px 12px;border-radius:14px;background:var(--surface2);font-size:13px;font-weight:600;color:var(--muted)}
 .fr-got svg{flex:none;width:18px;height:18px;fill:var(--accent)}.fr-got b{color:var(--text);font-weight:800}
@@ -457,6 +458,12 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:
 @media (max-width:430px){.hist-h span.hist-s{display:none}}
 @media (max-width:999px){.stack[aria-expanded="false"] #actionCard{padding-top:33px;padding-bottom:27px}.stack[aria-expanded="false"] #actionCard .hist-h span.hist-m{line-height:1;margin-top:0;text-align:center}.stack[aria-expanded="false"] #actionCard .hist-h{justify-content:center}}
 .calhead{display:flex;gap:8px;align-items:center;margin:16px 0 4px}
+.sh-pick{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.sh-opt{all:unset;box-sizing:border-box;cursor:pointer;display:grid;gap:8px;justify-items:center;padding:12px;border-radius:14px;font-weight:800;font-size:13px;color:var(--text);background:var(--surface2)}
+.sh-opt img{width:100%;aspect-ratio:1;object-fit:contain;border-radius:10px;padding:8px;box-sizing:border-box}
+.sh-white img{background:#7d8a99}.sh-ph{width:100%}.sh-ph img{aspect-ratio:4/5;padding:0;object-fit:cover}
+.sh-note{margin:6px 0 0;font-size:12px;color:var(--muted)}
+.sh-photo{display:block!important;margin-top:10px!important;text-align:center;padding:12px;border-radius:14px;border:1.5px dashed var(--border);cursor:pointer;font-weight:800;font-size:13px;color:var(--accent)!important;text-transform:none!important;letter-spacing:0!important}.sh-black img{background:#e9ecef}.sh-opt:focus-visible{outline:2px solid var(--accent)}
 .cal-share{flex:none;margin-left:auto;width:34px;height:34px;border:none;border-radius:50%;background:var(--surface2);color:var(--accent);display:grid;place-items:center;cursor:pointer;padding:0}.cal-share svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.cal-share.done{background:var(--accent);color:#fff}#actionCard .period select{border-radius:9px!important}.calhead .seg{flex:none}.calhead .seg button{padding:7px 9px;font-size:12px}
 #actionCard:not([data-view="year"]) .period #selYear{display:none}#actionCard .period select{width:100%}
 #actionCard .period{display:flex;flex:1;min-width:0;margin:0;background:var(--surface2);box-shadow:none}#actionCard .period #selWeek{flex:1}
@@ -540,6 +547,7 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:
 .dsc{display:flex;align-items:center;gap:7px;white-space:nowrap;margin-left:auto}.dsc:has(b.big){align-items:baseline;gap:5px}.dsc b.big{line-height:1}.dsc b.big+small{line-height:1;margin:0;align-self:baseline;display:inline-block}.dsc b.big{font-size:30px!important;font-weight:900;letter-spacing:-1px!important}.dsc b.big+small{text-transform:none;font-size:13px;margin-left:0}
 .calsum{white-space:nowrap}.calsum>span:first-child{overflow:hidden;text-overflow:ellipsis}.hist-s{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 @media (max-width:430px){.calsum{font-size:12px}.calsum b{font-size:28px!important}}.dsc .dring{width:22px;height:22px;fill:none;stroke-width:3;stroke-linecap:round}.dsc .dring circle{stroke:var(--accent)}.dsc .dring .bg{stroke:var(--cell)}.dsc b{font-size:18px!important;letter-spacing:-.3px!important}.dsc b{font-size:26px;font-weight:900;letter-spacing:-.8px;color:var(--text)}.dsc i{font-style:normal;font-size:14px;font-weight:800;color:var(--accent)}.dsc .dsep{width:1px;height:20px;background:var(--border);margin:0 8px;align-self:center}
+.dsc-n{font-size:12px;font-weight:600;color:var(--muted);text-transform:none;letter-spacing:0}.dsc-n b{font-size:17px;font-weight:800;color:var(--text);margin-right:1px}
 .dsc small{font-size:11px;font-weight:700;color:var(--muted);margin-left:5px;text-transform:uppercase;letter-spacing:.05em}
 .calsum .psc{color:var(--muted)}.calsum .psc.ok{color:var(--accent);font-weight:800}.calsum .psc b{font-size:22px;font-weight:900;color:var(--accent);margin-left:4px;letter-spacing:-.5px}
 .wlbl{display:inline-flex;align-items:center;gap:6px}.wlbl svg{width:18px;height:18px;fill:none;stroke:var(--accent);stroke-width:2.2;stroke-linejoin:round}
@@ -758,8 +766,8 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:
 
   <!-- Friends (part of the Score tab): training only (days, plan, consistency); 1v1 with one friend, a ranking with more -->
   <div class="card" id="friendCard" hidden>
-    <div class="label fr-l"><button type="button" class="fr-h" data-tog="friends" aria-label="Show friends"><span class="ttl"><svg class="calicon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8.2" r="3.3"/><path d="M3.2 19.5c.6-3.3 2.9-5.2 5.8-5.2s5.2 1.9 5.8 5.2"/><circle cx="17.2" cy="9.2" r="2.6"/><path d="M16.2 14.4c2.5-.3 4.3 1.3 4.9 4.4"/></svg>Friends</span><span class="fr-sum" id="frSum"></span></button></div>
-    <div class="fr-ctl" id="frCtl"><div class="seg" id="frSeg" aria-label="Period"><button data-p="week">Week</button><button data-p="month">Month</button><button data-p="year">Year</button></div><button type="button" class="cal-share fr-share" id="frShare" aria-label="Share ranking"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg></button><button type="button" class="fr-info" data-frinfo aria-label="How Friends and Boost work">i</button></div>
+    <div class="label fr-l"><button type="button" class="fr-h" data-tog="friends" aria-label="Show friends"><span class="ttl"><svg class="calicon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8.2" r="3.3"/><path d="M3.2 19.5c.6-3.3 2.9-5.2 5.8-5.2s5.2 1.9 5.8 5.2"/><circle cx="17.2" cy="9.2" r="2.6"/><path d="M16.2 14.4c2.5-.3 4.3 1.3 4.9 4.4"/></svg>Friends</span><span class="fr-sum" id="frSum"></span></button><button type="button" class="cal-share fr-share" id="frShare" aria-label="Share ranking"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg></button></div>
+    <div class="fr-ctl" id="frCtl"><div class="seg" id="frSeg" aria-label="Period"><button data-p="week">Week</button><button data-p="month">Month</button><button data-p="year">Year</button></div><button type="button" class="fr-info" data-frinfo aria-label="How Friends and Boost work">i</button></div>
     <div id="frBody"></div>
     <div class="fr-by" id="frByRow"><div class="seg" id="frBy" aria-label="Rank by"><button data-by="training">Training</button><button data-by="cons">Consistency</button></div></div>
   </div>
@@ -1201,7 +1209,7 @@ function renderToday(){const tc=$('todayCard'),ti=$('todayIn');tc.hidden=false;
     const mon=iso(mondayOf(new Date())),days=[...Array(7)].map((_,i)=>addD(mon,i)),T=trained(),n=days.filter(k=>T.has(k)).length,pw=perWeek();
     const sc=modScore('training',mon,addD(mon,6)); // training score: sessions done vs plan this week, 0-100
     $('dayScore').hidden=false;$('dayScore').innerHTML=sc==null?`<b class="big">${n}</b><small>/ ${pw||'–'} this week</small>`
-      :`<small>${n} / ${pw} this week</small><svg class="dring" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" class="bg"/><circle cx="12" cy="12" r="9.5" pathLength="100" stroke-dasharray="${sc} 100" transform="rotate(-90 12 12)"/></svg><b>${sc}</b>`;
+      :`<span class="dsc-n"><b>${n}</b> / ${pw} this week</span><svg class="dring" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" class="bg"/><circle cx="12" cy="12" r="9.5" pathLength="100" stroke-dasharray="${sc} 100" transform="rotate(-90 12 12)"/></svg><b>${sc}</b>`;
     ti.innerHTML=`<div class="dgrid wk tw">${days.map(k=>dayBtn(k,T)).join('')}</div>`;return;}
   // today's score: basics 0-100, Food bonus on top
   const base=Math.min(100,Math.round(frac(mod,todayIso)*100+bonusPts(mod,todayIso))),bon=0; // bonus can make up for a missed item, never above 100
@@ -1269,7 +1277,7 @@ const FR_ICON='<circle cx="9" cy="8.2" r="3.3"/><path d="M3.2 19.5c.6-3.3 2.9-5.
 // Friends sit under the Score card (Score must be on). Own period switch; folded by default.
 let frP=(()=>{try{return localStorage.getItem('training.frp')||'week'}catch(e){return 'week'}})();
 function renderFriends(){const F=(S.friends||[]).length>0;$('friendCard').hidden=!(ov&&F);if(!ov||!F)return;
-  const open=!!UI.friends;$('frBody').hidden=!open;$('frByRow').hidden=!open||frP==='week';$('frCtl').hidden=!open;
+  const open=!!UI.friends;$('frBody').hidden=!open;$('frByRow').hidden=!open||frP==='week';$('frCtl').hidden=!open;$('frShare').hidden=!open;
   document.querySelectorAll('#frSeg button').forEach(b=>b.classList.toggle('on',b.dataset.p===frP));
   document.querySelectorAll('#frBy button').forEach(b=>b.classList.toggle('on',b.dataset.by===frBy));
   const rows=[Object.assign({name:'You',me:true},trainStats(frP))].concat((S.friends||[]).map(f=>Object.assign({name:f.name,today:(f.trained||[]).includes(todayIso)},asFriend(f,()=>trainStats(frP)))));
@@ -1325,15 +1333,15 @@ function countUp(root){const els=[...root.querySelectorAll('[data-to]')];
 // share the ranking that is on screen, same style
 async function shareFriends(){if(!frLast)return;const {per,cons,wkP,rows}=frLast;
   const v=r=>cons?r.streak+(r.streak===1?' wk':' wks'):wkP?`${r.c}/${r.g||'–'}`:r.pct+'%';
-  const R=rows.slice(0,8),rh=118,H=200+R.length*rh+130;
-  const c=await shImg(H,x=>{shLabel(x,'Training · '+(cons?'weeks in a row':per),90);
+  const R=rows.slice(0,8),rh=118,H=200+R.length*rh+20;
+  const draw=x=>{shLabel(x,cons?'weeks in a row':per,90);
     R.forEach((r,i)=>{const y=210+i*rh,L=120,Rr=SH_W-120;
       x.textAlign='left';
       if(i===0){x.beginPath();const cx=L+22,cy=y-26;x.moveTo(cx-24,cy-14);x.lineTo(cx-12,cy-2);x.lineTo(cx,cy-22);x.lineTo(cx+12,cy-2);x.lineTo(cx+24,cy-14);x.lineTo(cx+19,cy+14);x.lineTo(cx-19,cy+14);x.closePath();x.fill();}
       else{x.font='800 46px Poppins';x.globalAlpha=.75;x.fillText(String(i+1),L+8,y);x.globalAlpha=1;}
       x.font=(r.me?'900':'800')+' 62px Poppins';let n=r.me?'You':r.name;while(x.measureText(n).width>560&&n.length>2)n=n.slice(0,-2)+'…';x.fillText(n,L+80,y);
-      x.textAlign='right';x.font='900 70px Poppins';x.fillText(v(r),Rr,y+2);});});
-  shSend(c,rows.map((r,i)=>`${i+1}. ${r.name} ${v(r)}`).join('\n'),$('frShare'));}
+      x.textAlign='right';x.font='900 70px Poppins';x.fillText(v(r),Rr,y+2);});};
+  shSend(H,draw,rows.map((r,i)=>`${i+1}. ${r.name} ${v(r)}`).join('\n'),$('frShare'));}
 // short explanation: the info button, or tapping 'X boosted you'
 function friendsInfo(){dialog(`<h3>Friends</h3>
   <dl class="fr-dl"><dt>Boost</dt><dd>When a friend trained today, send a boost!</dd>
@@ -1719,22 +1727,32 @@ placeProgress();window.addEventListener('resize',()=>placeProgress());
 // period picker + Week/Month/Year sit together right above the calendar they control
 {const ch=document.createElement('div');ch.className='calhead';$('actSum').before(ch);ch.append(document.querySelector('.period'),$('viewSeg'));
   const sb=document.createElement('button');sb.type='button';sb.className='cal-share';sb.id='calShare';sb.setAttribute('aria-label','Share');
-  sb.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>';sb.onclick=shareCal;ch.append(sb);}
+  sb.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>';sb.onclick=shareCal;$('actionCard').querySelector('.label').append(sb);}
 // share: a Strava-style transparent PNG (white type, no background) for stories; laptop = download
 const SH_W=1080;
-async function shImg(h,draw){await Promise.all(['900 160px Poppins','800 60px Poppins','700 40px Poppins'].map(f=>document.fonts.load(f).catch(()=>{})));
-  const c=document.createElement('canvas');c.width=SH_W;c.height=h;const x=c.getContext('2d');
-  x.fillStyle='#fff';x.strokeStyle='#fff';x.textBaseline='alphabetic';x.shadowColor='rgba(0,0,0,.28)';x.shadowBlur=14;x.shadowOffsetY=2;draw(x);
-  // small wordmark
-  x.font='800 34px Poppins';x.textAlign='center';x.globalAlpha=.85;x.fillText('HEALTH',SH_W/2,h-40);x.globalAlpha=1;return c;}
+async function shImg(h,draw,col,photo){await Promise.all(['900 160px Poppins','800 60px Poppins','700 40px Poppins'].map(f=>document.fonts.load(f).catch(()=>{})));
+  const PH=photo?Math.max(1350,h+120):h,c=document.createElement('canvas');c.width=SH_W;c.height=PH;const x=c.getContext('2d'),w=col==='white';
+  if(photo){const s=Math.max(SH_W/photo.width,PH/photo.height),iw=photo.width*s,ih=photo.height*s;x.drawImage(photo,(SH_W-iw)/2,(PH-ih)/2,iw,ih);
+    const g=x.createLinearGradient(0,PH-h-160,0,PH);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(0,0,0,.55)');x.fillStyle=g;x.fillRect(0,0,SH_W,PH);x.translate(0,PH-h-40);}
+  x.fillStyle=x.strokeStyle=w?'#fff':'#111';x.textBaseline='alphabetic';x.shadowColor=w?'rgba(0,0,0,.28)':'rgba(255,255,255,.35)';x.shadowBlur=14;x.shadowOffsetY=2;draw(x);return c;}
 const shLabel=(x,t,y)=>{x.font='700 38px Poppins';x.textAlign='center';x.globalAlpha=.9;x.letterSpacing='6px';x.fillText(t.toUpperCase(),SH_W/2,y);x.letterSpacing='0px';x.globalAlpha=1;};
 function shX(x,cx,cy,r){x.lineWidth=r*.36;x.lineCap='round';x.beginPath();x.moveTo(cx-r,cy-r);x.lineTo(cx+r,cy+r);x.moveTo(cx+r,cy-r);x.lineTo(cx-r,cy+r);x.stroke();}
-async function shSend(c,fallbackText,btn){
-  const blob=await new Promise(r=>c.toBlob(r,'image/png'));const f=blob&&new File([blob],'health.png',{type:'image/png'});
-  try{if(f&&navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f]});return;}}catch(e){if(e.name==='AbortError')return;}
-  if(f){const a=document.createElement('a');a.href=URL.createObjectURL(f);a.download='health.png';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);}
-  else try{await navigator.clipboard.writeText(fallbackText);}catch(e){}
-  btn.classList.add('done');setTimeout(()=>btn.classList.remove('done'),1500);}
+async function shSend(h,draw,fallbackText,btn){
+  const mk=async col=>{const c=await shImg(h,draw,col),b=await new Promise(r=>c.toBlob(r,'image/png'));return {col,url:c.toDataURL(),f:b&&new File([b],'health.png',{type:'image/png'})};};
+  const V=await Promise.all([mk('white'),mk('black')]);
+  dialog(`<h3>Share</h3><p class="sh-note">Transparent, to put on your own photo or story</p><div class="sh-pick">${V.map((v,i)=>`<button type="button" class="sh-opt sh-${v.col}" data-i="${i}"><img src="${v.url}" alt=""><span>${v.col==='white'?'White':'Black'}</span></button>`).join('')}</div>
+    <label class="sh-photo"><input type="file" accept="image/*" hidden><span>On a photo…</span></label>`,()=>{});
+  const F=$('dlgForm');F.querySelector('.primary')?.remove();
+  // photo: draw the stats over it, then a second tap shares it (the photo picker ends the tap)
+  F.querySelector('.sh-photo input').onchange=async e=>{const file=e.target.files[0];if(!file)return;
+    const img=await createImageBitmap(file).catch(()=>null);if(!img)return;const c=await shImg(h,draw,'white',img),b=await new Promise(r=>c.toBlob(r,'image/jpeg',.9));
+    V.push({f:new File([b],'health.jpg',{type:'image/jpeg'})});F.querySelector('.sh-pick').outerHTML=`<button type="button" class="sh-opt sh-ph" data-i="${V.length-1}"><img src="${c.toDataURL('image/jpeg',.8)}" alt=""><span>Share</span></button>`;
+    F.querySelector('.sh-photo').remove();F.querySelector('.sh-note').remove();wire();};
+  const wire=()=>F.querySelectorAll('.sh-opt').forEach(o=>o.onclick=async()=>{const f=V[+o.dataset.i].f;$('dlg').close();
+    try{if(f&&navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f]});return;}}catch(e){if(e.name==='AbortError')return;}
+    if(f){const a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=f.name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);}
+    else try{await navigator.clipboard.writeText(fallbackText);}catch(e){}
+    btn.classList.add('done');setTimeout(()=>btn.classList.remove('done'),1500);});wire();}
 async function shareCal(){
   const sp=$('actSum').querySelector('.calsum span'),line=sp?sp.innerText.replace(/\s+/g,' ').trim():$('actSum').innerText.trim();
   const m=line.match(/^(\d+)\s*\/\s*(\d+)\s*(.*)$/),big=m?`${m[1]}/${m[2]}`:(sp&&sp.querySelector('b')?sp.querySelector('b').textContent:''),sub=m?m[3]:line.replace(big,'').trim();
@@ -1742,17 +1760,17 @@ async function shareCal(){
   let days=[];if(actView==='week'){const a=iso(weekStart);days=[0,1,2,3,4,5,6].map(i=>addD(a,i));}
   else if(actView==='month'){const f=monthStart,n=new Date(f.getFullYear(),f.getMonth()+1,0).getDate();days=Array.from({length:n},(_,i)=>iso(new Date(f.getFullYear(),f.getMonth(),i+1)));}
   const wk=actView==='week',rows=wk?1:Math.ceil((((monthStart.getDay()+6)%7)+days.length)/7),cell=wk?130:96;
-  const gridH=item&&days.length?(wk?190:rows*cell+20):0,H=480+gridH+110;
-  const c=await shImg(H,x=>{shLabel(x,title,90);
-    x.font='900 210px Poppins';x.textAlign='center';x.fillText(big,SH_W/2,320);
-    x.font='700 44px Poppins';x.globalAlpha=.9;x.fillText(sub,SH_W/2,400);x.globalAlpha=1;
-    if(!gridH)return;const y0=480;
+  const gridH=item&&days.length?(wk?190:rows*cell+20):0,H=400+gridH+30;
+  const draw=x=>{
+    x.font='900 210px Poppins';x.textAlign='center';x.fillText(big,SH_W/2,230);
+    x.font='700 44px Poppins';x.globalAlpha=.9;x.fillText(sub,SH_W/2,310);x.globalAlpha=1;
+    if(!gridH)return;const y0=390;
     if(wk){const L='MTWTFSS';days.forEach((d,i)=>{const cx=SH_W/2+(i-3)*cell,cy=y0+50;
         if(done(d))shX(x,cx,cy,34);else if(d<=todayIso){x.lineWidth=6;x.beginPath();x.arc(cx,cy,34,0,7);x.stroke();}else{x.beginPath();x.arc(cx,cy,8,0,7);x.fill();}
         x.font='700 34px Poppins';x.globalAlpha=.85;x.fillText(L[i],cx,cy+105);x.globalAlpha=1;});}
     else{const off=(monthStart.getDay()+6)%7;days.forEach((d,i)=>{const k=i+off,cx=SH_W/2+((k%7)-3)*cell,cy=y0+30+Math.floor(k/7)*cell;
-        if(done(d))shX(x,cx,cy,26);else if(d<=todayIso){x.lineWidth=5;x.beginPath();x.arc(cx,cy,26,0,7);x.stroke();}else{x.beginPath();x.arc(cx,cy,6,0,7);x.fill();}});}});
-  shSend(c,`${title}: ${line}`,$('calShare'));}
+        if(done(d))shX(x,cx,cy,26);else if(d<=todayIso){x.lineWidth=5;x.beginPath();x.arc(cx,cy,26,0,7);x.stroke();}else{x.beginPath();x.arc(cx,cy,6,0,7);x.fill();}});}};
+  shSend(H,draw,`${title}: ${line}`,$('calShare'));}
 $('actionCard').classList.toggle('open',UI.hist); // History starts folded
 if(innerWidth<1000)$('stack').setAttribute('aria-expanded',UI.hist?'true':'false');
 $('stack').prepend($('actionCard'));$('actionCard').classList.add('scard');placeProgress();$('stackN').hidden=true; // the content line says what is in the pile // History heads the stack
