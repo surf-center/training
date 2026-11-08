@@ -1095,10 +1095,10 @@ function daysOnTarget(m){const st=startOf(m),tg=targetOf(m);if(!st)return {strea
   let streak=0;for(let i=res.length-1;i>=0&&res[i];i--)streak++;
   return {streak,best,on,total};}
 // Training days done vs planned within [a..b] (from the goal start up to today)
-function trainCount(a,b){const st=startOf('training');if(!st)return [0,0];const from=a>st?a:st,to=b<todayIso?b:todayIso;if(from>to)return [0,0];
+function trainCount(a,b){let st=startOf('training');if(!st)return [0,0,0];st=iso(mondayOf(parse(st)));const from=a>st?a:st,to=b<todayIso?b:todayIso;if(from>to)return [0,0,0];
   let c=0;for(let d=from;d<=to;d=addD(d,1))if(has(d,'Training'))c++;
   const span=(parse(b)-parse(from))/864e5+1,pw=pwOf('training'),g=Math.max(1,span<=7?pw:Math.round(pw*span/7));
-  return [Math.min(c,g),g];}
+  return [Math.min(c,g),g,c];} // score caps at the plan; c = what you really did (5 of 4)
 // Consistency = weeks on target: weeks (Mon-Sun) in which the planned training days were done.
 // The running week and a part-week at the very start only count once they are on target.
 function trainWeeks(){const st=startOf('training');if(!st||!pwOf('training'))return {streak:0,best:0,on:0,total:0};
@@ -1109,8 +1109,8 @@ function trainWeeks(){const st=startOf('training');if(!st||!pwOf('training'))ret
   return {streak,best,on,total:res.length};}
 // run fn on a friend's shared data (training days, plan, start) with the same maths as for yourself
 function asFriend(f,fn){const keep=S;S={settings:{daysPerWeek:String(f.plan||''),goalStart:f.goalStart||null},actions:(f.trained||[]).map(d=>({date:d,action:'Training'})),weight:[],modules:['training'],friends:[]};try{return fn();}finally{S=keep;}}
-function trainStats(p){const [a,b]=period(p,todayIso,'training'),[c,g]=startOf('training')?trainCount(a,b):[0,0],w=trainWeeks();
-  return {c,g,pct:g?Math.round(100*c/g):0,streak:w.streak,best:w.best,on:w.on,total:w.total};}
+function trainStats(p){const [a,b]=period(p,todayIso,'training'),[cc,g,c]=startOf('training')?trainCount(a,b):[0,0,0],w=trainWeeks();
+  return {c,g,pct:g?Math.round(100*cc/g):0,streak:w.streak,best:w.best,on:w.on,total:w.total};}
 function totalScore(sc){let w=0,t=0;Object.entries(sc).forEach(([m,v])=>{const p=planPct(m,v);if(p!=null){w+=WEIGHT[m];t+=WEIGHT[m]*p;}});return w?Math.round(t/w):null;}
 // period [a,b] for day/week/month/year containing date k (training's 'day' uses the week so far: rest days aren't failures)
 function period(p,k,m){const d=parse(k);
@@ -1126,7 +1126,7 @@ function weakest(m,a,b){const M=MODS[m],st=startOf(m);if(!st)return 'Not started
   const from=a>st?a:st,to=b<todayIso?b:todayIso;if(from>to)return '';
   const days=[];for(let d=from;d<=to;d=addD(d,1))days.push(d);
   if(M.rating){const r=days.map(rateOf).filter(Boolean);if(!r.length)return 'No nights rated yet';const av=r.reduce((x,y)=>x+y,0)/r.length;return `Average: ${RATE[Math.round(av)-1].l} · ${r.length} ${r.length===1?'night':'nights'} rated`;}
-  if(m==='training'){const [c,g]=trainCount(a,b);return `${c} of ${g} training days`;}
+  if(m==='training'){const [,g,c]=trainCount(a,b);return `${c} of ${g} training days`;}
   const rows=M.items.filter(it=>!EXTRAS.includes(it)||xOn().includes(it)).map(it=>[itemLbl(it),days.filter(d=>has(d,it)).length]);
   if(M.water)rows.unshift(['Water',days.filter(d=>waterN(d)>=M.water.goal).length]);
   rows.sort((x,y)=>x[1]-y[1]);const [it,n]=rows[0];
