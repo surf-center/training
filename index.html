@@ -29,8 +29,8 @@
   --cell:#1f2a3b;--cell-done:#60a5fa;--cell-today:#e8edf5;
 }
 :root[data-theme="dark"] .card{box-shadow:none;border:1px solid var(--border)}
-/* dark: ticked Nutrition boxes white (calm, high contrast), open ones outlined */
-:root[data-theme="dark"] .pill{background:transparent;box-shadow:inset 0 0 0 1.5px var(--border);color:var(--muted)}:root[data-theme="dark"] .pill.on{background:#fff;color:#0d1420;box-shadow:none}
+/* dark: ticked Nutrition boxes soft blue with a check, open ones quiet grey */
+:root[data-theme="dark"] .pill{background:var(--surface2);color:var(--muted)}:root[data-theme="dark"] .pill.on{background:var(--accent-soft);color:var(--accent)}:root[data-theme="dark"] .pill.on span::before{content:"✓";margin-right:7px}
 :root[data-theme="dark"]{color-scheme:dark}
 .themebtn{border:none;background:var(--surface);color:var(--text2);width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 2px rgba(15,23,42,.06),0 4px 12px rgba(15,23,42,.06);flex:none}
 *{box-sizing:border-box}
@@ -486,6 +486,9 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:
 .set-ck input{width:20px;height:20px;accent-color:var(--accent);margin:0}
 .set-f{display:flex;align-items:center;gap:8px}.set-f input{flex:1;min-width:0}.set-f span{flex:none;font-size:12px;font-weight:800;color:var(--muted)}.set-f span.ok{color:var(--accent)}
 .set-list{display:grid;gap:8px}
+.set-seg{display:flex}.set-seg button{flex:1}
+.set-wv{float:right;font-size:13px;color:var(--text);text-transform:none;letter-spacing:0}
+.set-range{width:100%;accent-color:var(--accent);padding:0;border:none;background:none;margin:6px 0 2px}
 .set-rm,.set-plus{flex:none;width:32px;height:32px;border:none;border-radius:50%;cursor:pointer;font:700 18px/1 var(--font);display:grid;place-items:center;padding:0}
 .set-rm{background:transparent;color:var(--muted2)}.set-rm:hover{color:var(--text)}
 .set-plus{background:var(--accent);color:#fff}
@@ -1687,9 +1690,9 @@ function openSettings(){if(!auth)return askLogin();
   const has_=m=>(S.modules||[]).includes(m),tm=themeMode(),FL=S.friendList||[];
   const tick=(m,l)=>`<label class="set-ck"><input type="checkbox" name="m_${m}"${has_(m)?' checked':''}><span>${l}</span></label>`;
   dialog(`<h3>Settings</h3>
-    <label>Appearance</label><select name="theme"><option value="auto"${tm==='auto'?' selected':''}>Automatic (dark 19:00–07:00)</option><option value="light"${tm==='light'?' selected':''}>Light</option><option value="dark"${tm==='dark'?' selected':''}>Dark</option></select>
+    <label>Appearance <small>(Auto = dark 19:00–07:00)</small></label><input type="hidden" name="theme" value="${tm}"><div class="seg set-seg" data-seg="theme">${[['auto','Auto'],['light','Light'],['dark','Dark']].map(([v,l])=>`<button type="button" data-v="${v}"${tm===v?' class="on"':''}>${l}</button>`).join('')}</div>
     <label>Modules</label><div class="set-mods"><label class="set-ck"><input type="checkbox" checked disabled><span>Training</span></label>${tick('food','Nutrition')}${tick('sleep','Sleep')}${tick('score','Score')}</div>
-    <label>Water goal</label><select name="waterL">${[1,1.5,2,2.5,3,3.5,4].map(l=>`<option value="${l}"${wGoal()/2===l?' selected':''}>${L(l*1000)} L</option>`).join('')}</select>
+    <label>Water goal <b class="set-wv" id="setWv">${L(wGoal()*500)} L</b></label><input type="range" class="set-range" name="waterL" min="1" max="4" step="0.5" value="${wGoal()/2}">
     <label>Nutrition extras <small>(empty = off · max ${X_MAX})</small></label><div class="set-x">${EXTRAS.map(a=>`<input name="x_${a}" maxlength="${X_MAX}" placeholder="Off" value="${esc(xLbl(a))}">`).join('')}</div>
     <label>Friends <small>(you see each other once you both add each other)</small></label>
     ${setList('f',FL.map(f=>({v:f.name,st:f.mutual?'Friends':'Waiting',ok:f.mutual})),'Add a friend',30)}
@@ -1703,7 +1706,9 @@ function openSettings(){if(!auth)return askLogin();
     const q=listVals(f,'q').map(x=>x.slice(0,200)).slice(0,20),qCh=q.join('\n')!==(S.quotes||[]).join('\n');
     if(qCh){S.quotes=q;renderQuotes();}
     save(Object.assign({type:'prefs',modules:mods,friends:fr,settings:set},qCh?{quotes:q}:{}));});
-  setListWire($('dlgForm'));}
+  setListWire($('dlgForm'));
+  const F=$('dlgForm');F.querySelectorAll('[data-seg] button').forEach(b=>b.onclick=()=>{const g=b.parentElement;g.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));F[g.dataset.seg].value=b.dataset.v;});
+  F.waterL.oninput=()=>$('setWv').textContent=L(F.waterL.value*1000)+' L';}
 // list with rows (×) and an add field with a plus: what you add shows straight away
 function setRow(n,it,ml,isNew){return `<div class="set-f${isNew?' new':''}"><input name="${n}" maxlength="${ml}" value="${esc(it.v)}">${it.st?`<span class="${it.ok?'ok':''}">${it.st}</span>`:''}<button type="button" class="set-rm" data-rm aria-label="Remove">×</button></div>`;}
 function setList(n,items,ph,ml){return `<div class="set-list" data-list="${n}" data-ml="${ml}">${items.map(it=>setRow(n,it,ml)).join('')}
