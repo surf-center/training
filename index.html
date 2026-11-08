@@ -1293,7 +1293,7 @@ function renderFriends(){const F=(S.friends||[]).length>0;$('friendCard').hidden
   rows.sort(cons?byC:byT);
   { // folded: your place and new boosts, nothing else
     const pos=rows.findIndex(r=>r.me)+1;
-    $('frSum').innerHTML=`<b>#${pos}</b> of ${rows.length}<span class="fr-chev">${open?'▴':'▾'}</span>`;}
+    $('frSum').innerHTML=`<b>#${pos}</b> of ${rows.length}`;}
   if(!open)return;
   const per={week:'this week',month:'this month',year:'this year'}[frP];
   frLast={per,cons,wkP,rows};
