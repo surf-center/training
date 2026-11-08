@@ -467,7 +467,12 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:
 .set-mods,.set-x,.set-fr{display:grid;gap:8px}.set-x{grid-template-columns:1fr 1fr}
 .set-ck{display:flex!important;align-items:center;gap:10px;margin:0!important;font-weight:700;text-transform:none!important;letter-spacing:0!important;color:var(--text)!important}
 .set-ck input{width:20px;height:20px;accent-color:var(--accent);margin:0}
-.set-f{display:flex;align-items:center;gap:10px}.set-f input{flex:1;min-width:0}.set-f span{flex:none;font-size:12px;font-weight:800;color:var(--muted)}.set-f span.ok{color:var(--accent)}
+.set-f{display:flex;align-items:center;gap:8px}.set-f input{flex:1;min-width:0}.set-f span{flex:none;font-size:12px;font-weight:800;color:var(--muted)}.set-f span.ok{color:var(--accent)}
+.set-list{display:grid;gap:8px}
+.set-rm,.set-plus{flex:none;width:32px;height:32px;border:none;border-radius:50%;cursor:pointer;font:700 18px/1 var(--font);display:grid;place-items:center;padding:0}
+.set-rm{background:transparent;color:var(--muted2)}.set-rm:hover{color:var(--text)}
+.set-plus{background:var(--accent);color:#fff}
+.set-f.new{animation:setIn .25s ease-out}@keyframes setIn{from{opacity:0;transform:translateY(-4px)}}
 #dlgForm label small{font-weight:600;text-transform:none;letter-spacing:0;color:var(--muted2)}
 .ov-box{display:inline-block;width:24px;height:24px;border-radius:7px;box-shadow:inset 0 0 0 2.5px var(--muted2);vertical-align:middle;margin-right:4px}
 .ov-x{position:relative;display:inline-block;width:26px;height:26px;vertical-align:middle;margin-right:4px}.ov-x .xm{left:0;top:0;width:100%;height:100%}
@@ -1641,18 +1646,30 @@ function openSettings(){if(!auth)return askLogin();
     <label>Modules</label><div class="set-mods"><label class="set-ck"><input type="checkbox" checked disabled><span>Training</span></label>${tick('food','Nutrition')}${tick('sleep','Sleep')}${tick('score','Score')}</div>
     <label>Nutrition extras <small>(empty = off · max ${X_MAX})</small></label><div class="set-x">${EXTRAS.map(a=>`<input name="x_${a}" maxlength="${X_MAX}" placeholder="Off" value="${esc(xLbl(a))}">`).join('')}</div>
     <label>Friends <small>(you see each other once you both add each other)</small></label>
-    <div class="set-fr">${FL.map(f=>`<div class="set-f"><input name="f" maxlength="30" value="${esc(f.name)}"><span class="${f.mutual?'ok':''}">${f.mutual?'Friends':'Waiting'}</span></div>`).join('')}
-      <div class="set-f"><input name="f" maxlength="30" placeholder="Add a friend"></div></div>
-    <label>Quotes <small>(one per line · shown with the quote button)</small></label>
-    <textarea name="quotes" rows="5" maxlength="4000" placeholder="Discipline beats motivation.">${esc((S.quotes||[]).join('\n'))}</textarea>`,
+    ${setList('f',FL.map(f=>({v:f.name,st:f.mutual?'Friends':'Waiting',ok:f.mutual})),'Add a friend',30)}
+    <label>Quotes <small>(shown with the quote button)</small></label>
+    ${setList('q',(S.quotes||[]).map(q=>({v:q})),'Add a quote',200)}`,
   f=>{try{localStorage.setItem('training.themeMode',f.theme.value);localStorage.removeItem('training.themeOverride')}catch(e){}setTheme(wantedTheme());
     const mods=['training'].concat(['food','sleep','score'].filter(m=>f['m_'+m].checked));
-    const fr=[...f.querySelectorAll('input[name="f"]')].map(i=>i.value.trim()).filter(Boolean);
+    const fr=listVals(f,'f');
     const set={};EXTRAS.forEach(a=>{const v=f['x_'+a].value.trim().slice(0,X_MAX);if(v!==xLbl(a))set['x_'+a]=v;});
     Object.assign(S.settings,set);S.modules=mods;S.friendList=fr.map(n=>({name:n,mutual:(S.friendList||[]).some(x=>x.mutual&&x.name.toLowerCase()===n.toLowerCase())}));
-    const q=f.quotes.value.split('\n').map(x=>x.trim().slice(0,200)).filter(Boolean).slice(0,20),qCh=q.join('\n')!==(S.quotes||[]).join('\n');
+    const q=listVals(f,'q').map(x=>x.slice(0,200)).slice(0,20),qCh=q.join('\n')!==(S.quotes||[]).join('\n');
     if(qCh){S.quotes=q;renderQuotes();}
-    save(Object.assign({type:'prefs',modules:mods,friends:fr,settings:set},qCh?{quotes:q}:{}));});}
+    save(Object.assign({type:'prefs',modules:mods,friends:fr,settings:set},qCh?{quotes:q}:{}));});
+  setListWire($('dlgForm'));}
+// list with rows (×) and an add field with a plus: what you add shows straight away
+function setRow(n,it,ml,isNew){return `<div class="set-f${isNew?' new':''}"><input name="${n}" maxlength="${ml}" value="${esc(it.v)}">${it.st?`<span class="${it.ok?'ok':''}">${it.st}</span>`:''}<button type="button" class="set-rm" data-rm aria-label="Remove">×</button></div>`;}
+function setList(n,items,ph,ml){return `<div class="set-list" data-list="${n}" data-ml="${ml}">${items.map(it=>setRow(n,it,ml)).join('')}
+  <div class="set-f set-add"><input data-add maxlength="${ml}" placeholder="${ph}"><button type="button" class="set-plus" data-plus aria-label="${ph}">+</button></div></div>`;}
+function listVals(f,n){const L=f.querySelector(`[data-list="${n}"]`);const seen=new Set();
+  return [...L.querySelectorAll(`input[name="${n}"],input[data-add]`)].map(i=>i.value.trim()).filter(v=>v&&!seen.has(v.toLowerCase())&&seen.add(v.toLowerCase()));}
+function setListWire(f){
+  const add=L=>{const i=L.querySelector('[data-add]'),v=i.value.trim();if(!v)return i.focus();const n=L.dataset.list;
+    L.querySelector('.set-add').insertAdjacentHTML('beforebegin',setRow(n,{v,st:n==='f'?'Waiting':''},L.dataset.ml,true));i.value='';i.focus();};
+  f.addEventListener('click',e=>{const p=e.target.closest('[data-plus]'),r=e.target.closest('[data-rm]');
+    if(p)add(p.closest('[data-list]'));if(r)r.closest('.set-f').remove();});
+  f.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.matches('[data-add]')){e.preventDefault();add(e.target.closest('[data-list]'));}});}
 $('themeBtn').onclick=()=>{const t=document.documentElement.dataset.theme==='dark'?'light':'dark';try{localStorage.setItem('training.themeOverride',JSON.stringify({t,slot:themeSlot()}))}catch(e){}setTheme(t);};
 // Progress card: collapsed shows current weight, bars and the entry; expanded adds chart + measurements
 function setProg(open){$('pmore').hidden=!open;$('progToggle').textContent=open?'Show less ▴':'Show more ▾';$('progToggle').setAttribute('aria-expanded',open);
