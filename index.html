@@ -7,7 +7,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#f4f5f8">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Health">
@@ -528,7 +528,7 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:
 .wrow .wamt{flex:none}.wrow .bottles{margin-top:0}
 .wamt{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--muted)}.wamt b{font-size:17px;font-weight:800;color:var(--text);margin-right:-2px}.wamt .wdrop{margin-right:2px}
 .water.wrow{display:flex;align-items:center;gap:8px}.wdrop{flex:none;width:20px;height:20px;fill:none;stroke:var(--accent);stroke-width:2.2;stroke-linejoin:round}.wrow .bottles{flex:1;margin:0}
-.bottles{display:grid;grid-template-columns:repeat(var(--n,8),minmax(0,1fr));gap:4px;margin-top:6px}
+.bottles{display:grid;grid-template-columns:repeat(var(--n,8),minmax(0,44px));justify-content:start;gap:4px 10px;margin-top:6px}
 .bt{all:unset;position:relative;cursor:pointer;aspect-ratio:3/4;display:grid;place-items:center;-webkit-tap-highlight-color:transparent}
 .bt .btl{display:block;width:70%;height:auto;fill:none;stroke:var(--muted2);stroke-width:1.6;stroke-linejoin:round;transition:stroke .2s}
 .bt.on .btl{stroke:var(--accent)}.bt .btl .wtr{fill:var(--accent);stroke:none}.bt.goal::after{content:'';position:absolute;left:50%;bottom:-7px;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:var(--muted2)}
@@ -701,6 +701,7 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:
 .wr b{font-size:14px;font-weight:800;color:var(--text)}.wr.now span,.wr.now b{color:var(--accent)}
 .wr.gap{margin-top:6px;padding-top:13px;border-top:1px solid var(--border)}
 .wr b i{font-style:normal;font-size:12px;font-weight:700;margin-right:8px}.wr .up{color:var(--good)}.wr .dn{color:var(--accent)}
+.wr i.pm{font-style:normal;font-size:12px;font-weight:700;color:var(--muted);margin:0 3px 0 5px}
 .wnote{margin:4px 0 0;font-size:11px;font-weight:600;color:var(--muted2)}
 .wpers{margin-top:12px;padding:12px 14px;border-radius:14px;background:var(--surface2);font-size:13px;font-weight:600;color:var(--muted)}
 .wp-r{display:flex;justify-content:space-between;align-items:baseline;padding:3px 0}.wp-r b{font-weight:800;color:var(--text)}.wp-r.now span,.wp-r.now b{color:var(--accent);font-weight:800}
@@ -1000,16 +1001,38 @@ function startWeight(W){ // last measurement before the goal start day, else the
 // Daily weight curve: you weigh least right after waking and most in the evening (food + drink).
 // kg gained per hour after 07:00, from your own timed measurements once there are enough, else a typical ~0.09%/h (~1 kg over a day)
 const hourOf=t=>{const m=/^(\d{1,2}):(\d{2})/.exec(t||'');return m?+m[1]+m[2]/60:null;};
-function dayCurve(W){
-  const kg=W.length?W[W.length-1].kg:80,def={slope:kg*0.0009,own:false,n:0};
-  const T=W.filter(w=>hourOf(w.time)!=null);if(T.length<5)return def;
-  const hs=T.map(w=>hourOf(w.time));if(Math.max(...hs)-Math.min(...hs)<4)return def;
-  // remove the long-term trend first (straight line over all measurements), then fit what is left against the hour
-  const t0=parse(W[0].date).getTime(),X=W.map(w=>(parse(w.date).getTime()-t0)/864e5),Y=W.map(w=>w.kg),n=W.length;
-  const mx=X.reduce((a,b)=>a+b)/n,my=Y.reduce((a,b)=>a+b)/n;let sxx=0,sxy=0;X.forEach((x,i)=>{sxx+=(x-mx)**2;sxy+=(x-mx)*(Y[i]-my);});
-  const b=sxx?sxy/sxx:0,res=T.map(w=>w.kg-(my+b*((parse(w.date).getTime()-t0)/864e5-mx)));
-  const mh=hs.reduce((a,c)=>a+c)/hs.length,mr=res.reduce((a,c)=>a+c)/res.length;let hh=0,hr=0;hs.forEach((h,i)=>{hh+=(h-mh)**2;hr+=(h-mh)*(res[i]-mr);});
-  const sl=hh?hr/hh:0;return sl>0&&sl<kg*0.003?{slope:sl,own:true,n:T.length}:def;}
+// ---------- weight model: one Kalman filter for trend weight, pace and your day curve ----------
+// state: level = your true 07:00 weight, pace = kg per day, curve = kg per hour later in the day.
+// every weigh-in = level + curve × (hour − 7) + noise (food, drink, water: ±0.45 kg).
+// It starts from sensible defaults and gets more personal with every measurement,
+// fastest from a morning and an evening weigh-in on the same day.
+const KM={noise:.45,levelQ:.03,paceQ:.002,curveQ:.0003};
+let KM_CACHE=null;
+function weightModel(){
+  const key=S.weight.length+'|'+S.weight.map(w=>w.date+w.time+w.kg).join(',').length;
+  if(KM_CACHE&&KM_CACHE.key===key&&KM_CACHE.ref===S.weight)return KM_CACHE.m;
+  const R=[...S.weight].filter(w=>w.kg>0).sort(byDT);let m=null;
+  if(R.length){
+    const uh=medHour(R)??7,kg0=R[0].kg,c0=kg0*.0009,cs=kg0*.0006; // default ≈ +1.1 kg from 07:00 to 22:00 at 80 kg
+    let x=[kg0,0,c0],P=[[4,0,0],[0,.06**2,0],[0,0,cs*cs]],tPrev=parse(R[0].date).getTime()/864e5,nt=0;
+    const hrs=new Set(),days={};
+    R.forEach(w=>{const t=parse(w.date).getTime()/864e5,dt=Math.max(0,t-tPrev);tPrev=t;
+      // predict: level moves with the pace; uncertainty grows with time
+      x=[x[0]+dt*x[1],x[1],x[2]];
+      const a=P;P=[[a[0][0]+2*dt*a[0][1]+dt*dt*a[1][1]+KM.levelQ**2*dt,a[0][1]+dt*a[1][1],a[0][2]+dt*a[1][2]],
+        [a[1][0]+dt*a[1][1],a[1][1]+KM.paceQ**2*dt,a[1][2]],[a[2][0]+dt*a[2][1],a[2][1],a[2][2]+KM.curveQ**2*dt]];
+      // update with this weigh-in
+      const hh=hourOf(w.time),h=Math.min(22,Math.max(7,hh??uh)),e=h-7,Hm=[1,0,e],r=(hh==null?1.5:1)*KM.noise**2;
+      if(hh!=null){nt++;hrs.add(Math.round(h));(days[w.date]=days[w.date]||[]).push(h);}
+      const PH=[0,1,2].map(i=>P[i][0]+P[i][2]*e),Sv=PH[0]+PH[2]*e+r,K=PH.map(v=>v/Sv),y=w.kg-(x[0]+x[2]*e);
+      x=x.map((v,i)=>v+K[i]*y);P=P.map((row,i)=>row.map((v,j)=>v-K[i]*PH[j]));});
+    const pairs=Object.values(days).filter(hs=>Math.max(...hs)-Math.min(...hs)>=4).length;
+    m={level:x[0],pace:x[1],curve:x[2],P,lastT:tPrev*864e5,n:R.length,nt,pairs,learned:Math.max(0,Math.min(1,1-Math.sqrt(P[2][2])/cs))};}
+  KM_CACHE={key,ref:S.weight,m};return m;}
+// day curve used everywhere: from the model, between +0.5 and +3 kg from 07:00 to 22:00
+function dayCurve(){const m=weightModel(),kg=m?m.level:80;
+  if(!m)return {slope:kg*.0009,own:false,n:0,learned:0};
+  return {slope:Math.min(3/15,Math.max(.5/15,m.curve)),own:m.learned>=.7,n:m.nt,pairs:m.pairs,learned:m.learned};}
 // All measurements as 07:00 morning weight, so the time you weigh no longer matters.
 // kg = morning estimate, raw = what the scale said; untimed measurements are taken as your usual time.
 const byDT=(a,b)=>a.date.localeCompare(b.date)||(a.time||'').localeCompare(b.time||'');
@@ -1017,21 +1040,11 @@ const medHour=W=>{const hs=W.map(w=>hourOf(w.time)).filter(v=>v!=null).sort((a,b
 function weights(){const R=[...S.weight].sort(byDT),dc=dayCurve(R),uh=medHour(R);
   return R.map(w=>{const h=hourOf(w.time)??uh;return {...w,raw:w.kg,kg:h==null?w.kg:Math.round(atHour(w.kg,h,7,dc.slope)*10)/10};});}
 const atHour=(kg,from,to,sl)=>kg+sl*(Math.min(22,Math.max(7,to))-Math.min(22,Math.max(7,from)));
-// Expected weight = where you are now + your pace × time to the deadline.
-//  start: average of the last 3 morning weights (one off day only counts for a third)
-//  pace:  weighted straight line through ALL measurements; recent ones count most (half weight every 14 days),
-//         capped at 1% of your weight per week so a fast (water) start isn't extended to the deadline
-function trend(W){
-  if(W.length<2)return null;
-  const lastT=parse(W[W.length-1].date).getTime(),HALF=14;
-  const xs=W.map(w=>(parse(w.date).getTime()-lastT)/864e5),ys=W.map(w=>w.kg),ws=xs.map(x=>Math.pow(.5,-x/HALF));
-  const sw=ws.reduce((a,b)=>a+b),mx=xs.reduce((a,x,i)=>a+ws[i]*x,0)/sw,my=ys.reduce((a,y,i)=>a+ws[i]*y,0)/sw;
-  let sxx=0,sxy=0;xs.forEach((x,i)=>{sxx+=ws[i]*(x-mx)**2;sxy+=ws[i]*(x-mx)*(ys[i]-my);});
-  if(!sxx)return null;
-  const L3=ys.slice(-3),start=L3.reduce((a,b)=>a+b)/L3.length,cap=start*.01/7;
-  const slope=Math.max(-cap,Math.min(cap,sxy/sxx)); // kg per day
-  return {slope,lastT,start,capped:Math.abs(sxy/sxx)>cap,at:t=>start+slope*(t-lastT)/864e5,days:Math.round(-Math.min(...xs)),n:W.length};
-}
+// Expected weight = trend weight now + pace × time to the deadline (pace capped at 1% of your weight per week)
+function trend(){const m=weightModel();if(!m||m.n<2)return null;
+  const cap=m.level*.01/7,slope=Math.max(-cap,Math.min(cap,m.pace)),P=m.P;
+  const sd=t=>{const d=(t-m.lastT)/864e5;return Math.sqrt(Math.max(0,P[0][0]+2*d*P[0][1]+d*d*P[1][1]));};
+  return {slope,lastT:m.lastT,start:m.level,capped:Math.abs(m.pace)>cap,at:t=>m.level+slope*(t-m.lastT)/864e5,sd};}
 let year=new Date().getFullYear();
 let weekStart=mondayOf(new Date());
 let monthStart=new Date(new Date().getFullYear(),new Date().getMonth(),1);
@@ -1463,7 +1476,7 @@ function renderWeight(){
     // big current weight; folded card also shows the expected weight inline
     h+=`<div class="cur"><div class="cur-v">${fmtKg(last)}<span>kg</span></div><div class="cur-l">Morning weight · ${fmtDs(W[W.length-1].date)}${ch===null||Math.abs(ch)<0.05?'':` · <b class="${toward(ch)?'up':'dn'}">${ch>0?'+':''}${fmtKg(ch)} kg</b>`}${fk!=null?` <span class="fc-in">· Expected <b class="${ok?'up':'dn'}">${fmtKg(fk)} kg</b></span>`:''}</div></div>`;
     // one quiet list: your last measurement in your day, then body composition, then where you're heading
-    const R2=[...S.weight].sort(byDT),L=R2[R2.length-1],h0=hourOf(L.time),dc=dayCurve(R2),f=v=>fmtKg(Math.round(v*10)/10);
+    const R2=[...S.weight].sort(byDT),L=R2[R2.length-1],h0=hourOf(L.time),dc=dayCurve(),f=v=>fmtKg(Math.round(v*10)/10);
     const hs=R2.slice(0,-1).map(w=>hourOf(w.time)).filter(v=>v!=null).sort((a,b)=>a-b),uh=hs.length>=2?hs[Math.floor(hs.length/2)]:null;
     const row=(l,v,c='')=>`<div class="wr${c?' '+c:''}"><span>${l}</span><b>${v}</b></div>`;
     let rows='';
@@ -1475,9 +1488,15 @@ function renderWeight(){
     if(F.length){const lf=F[F.length-1],df=lf.fat-F[0].fat,lean=lf.raw*(1-lf.fat/100);
       rows+=row('Body fat',`${F.length>1&&Math.abs(df)>=0.05?`<i class="${df<=0?'up':'dn'}">${df>0?'+':''}${fmtKg(df)}</i>`:''}${fmtKg(lf.fat)}%`,'gap');
       rows+=row('Lean mass',fmtKg(lean)+' kg');}
-    if(fk!=null)rows+=row('Expected · '+fmtDs(dl),`<span class="${ok?'up':'dn'}">${fmtKg(fk)} kg</span>`,'gap');
+    // where you're heading: trend weight + pace, expected at the deadline (± band), and when you reach your goal
+    if(tr){const wk=tr.slope*7;rows+=row(`Trend${Math.abs(wk)>=.05?` · ${wk>0?'+':''}${fmtKg(wk)} kg/week`:' · stable'}`,fmtKg(tr.start)+' kg','gap');
+      if(fk!=null){const band=tr.sd(tf);rows+=row('Expected · '+fmtDs(dl),`<span class="${ok?'up':'dn'}">${fmtKg(fk)}</span><i class="pm">± ${fmtKg(Math.max(.1,band))}</i> kg`);}
+      if(tw&&Math.abs(tr.start-tw)>=.2&&Math.sign(tw-tr.start)===Math.sign(tr.slope)&&Math.abs(tr.slope)>.005){const dd=(tw-tr.start)/tr.slope;
+        if(dd<730){const gd=iso(new Date(tr.lastT+dd*864e5));rows+=row('Goal '+fmtKg(tw)+' kg','≈ '+fmtDs(gd));}}}
+    const pc=Math.round(dc.learned*100),dcn=dc.learned>=.7?`Your day curve: +${fmtKg(dc.slope*15)} kg from 07:00 to 22:00`
+      :`Day curve +${fmtKg(dc.slope*15)} kg (07–22)${pc>=5?` · ${pc}% yours`:''} · weigh in morning + evening on one day to learn it`;
     h+=`<div class="wrows">${rows}</div>`
-      +(h0==null?`<p class="wnote">Add the time to a measurement to see it in your day.</p>`:dc.own?'':`<p class="wnote">Typical day curve · becomes yours after 5 timed weigh-ins</p>`);
+      +(h0==null?`<p class="wnote">Add the time to a measurement to see it in your day.</p>`:`<p class="wnote">${dcn}</p>`);
   }else h='<div class="sub">No measurements yet. Add your first weight below.</div>';
   $('wStats').innerHTML=h;
   {const up=tw?tw>=(W.length?startWeight(W).kg:0):false;
@@ -1694,7 +1713,7 @@ const autoTheme=()=>themeSlot()[0]==='N'?'dark':'light';
 const themeMode=()=>{try{return localStorage.getItem('training.themeMode')||'auto'}catch(e){return 'auto'}};
 function wantedTheme(){const m=themeMode();if(m==='light'||m==='dark')return m;try{const o=JSON.parse(localStorage.getItem('training.themeOverride')||'null');if(o&&o.slot===themeSlot())return o.t;}catch(e){}return autoTheme();}
 function setTheme(t){if(document.documentElement.dataset.theme===t&&$('themeBtn').innerHTML)return;document.documentElement.dataset.theme=t;$('themeBtn').innerHTML=t==='dark'?SUN:MOON;
-  document.querySelector('meta[name=theme-color]')?.setAttribute('content',t==='dark'?'#0b0f17':'#ffffff');if(S.weight)renderWeight();}
+  document.querySelector('meta[name=theme-color]')?.setAttribute('content',t==='dark'?'#0b0f17':'#f4f5f8');if(S.weight)renderWeight();}
 setTheme(wantedTheme());
 setInterval(()=>setTheme(wantedTheme()),60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)setTheme(wantedTheme());});
 $('playBtn').onclick=()=>playIntro(true);
