@@ -528,7 +528,7 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:
 .wrow .wamt{flex:none}.wrow .bottles{margin-top:0}
 .wamt{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--muted)}.wamt b{font-size:17px;font-weight:800;color:var(--text);margin-right:-2px}.wamt .wdrop{margin-right:2px}
 .water.wrow{display:flex;align-items:center;gap:8px}.wdrop{flex:none;width:20px;height:20px;fill:none;stroke:var(--accent);stroke-width:2.2;stroke-linejoin:round}.wrow .bottles{flex:1;margin:0}
-.bottles{display:grid;grid-template-columns:repeat(var(--n,8),minmax(0,44px));justify-content:start;gap:4px 10px;margin-top:6px}
+.bottles{display:grid;grid-template-columns:repeat(var(--n,8),minmax(0,44px));justify-content:center;gap:4px 10px;margin-top:6px}
 .bt{all:unset;position:relative;cursor:pointer;aspect-ratio:3/4;display:grid;place-items:center;-webkit-tap-highlight-color:transparent}
 .bt .btl{display:block;width:70%;height:auto;fill:none;stroke:var(--muted2);stroke-width:1.6;stroke-linejoin:round;transition:stroke .2s}
 .bt.on .btl{stroke:var(--accent)}.bt .btl .wtr{fill:var(--accent);stroke:none}.bt.goal::after{content:'';position:absolute;left:50%;bottom:-7px;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:var(--muted2)}
@@ -752,6 +752,58 @@ body.ov #actionCard,body.ov #todayCard,body.ov .stack,body.ov #progCard{display:
 .q-ov .q-slide{min-height:240px;padding:44px 28px 18px}.q-ov .q-slide p{font-size:28px}
 .q-x{all:unset;cursor:pointer;position:absolute;top:10px;right:12px;z-index:2;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;line-height:1;color:var(--muted);background:var(--surface2)}
 @media (max-width:430px){header{gap:8px}.hdr-right{gap:6px!important}header .themebtn{width:34px;height:34px}.hello,header h1{font-size:25px}}
+
+/* Progress, minimal: number + one sentence, sparkline, three tiles, one bar */
+#bars{display:none!important}
+.cur-v .cur-d{font-size:15px;font-weight:800;letter-spacing:0;margin-left:10px;vertical-align:super}
+.cur-d.up,.cur-l b.up,.wt em.up{color:var(--good)}.cur-d.dn,.cur-l b.dn,.wt em.dn{color:var(--accent)}
+.cur-l{color:var(--text2)}.cur-l b{font-weight:800}
+.wt em{font-style:normal}
+.wspark{display:block;width:100%;height:56px;margin-top:18px;overflow:visible}
+.wspark polyline{fill:none;stroke:var(--text);stroke-width:2;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke}
+.wspark line.g{stroke:var(--muted2);stroke-width:1.2;stroke-dasharray:4 4;vector-effect:non-scaling-stroke}
+.wspark circle{fill:var(--text)}
+.wspark-l{display:flex;justify-content:space-between;font-size:10px;font-weight:700;color:var(--muted2);margin-top:4px}
+.wtiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px}
+.wt{background:var(--surface2);border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.wt span{font-size:11px;font-weight:700;color:var(--muted)}.wt b{font-size:19px;font-weight:800;color:var(--text);letter-spacing:-.3px;font-variant-numeric:tabular-nums}.wt i{font-style:normal;font-size:10.5px;font-weight:600;color:var(--muted2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wbar{margin-top:18px}
+.wbar-t{display:flex;justify-content:space-between;font-size:12px;font-weight:600;color:var(--muted)}.wbar-t b{color:var(--text);font-weight:800}
+.wbar-k{position:relative;height:6px;border-radius:3px;background:var(--surface2);margin:7px 0 5px}
+.wbar-k i{position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:var(--text)}
+.wbar-k u{position:absolute;top:-4px;width:2px;height:14px;margin-left:-1px;border-radius:1px;background:var(--accent)}
+.wbar-e{display:flex;justify-content:space-between;font-size:10px;font-weight:700;color:var(--muted2)}
+#progCard:has(#pmore[hidden]) .wspark,#progCard:has(#pmore[hidden]) .wspark-l,#progCard:has(#pmore[hidden]) .wtiles,#progCard:has(#pmore[hidden]) .wbar,#progCard:has(#pmore[hidden]) .cur-d{display:none}
+#progCard .wnote{margin-top:12px}
+#progCard:has(#pmore[hidden]) .cur-l{display:none}
+
+/* Nutrition, tighter: monochrome bottles and ticks (black on light, white on dark) */
+.bt .btl{stroke:var(--muted2)}.bt.on .btl{stroke:var(--text)}.bt .btl .wtr{fill:var(--text)}
+.wdrop{stroke:var(--text)!important}
+.pill,:root[data-theme="dark"] .pill{height:40px;border-radius:11px;background:var(--surface2);color:var(--muted);font-weight:700}
+.pill.on,.soft .pill.on,:root[data-theme="dark"] .pill.on{background:var(--text);color:var(--surface)}
+.pill.on span::before,.soft .pill.on span::before,:root[data-theme="dark"] .pill.on span::before{content:"✓";margin-right:6px}
+.pill.on i{color:inherit;opacity:.7}
+
+/* Settings: calm sections, chip toggles, monochrome controls */
+#dlgForm .set-sec{padding:16px 0;border-top:1px solid var(--border)}
+#dlgForm h3+.set-sec{border-top:none;padding-top:6px}
+#dlgForm .set-h{display:flex;align-items:baseline;justify-content:space-between;font-size:14px;font-weight:800;color:var(--text);margin-bottom:10px}
+#dlgForm .set-hint{margin:-6px 0 10px;font-size:12px;font-weight:600;color:var(--muted2);line-height:1.35}
+#dlgForm .set-wv{float:none;font-size:14px;font-weight:800;color:var(--text)}
+.set-mods{grid-template-columns:1fr 1fr}
+#dlgForm .set-ck{position:relative;cursor:pointer}
+#dlgForm .set-ck input{position:absolute;opacity:0;pointer-events:none}
+#dlgForm .set-ck span{flex:1;display:flex;align-items:center;gap:8px;height:42px;padding:0 12px;border-radius:12px;background:var(--surface2);color:var(--muted);font-size:13px;font-weight:700;transition:background .15s,color .15s}
+#dlgForm .set-ck span svg{width:17px;height:17px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#dlgForm .set-ck input:checked+span{background:var(--text);color:var(--surface)}
+#dlgForm .set-ck input:disabled+span{opacity:.55;cursor:default}
+#dlgForm .set-ck input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px}
+.set-range{accent-color:var(--text)}
+.set-scale{display:flex;justify-content:space-between;font-size:10.5px;font-weight:700;color:var(--muted2);margin-top:2px}
+.set-plus{background:var(--text);color:var(--surface)}
+#dlgForm .seg button:focus:not(:focus-visible),#dlgForm .seg button:focus{outline:none}
+.set-f span.ok{color:var(--good)}
 </style>
 </head>
 <body>
@@ -1432,8 +1484,9 @@ function renderProcess(){
 function dayBtn(k,T,cls=''){const d=parse(k).getDate();
   // Sleep: the night's smiley sits in the circle, its score underneath (blue today, black before)
   if(MODS[mod].rating){const r=rateOf(k);if(r)return `<div class="dc"><button class="cday rated${k===todayIso?' today':''}${cls}" data-wd="${k}" title="${fmtD(k)} · ${RATE[r-1].l}" aria-label="${fmtD(k)}: ${RATE[r-1].l}">${face(r-1)}</button><i class="dpc${k===todayIso?' td':''}">${r*20}</i></div>`;}
-  const on=T.has(k);
-  const f=!on&&mod!=='training'&&k<=todayIso?dayVal(mod,k)/100:0,pc=Math.round(f*100),full=on&&mod!=='training';
+  // Nutrition: no cross at 100%, just a closed ring with 100%
+  const on=T.has(k)&&mod!=='food';
+  const f=!on&&mod!=='training'&&k<=todayIso?Math.min(1,dayVal(mod,k)/100):0,pc=Math.round(f*100),full=on&&mod!=='training';
   const ringSvg=f>0?`<svg class="pring" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18" pathLength="100" stroke-dasharray="${pc} 100" transform="rotate(-90 20 20)"/></svg>`:'';
   return `<div class="dc"><button class="cday${on?' on':''}${f>0?' part':''}${k===todayIso?' today':''}${k>todayIso?' fut':''}${cls}" data-wd="${k}" title="${fmtD(k)}${f>0?' · '+pc+'%':''}" aria-pressed="${on}"><span>${d}</span>${ringSvg}${on?crossSVG(k,k===todayIso):''}</button>${f>0?`<i class="dpc${k===todayIso?' td':''}">${pc}%</i>`:full?`<i class="dpc${k===todayIso?' td':''}">${dayVal(mod,k)}%</i>`:''}</div>`;}
 const countTxt=(n,period)=>mod!=='training'?'':`<div class="msum"><b>${n}</b> training ${n===1?'day':'days'} ${period}</div>`;
@@ -1473,30 +1526,37 @@ function renderWeight(){
     const prev=W.length>1?W[W.length-2].kg:null,ch=prev===null?null:last-prev;
     const tr=trend(W),tf=dl&&tw?parse(dl).getTime():null; // expected weight: only with a target weight and a deadline
     const fk=tr&&tf&&tf>tr.lastT?tr.at(tf):null,ok=fk!=null&&(Math.abs(fk-tw)<=0.5||(tw>=first?fk>=tw:fk<=tw));
-    // big current weight; folded card also shows the expected weight inline
-    h+=`<div class="cur"><div class="cur-v">${fmtKg(last)}<span>kg</span></div><div class="cur-l">Morning weight · ${fmtDs(W[W.length-1].date)}${ch===null||Math.abs(ch)<0.05?'':` · <b class="${toward(ch)?'up':'dn'}">${ch>0?'+':''}${fmtKg(ch)} kg</b>`}${fk!=null?` <span class="fc-in">· Expected <b class="${ok?'up':'dn'}">${fmtKg(fk)} kg</b></span>`:''}</div></div>`;
-    // one quiet list: your last measurement in your day, then body composition, then where you're heading
+    const wk=tr?tr.slope*7:null,days=dl?Math.round((parse(dl)-parse(todayIso))/864e5):null;
+    let gd=null;if(tr&&tw&&Math.abs(tr.start-tw)>=.2&&Math.sign(tw-tr.start)===Math.sign(tr.slope)&&Math.abs(tr.slope)>.005){const dd=(tw-tr.start)/tr.slope;if(dd<730)gd=iso(new Date(tr.lastT+dd*864e5));}
+    const reached=tw&&tr&&Math.abs(tr.start-tw)<.2;
+    // one plain sentence: where you stand and what it means
+    const pace=wk!=null&&Math.abs(wk)>=.05?`${wk>0?'+':'−'}${fmtKg(Math.abs(wk))} kg a week`:'a stable weight';
+    const insight=reached?'<b class="up">Goal reached.</b> Keep it steady.'
+      :fk!=null?(ok?`<b class="up">On track.</b> At ${pace} you reach ${fmtKg(tw)} kg${gd?' around '+fmtDs(gd):''}.`
+        :`<b class="dn">${fmtKg(Math.abs(fk-tw))} kg off.</b> At ${pace} you're at ${fmtKg(fk)} kg on ${fmtDs(dl)}.`)
+      :tr?`Trend: ${pace}.`:'';
+    h+=`<div class="cur"><div class="cur-v">${fmtKg(last)}<span>kg</span>${ch===null||Math.abs(ch)<0.05?'':`<b class="cur-d ${toward(ch)?'up':'dn'}">${ch>0?'+':''}${fmtKg(ch)}</b>`}</div>`
+      +`<div class="cur-l">${insight||'Morning weight · '+fmtDs(W[W.length-1].date)}</div></div>`;
+    // quiet sparkline of the last 8 weeks with the goal as a dashed line
+    {const t1=Math.max(parse(W[W.length-1].date).getTime(),parse(todayIso).getTime()),t0=t1-56*864e5,P=W.filter(w=>parse(w.date).getTime()>=t0);
+     if(P.length>=3){const vs=P.map(w=>w.kg);if(tw)vs.push(tw);let lo=Math.min(...vs),hi=Math.max(...vs);if(hi-lo<1){lo-=.5;hi+=.5;}
+       const X=t=>(t-t0)/(t1-t0)*300,Y=v=>4+(hi-v)/(hi-lo)*48;
+       const pts=P.map(w=>X(parse(w.date).getTime()).toFixed(1)+','+Y(w.kg).toFixed(1)).join(' '),lp=P[P.length-1];
+       h+=`<svg class="wspark" viewBox="0 0 300 56" preserveAspectRatio="none" aria-hidden="true">${tw?`<line x1="0" x2="300" y1="${Y(tw)}" y2="${Y(tw)}" class="g"/>`:''}<polyline points="${pts}"/><circle cx="${X(parse(lp.date).getTime())}" cy="${Y(lp.kg)}" r="3.5"/></svg><div class="wspark-l"><span>${fmtDs(iso(new Date(t0)))}</span>${tw?`<span>goal ${fmtKg(tw)}</span>`:''}<span>today</span></div>`;}}
+    // three numbers
+    const tile=(l,v,sub='')=>`<div class="wt"><span>${l}</span><b>${v}</b>${sub?`<i>${sub}</i>`:''}</div>`;
+    const F=W.filter(w=>w.fat!=null),lf=F.length?F[F.length-1]:null;
+    let tiles=tile('Per week',wk==null?'–':(Math.abs(wk)<.05?'0.0':(wk>0?'+':'−')+fmtKg(Math.abs(wk))),'kg');
+    tiles+=fk!=null?tile(fmtDs(dl),`<em class="${ok?'up':'dn'}">${fmtKg(fk)}</em>`,'± '+fmtKg(Math.max(.1,tr.sd(tf)))+' kg'):tile('Goal',gd?fmtDs(gd):'–',gd?'≈ '+fmtKg(tw)+' kg':'');
+    tiles+=lf?tile('Body fat',fmtKg(lf.fat)+'%',fmtKg(lf.raw*(1-lf.fat/100))+' kg lean'):tile('Goal',gd?fmtDs(gd):(tw?fmtKg(tw):'–'),gd?'≈ '+fmtKg(tw)+' kg':(tw?'kg':''));
+    h+=`<div class="wtiles">${tiles}</div>`;
+    // one bar: how far along the weight goes, with a tick for how much time has passed
+    if(tw){const s0=sw.kg,tot=s0-tw,p=tot?Math.round(Math.min(1,Math.max(0,(s0-last)/tot))*100):100;
+      let tp=null;if(dl){const st=goalStart(),T=Math.max(1,(parse(dl)-parse(st))/864e5);tp=Math.round(Math.min(1,Math.max(0,(parse(todayIso)-parse(st))/864e5/T))*100);}
+      h+=`<div class="wbar"><div class="wbar-t"><span><b>${p}%</b> of the way</span>${days!=null?`<span>${Math.max(0,days)} days left</span>`:''}</div><div class="wbar-k"><i style="width:${p}%"></i>${tp!=null?`<u style="left:${tp}%"></u>`:''}</div><div class="wbar-e"><span>${fmtKg(s0)}</span><span>${fmtKg(tw)} kg</span></div></div>`;}
+    // today in your day, as one quiet line
     const R2=[...S.weight].sort(byDT),L=R2[R2.length-1],h0=hourOf(L.time),dc=dayCurve(),f=v=>fmtKg(Math.round(v*10)/10);
-    const hs=R2.slice(0,-1).map(w=>hourOf(w.time)).filter(v=>v!=null).sort((a,b)=>a-b),uh=hs.length>=2?hs[Math.floor(hs.length/2)]:null;
-    const row=(l,v,c='')=>`<div class="wr${c?' '+c:''}"><span>${l}</span><b>${v}</b></div>`;
-    let rows='';
-    if(h0!=null){
-      if(Math.abs(h0-7)>=0.5)rows+=row('Morning · 07:00','≈ '+f(atHour(L.kg,h0,7,dc.slope))+' kg');
-      rows+=row('Measured · '+L.time,f(L.kg)+' kg','now');
-      if(h0<21&&!(uh!=null&&uh>=21))rows+=row('Evening · 22:00','≈ '+f(atHour(L.kg,h0,22,dc.slope))+' kg');}
-    const F=W.filter(w=>w.fat!=null);
-    if(F.length){const lf=F[F.length-1],df=lf.fat-F[0].fat,lean=lf.raw*(1-lf.fat/100);
-      rows+=row('Body fat',`${F.length>1&&Math.abs(df)>=0.05?`<i class="${df<=0?'up':'dn'}">${df>0?'+':''}${fmtKg(df)}</i>`:''}${fmtKg(lf.fat)}%`,'gap');
-      rows+=row('Lean mass',fmtKg(lean)+' kg');}
-    // where you're heading: trend weight + pace, expected at the deadline (± band), and when you reach your goal
-    if(tr){const wk=tr.slope*7;rows+=row(`Trend${Math.abs(wk)>=.05?` · ${wk>0?'+':''}${fmtKg(wk)} kg/week`:' · stable'}`,fmtKg(tr.start)+' kg','gap');
-      if(fk!=null){const band=tr.sd(tf);rows+=row('Expected · '+fmtDs(dl),`<span class="${ok?'up':'dn'}">${fmtKg(fk)}</span><i class="pm">± ${fmtKg(Math.max(.1,band))}</i> kg`);}
-      if(tw&&Math.abs(tr.start-tw)>=.2&&Math.sign(tw-tr.start)===Math.sign(tr.slope)&&Math.abs(tr.slope)>.005){const dd=(tw-tr.start)/tr.slope;
-        if(dd<730){const gd=iso(new Date(tr.lastT+dd*864e5));rows+=row('Goal '+fmtKg(tw)+' kg','≈ '+fmtDs(gd));}}}
-    const pc=Math.round(dc.learned*100),dcn=dc.learned>=.7?`Your day curve: +${fmtKg(dc.slope*15)} kg from 07:00 to 22:00`
-      :`Day curve +${fmtKg(dc.slope*15)} kg (07–22)${pc>=5?` · ${pc}% yours`:''} · weigh in morning + evening on one day to learn it`;
-    h+=`<div class="wrows">${rows}</div>`
-      +(h0==null?`<p class="wnote">Add the time to a measurement to see it in your day.</p>`:`<p class="wnote">${dcn}</p>`);
+    if(h0!=null)h+=`<p class="wnote">${L.time} ${f(L.kg)} kg${Math.abs(h0-7)>=0.5?` · ≈ ${f(atHour(L.kg,h0,7,dc.slope))} at 07:00`:''}${h0<21?` · ≈ ${f(atHour(L.kg,h0,22,dc.slope))} at 22:00`:''}</p>`;
   }else h='<div class="sub">No measurements yet. Add your first weight below.</div>';
   $('wStats').innerHTML=h;
   {const up=tw?tw>=(W.length?startWeight(W).kg:0):false;
@@ -1721,16 +1781,16 @@ $('setBtn').onclick=()=>openSettings();
 // Settings: appearance, which modules you use, your Nutrition extras and your friends
 function openSettings(){if(!auth)return askLogin();
   const has_=m=>(S.modules||[]).includes(m),tm=themeMode(),FL=S.friendList||[];
-  const tick=(m,l)=>`<label class="set-ck"><input type="checkbox" name="m_${m}"${has_(m)?' checked':''}><span>${l}</span></label>`;
+  const ic=m=>`<svg viewBox="0 0 24 24" aria-hidden="true">${m==='score'?'<path d="M12 20.5s-7.5-4.6-7.5-10.1A4.2 4.2 0 0 1 12 8a4.2 4.2 0 0 1 7.5 2.4c0 5.5-7.5 10.1-7.5 10.1z"/>':MODS[m].icon}</svg>`;
+  const tick=(m,l,lock)=>`<label class="set-ck"><input type="checkbox" name="m_${m}"${lock||has_(m)?' checked':''}${lock?' disabled':''}><span>${ic(m)}${l}</span></label>`;
+  const sec=(t,body,hint='',extra='')=>`<section class="set-sec"><div class="set-h"><span>${t}</span>${extra}</div>${hint?`<p class="set-hint">${hint}</p>`:''}${body}</section>`;
   dialog(`<h3>Settings</h3>
-    <label>Appearance <small>(Auto = dark 19:00–07:00)</small></label><input type="hidden" name="theme" value="${tm}"><div class="seg set-seg" data-seg="theme">${[['auto','Auto'],['light','Light'],['dark','Dark']].map(([v,l])=>`<button type="button" data-v="${v}"${tm===v?' class="on"':''}>${l}</button>`).join('')}</div>
-    <label>Modules</label><div class="set-mods"><label class="set-ck"><input type="checkbox" checked disabled><span>Training</span></label>${tick('food','Nutrition')}${tick('sleep','Sleep')}${tick('score','Score')}</div>
-    <label>Water goal <b class="set-wv" id="setWv">${L(wGoal()*500)} L</b></label><input type="range" class="set-range" name="waterL" min="1" max="4" step="0.5" value="${wGoal()/2}">
-    <label>Nutrition extras <small>(empty = off · max ${X_MAX})</small></label><div class="set-x">${EXTRAS.map(a=>`<input name="x_${a}" maxlength="${X_MAX}" placeholder="Off" value="${esc(xLbl(a))}">`).join('')}</div>
-    <label>Friends <small>(you see each other once you both add each other)</small></label>
-    ${setList('f',FL.map(f=>({v:f.name,st:f.mutual?'Friends':'Waiting',ok:f.mutual})),'Add a friend',30)}
-    <label>Quotes <small>(shown with the quote button)</small></label>
-    ${setList('q',(S.quotes||[]).map(q=>({v:q})),'Add a quote',200)}`,
+    ${sec('Appearance',`<input type="hidden" name="theme" value="${tm}"><div class="seg set-seg" data-seg="theme">${[['auto','Auto'],['light','Light'],['dark','Dark']].map(([v,l])=>`<button type="button" data-v="${v}"${tm===v?' class="on"':''}>${l}</button>`).join('')}</div>`,'Auto switches to dark from 19:00 to 07:00.')}
+    ${sec('Modules',`<div class="set-mods">${tick('training','Training',true)}${tick('food','Nutrition')}${tick('sleep','Sleep')}${tick('score','Score')}</div>`)}
+    ${sec('Water goal',`<input type="range" class="set-range" name="waterL" min="1" max="4" step="0.5" value="${wGoal()/2}"><div class="set-scale"><span>1 L</span><span>4 L</span></div>`,'',`<b class="set-wv" id="setWv">${L(wGoal()*500)} L</b>`)}
+    ${sec('Nutrition extras',`<div class="set-x">${EXTRAS.map(a=>`<input name="x_${a}" maxlength="${X_MAX}" placeholder="Off" value="${esc(xLbl(a))}">`).join('')}</div>`,'Name them yourself. Leave empty to switch off.')}
+    ${sec('Friends',setList('f',FL.map(f=>({v:f.name,st:f.mutual?'Friends':'Waiting',ok:f.mutual})),'Add a friend',30),'You see each other once you both add each other.')}
+    ${sec('Quotes',setList('q',(S.quotes||[]).map(q=>({v:q})),'Add a quote',200),'Shown with the quote button.')}`,
   f=>{try{localStorage.setItem('training.themeMode',f.theme.value);localStorage.removeItem('training.themeOverride')}catch(e){}setTheme(wantedTheme());
     const mods=['training'].concat(['food','sleep','score'].filter(m=>f['m_'+m].checked));
     const fr=listVals(f,'f');
